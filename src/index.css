@@ -83,8 +83,16 @@ body {
 /* Forms & Controls */
 input[type="range"] {
   width: 100%;
+  min-width: 0;
+  height: 22px;
   accent-color: var(--primary);
-  cursor: pointer;
+  cursor: ew-resize;
+  touch-action: pan-x;
+}
+
+/* While dragging a slider, prevent the sticky companion from scrolling */
+.sim-companion:has(input[type="range"]:active) {
+  overflow-y: clip;
 }
 
 input[type="number"] {

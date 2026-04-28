@@ -32,7 +32,6 @@ export function drawArrow(
   
   ctx.restore();
   
-  // Return tip coordinates for labels
   return {
     hx: x + len * Math.cos(ang),
     hy: y + len * Math.sin(ang)
@@ -55,7 +54,6 @@ export function drawLabel(
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   
-  // Offset perpendicular to arrow
   const nx = -Math.sin(ang);
   const ny = Math.cos(ang);
   
@@ -74,4 +72,51 @@ export function scaleCanvas(canvas: HTMLCanvasElement, width: number, height: nu
   const ctx = canvas.getContext('2d')!;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   return ctx;
+}
+
+// ─── Mixed-font math label helper ─────────────────────────────────────────────
+// Renders label segments with alternating italic math / upright unit fonts.
+// E.g.  [{text:'x', italic:true}, {text:' (m)'}]  → "𝑥 (m)"
+export type TextSeg = { text: string; italic?: boolean };
+
+export function drawMixedText(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  segments: TextSeg[],
+  opts: {
+    fontSize?: number;
+    color?: string;
+    align?: CanvasTextAlign;
+    baseline?: CanvasTextBaseline;
+  } = {}
+) {
+  const { fontSize = 13, color = '#334155', align = 'left', baseline = 'middle' } = opts;
+  const mathFont = `italic ${fontSize}px "STIX Two Text", serif`;
+  const regFont  = `${fontSize}px "Inter", system-ui, sans-serif`;
+
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.textBaseline = baseline;
+
+  // Measure total width
+  let totalW = 0;
+  for (const seg of segments) {
+    ctx.font = seg.italic ? mathFont : regFont;
+    totalW += ctx.measureText(seg.text).width;
+  }
+
+  let startX = x;
+  if (align === 'center') startX = x - totalW / 2;
+  else if (align === 'right') startX = x - totalW;
+
+  let curX = startX;
+  for (const seg of segments) {
+    ctx.font = seg.italic ? mathFont : regFont;
+    ctx.fillText(seg.text, curX, y);
+    curX += ctx.measureText(seg.text).width;
+  }
+
+  ctx.restore();
+  return totalW;
 }
