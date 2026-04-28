@@ -20,46 +20,43 @@ export function SimulationLayout({
   actionsContent
 }: SimulationLayoutProps) {
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1>{title}</h1>
-          <p className="text-muted textbook-font">{description}</p>
-        </div>
-        {actionsContent && (
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {actionsContent}
+    <div className="sim-layout">
+
+      {/* Canvas Column */}
+      <div className="sim-canvas-col">
+        <div className="sim-header">
+          <div>
+            <h1>{title}</h1>
+            <p className="text-muted textbook-font">{description}</p>
           </div>
-        )}
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-        {/* Main Canvas Area */}
-        <div className="glass-panel" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {actionsContent && (
+            <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+              {actionsContent}
+            </div>
+          )}
+        </div>
+        <div className="glass-panel sim-canvas-panel">
           {canvasContent}
         </div>
+      </div>
 
-        {/* Guided Companion Panel */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
-          {/* Pedagogical Framing */}
-          <div className="glass-panel textbook-font" style={{ backgroundColor: '#f8fafc', borderLeft: '4px solid #0ea5e9' }}>
-            {theoryContent}
-          </div>
+      {/* Guided Companion Column — sticky + independently scrollable */}
+      <div className="sim-companion">
 
-          {/* Controls */}
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '16px', marginBottom: '16px', fontFamily: 'var(--font-ui)' }}>Interactive Parameters</h2>
-            {controlsContent}
-          </div>
-
-          {/* Live Metrics */}
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '16px', marginBottom: '16px', fontFamily: 'var(--font-ui)' }}>Live Dynamics</h2>
-            {metricsContent}
-          </div>
-          
+        <div className="glass-panel sim-theory-panel textbook-font">
+          {theoryContent}
         </div>
+
+        <div className="glass-panel">
+          <h2 className="sim-section-heading">Interactive Parameters</h2>
+          {controlsContent}
+        </div>
+
+        <div className="glass-panel">
+          <h2 className="sim-section-heading">Live Dynamics</h2>
+          {metricsContent}
+        </div>
+
       </div>
     </div>
   );
