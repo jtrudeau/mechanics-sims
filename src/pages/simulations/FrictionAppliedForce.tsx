@@ -4,7 +4,7 @@ import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, scaleCanvas } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 
-const g = 9.8; // m/s^2
+const g = 9.8;
 
 export default function FrictionAppliedForce() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,15 +26,8 @@ export default function FrictionAppliedForce() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = parseFloat(e.target.value);
-    
-    // Constraints
-    if (e.target.name === 'mu_k' && value > params.mu_s) {
-      value = params.mu_s; // kinetic cannot exceed static
-    }
-    if (e.target.name === 'mu_s' && value < params.mu_k) {
-      value = params.mu_k; // static cannot be less than kinetic
-    }
-
+    if (e.target.name === 'mu_k' && value > params.mu_s) value = params.mu_s;
+    if (e.target.name === 'mu_s' && value < params.mu_k) value = params.mu_k;
     setParams(prev => ({ ...prev, [e.target.name]: value }));
   };
 
@@ -47,19 +40,15 @@ export default function FrictionAppliedForce() {
       let a = 0;
       let f_friction = 0;
 
-      // At rest (or effectively at rest)
       if (Math.abs(prev.v) < 0.05) {
         if (Math.abs(params.F_app) <= fs_max) {
-          // Static regime
           f_friction = -params.F_app;
           a = 0;
         } else {
-          // Breakaway
           f_friction = -Math.sign(params.F_app) * fk;
           a = (params.F_app + f_friction) / params.mass;
         }
       } else {
-        // Kinetic regime
         f_friction = -Math.sign(prev.v) * fk;
         a = (params.F_app + f_friction) / params.mass;
       }
@@ -67,14 +56,12 @@ export default function FrictionAppliedForce() {
       let v_new = prev.v + a * dt;
       let x_new = prev.x + prev.v * dt + 0.5 * a * dt * dt;
 
-      // Snapping to rest if we cross v=0 while F_app is within static bounds
       if (prev.v * v_new < 0 && Math.abs(params.F_app) <= fs_max) {
         v_new = 0;
         a = 0;
         f_friction = -params.F_app;
       }
 
-      // Bound world
       if (x_new > 10) x_new = -10;
       if (x_new < -10) x_new = 10;
 
@@ -87,12 +74,13 @@ export default function FrictionAppliedForce() {
     onReset: () => setState({ x: 0, v: 0, a: 0, f_friction: 0 })
   });
 
-  // Re-calculate static friction if params change while paused
   useEffect(() => {
-    if (!isRunning) {
-      physicsStep(0);
-    }
+    if (!isRunning) physicsStep(0);
   }, [params, isRunning, physicsStep]);
+
+  const F_N = params.mass * g;
+  const fs_max = params.mu_s * F_N;
+  const isStatic = Math.abs(state.v) < 0.05 && Math.abs(params.F_app) <= fs_max;
 
   // Main Scene Render
   useEffect(() => {
@@ -104,86 +92,183 @@ export default function FrictionAppliedForce() {
 
     ctx.clearRect(0, 0, w, h);
 
-    // Floor
+    const floorY = h - 50;
+
+    // Floor with hatch marks
     ctx.fillStyle = '#e2e8f0';
-    ctx.fillRect(0, h - 50, w, 50);
+    ctx.fillRect(0, floorY, w, 50);
     ctx.strokeStyle = '#94a3b8';
-    ctx.beginPath(); ctx.moveTo(0, h - 50); ctx.lineTo(w, h - 50); ctx.stroke();
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, floorY); ctx.lineTo(w, floorY); ctx.stroke();
 
-    const scale = 20; // px per meter
+    ctx.strokeStyle = '#b8c4d0';
+    ctx.lineWidth = 1;
+    const hatchSpacing = 20;
+    for (let hx = -50; hx < w + 50; hx += hatchSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(hx, floorY);
+      ctx.lineTo(hx + 30, floorY + 30);
+      ctx.stroke();
+    }
+
+    const scale = 20;
     const cx = w / 2 + state.x * scale;
-    const cy = h - 50; // floor level
+    const cy = floorY;
 
-    // Draw Block
     const bw = 80;
     const bh = 60;
-    ctx.fillStyle = '#f8fafc';
+
+    // Block shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(cx - bw/2 + 4, cy - bh + 4, bw, bh);
+
+    // Block
+    ctx.fillStyle = '#f0f9ff';
     ctx.fillRect(cx - bw/2, cy - bh, bw, bh);
     ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 2;
     ctx.strokeRect(cx - bw/2, cy - bh, bw, bh);
 
-    // Vectors
+    // Mass label on block
+    ctx.fillStyle = '#334155';
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${params.mass.toFixed(1)} kg`, cx, cy - bh / 2);
+
     const vecScale = 4;
-    // F_app
+
     if (Math.abs(params.F_app) > 0.1) {
-      drawArrow(ctx, cx, cy - bh/2, params.F_app * vecScale, params.F_app > 0 ? 0 : Math.PI, 'var(--color-force-app)', 4);
+      drawArrow(ctx, cx, cy - bh / 2, params.F_app * vecScale, params.F_app > 0 ? 0 : Math.PI, 'var(--color-force-app)', 4);
+      ctx.fillStyle = 'var(--color-force-app)';
+      ctx.font = 'italic 13px "STIX Two Text", serif';
+      ctx.textAlign = params.F_app > 0 ? 'left' : 'right';
+      ctx.textBaseline = 'bottom';
+      const tip = cx + params.F_app * vecScale;
+      ctx.fillText('F_app', tip + (params.F_app > 0 ? 4 : -4), cy - bh / 2 - 6);
     }
-    // Friction
+
     if (Math.abs(state.f_friction) > 0.1) {
-      drawArrow(ctx, cx, cy, state.f_friction * vecScale, state.f_friction > 0 ? 0 : Math.PI, 'var(--color-friction)', 4);
+      drawArrow(ctx, cx, cy - 8, state.f_friction * vecScale, state.f_friction > 0 ? 0 : Math.PI, 'var(--color-friction)', 4);
+      ctx.fillStyle = 'var(--color-friction)';
+      ctx.font = 'italic 13px "STIX Two Text", serif';
+      ctx.textAlign = state.f_friction > 0 ? 'left' : 'right';
+      ctx.textBaseline = 'top';
+      const ftip = cx + state.f_friction * vecScale;
+      ctx.fillText('f', ftip + (state.f_friction > 0 ? 4 : -4), cy - 8 + 4);
     }
-    
-    // Velocity vector above block
+
     if (Math.abs(state.v) > 0.1) {
-      drawArrow(ctx, cx, cy - bh - 20, state.v * 10, state.v > 0 ? 0 : Math.PI, 'var(--color-vel)', 3);
+      drawArrow(ctx, cx, cy - bh - 18, state.v * 10, state.v > 0 ? 0 : Math.PI, 'var(--color-vel)', 3);
+      ctx.fillStyle = 'var(--color-vel)';
+      ctx.font = 'italic 12px "STIX Two Text", serif';
+      ctx.textAlign = state.v > 0 ? 'left' : 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('v', cx + state.v * 10 + (state.v > 0 ? 4 : -4), cy - bh - 18);
     }
 
   }, [state, params]);
 
-  // Mini Plot Render
+  // f vs F_app Mini Plot
   useEffect(() => {
     const canvas = plotRef.current;
     if (!canvas) return;
-    const ctx = scaleCanvas(canvas, canvas.parentElement!.clientWidth, 200);
+    const ctx = scaleCanvas(canvas, canvas.parentElement!.clientWidth, 210);
     const w = canvas.parentElement!.clientWidth;
-    const h = 200;
+    const h = 210;
 
     ctx.clearRect(0, 0, w, h);
 
-    const pad = 20;
-    const fMaxScale = 50; // max force domain
-    
-    const mapX = (f: number) => pad + (f + fMaxScale) / (2 * fMaxScale) * (w - 2 * pad);
-    const mapY = (f: number) => h / 2 - (f / fMaxScale) * (h / 2 - pad);
+    const padL = 54;
+    const padR = 14;
+    const padT = 12;
+    const padB = 38;
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
 
-    // Axes
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(mapX(0), 0); ctx.lineTo(mapX(0), h); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+    const fMaxScale = 50;
+    const mapFx = (f: number) => padL + (f + fMaxScale) / (2 * fMaxScale) * chartW;
+    const mapFy = (f: number) => padT + chartH / 2 - (f / fMaxScale) * (chartH / 2);
 
     const F_N = params.mass * g;
     const fs_max = params.mu_s * F_N;
     const fk = params.mu_k * F_N;
 
-    // Plot Theoretical curve
-    ctx.strokeStyle = '#cbd5e1';
+    // Background regions
+    ctx.fillStyle = '#f0fdf4';
+    ctx.fillRect(mapFx(-fs_max), padT, mapFx(fs_max) - mapFx(-fs_max), chartH);
+    ctx.fillStyle = '#fff7ed';
+    ctx.fillRect(padL, padT, mapFx(-fs_max) - padL, chartH);
+    ctx.fillRect(mapFx(fs_max), padT, padL + chartW - mapFx(fs_max), chartH);
+
+    // Region labels
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#15803d';
+    ctx.fillText('STATIC', mapFx(0), padT + 4);
+    ctx.fillStyle = '#c2410c';
+    ctx.fillText('KINETIC', mapFx(-fMaxScale * 0.6), padT + 4);
+    ctx.fillText('KINETIC', mapFx(fMaxScale * 0.6), padT + 4);
+
+    // Grid lines
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(mapFx(0), padT); ctx.lineTo(mapFx(0), padT + chartH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padL, mapFy(0)); ctx.lineTo(padL + chartW, mapFy(0)); ctx.stroke();
+
+    // Axes
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(padL, padT, chartW, chartH);
+
+    // Tick labels
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    [-40, -20, 0, 20, 40].forEach(v => {
+      ctx.fillText(v.toString(), mapFx(v), padT + chartH + 4);
+    });
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    [-40, -20, 0, 20, 40].forEach(v => {
+      ctx.fillText(v.toString(), padL - 4, mapFy(v));
+    });
+
+    // Axis titles
+    ctx.fillStyle = '#334155';
+    ctx.font = 'bold 12px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('F_app  (N)', padL + chartW / 2, h - 2);
+    ctx.save();
+    ctx.translate(12, padT + chartH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textBaseline = 'top';
+    ctx.fillText('f  (N)', 0, 0);
+    ctx.restore();
+
+    // Theoretical curve
+    ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(mapX(-fMaxScale), mapY(fk));
-    ctx.lineTo(mapX(-fs_max), mapY(fk));
-    ctx.lineTo(mapX(-fs_max), mapY(-fs_max));
-    ctx.lineTo(mapX(fs_max), mapY(fs_max));
-    ctx.lineTo(mapX(fs_max), mapY(-fk));
-    ctx.lineTo(mapX(fMaxScale), mapY(-fk));
+    ctx.moveTo(mapFx(-fMaxScale), mapFy(fk));
+    ctx.lineTo(mapFx(-fs_max), mapFy(fk));
+    ctx.lineTo(mapFx(-fs_max), mapFy(-fs_max));
+    ctx.lineTo(mapFx(fs_max), mapFy(fs_max));
+    ctx.lineTo(mapFx(fs_max), mapFy(-fk));
+    ctx.lineTo(mapFx(fMaxScale), mapFy(-fk));
     ctx.stroke();
 
-    // Plot Current Point
+    // Current point
     ctx.fillStyle = 'var(--color-friction)';
     ctx.beginPath();
-    ctx.arc(mapX(params.F_app), mapY(-state.f_friction), 5, 0, Math.PI*2);
+    ctx.arc(mapFx(params.F_app), mapFy(-state.f_friction), 6, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
   }, [state.f_friction, params]);
 
@@ -209,17 +294,25 @@ export default function FrictionAppliedForce() {
 
       canvasContent={
         <>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '14px', background: '#f8fafc' }}>
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '13px', background: '#f8fafc', flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ color: 'var(--color-force-app)', fontWeight: 600 }}>→ Applied Force <InlineMath math="F_{\text{app}}" /></span>
             <span style={{ color: 'var(--color-friction)', fontWeight: 600 }}>→ Friction <InlineMath math="f" /></span>
             <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>→ Velocity <InlineMath math="v" /></span>
+            <span style={{ marginLeft: 'auto', fontWeight: 700, fontSize: '12px', padding: '3px 12px', borderRadius: 99,
+              background: isStatic ? '#dcfce7' : '#fef3c7',
+              color: isStatic ? '#166534' : '#92400e'
+            }}>
+              {isStatic ? 'STATIC' : 'KINETIC'}
+            </span>
           </div>
-          <div style={{ width: '100%', height: '300px', flex: 1 }}>
+          <div style={{ width: '100%', height: '300px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
           </div>
           <div style={{ borderTop: '1px solid var(--border-color)', backgroundColor: '#fff' }}>
-            <h2 style={{ fontSize: '14px', margin: '8px 16px' }}>Friction (<InlineMath math="f" />) vs Applied Force (<InlineMath math="F_{\text{app}}" />)</h2>
-            <div style={{ width: '100%', height: '200px' }}>
+            <h2 style={{ fontSize: '13px', margin: '6px 16px', color: '#64748b', fontWeight: 600 }}>
+              Friction <InlineMath math="f" /> vs Applied Force <InlineMath math="F_{\text{app}}" />
+            </h2>
+            <div style={{ width: '100%', height: '210px' }}>
               <canvas ref={plotRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
             </div>
           </div>
@@ -237,7 +330,7 @@ export default function FrictionAppliedForce() {
           </p>
           <BlockMath math="f_k = \mu_k F_N" />
           <p>
-            <strong>Interactive:</strong> Gradually increase the Applied Force slider. Watch the static friction vector grow to match it, until you "break away" and slip into the kinetic friction regime. Notice the drop in friction force on the graph.
+            <strong>Interactive:</strong> Gradually increase the Applied Force slider. Watch the static friction vector grow to match it, until you "break away" and slip into the kinetic regime. Notice the drop on the graph and the badge change above.
           </p>
         </div>
       }
@@ -253,6 +346,14 @@ export default function FrictionAppliedForce() {
 
       metricsContent={
         <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Normal Force <InlineMath math="F_N" /></span>
+            <span style={{ fontWeight: 600 }}>{F_N.toFixed(1)} N</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Max Static <InlineMath math="\mu_s F_N" /></span>
+            <span style={{ fontWeight: 600 }}>{fs_max.toFixed(1)} N</span>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
             <span className="text-muted">Net Force <InlineMath math="F_{\text{net}}" /></span>
             <span style={{ fontWeight: 600 }}>{(params.F_app + state.f_friction).toFixed(2)} N</span>

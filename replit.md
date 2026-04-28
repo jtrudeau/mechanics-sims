@@ -36,10 +36,21 @@ src/
 ## Development
 
 - **Run:** `npm run dev` (starts on port 5000)
-- **Build:** `npm run build`
+- **Build (standard):** `npm run build`
+- **Build for GitHub Pages:** `npm run build:gh-pages`
+  - Outputs to `dist/` with base path `/mechanics-sims/`
+  - Deploy the `dist/` folder to the `gh-pages` branch
 
 ## Replit Setup Notes
 
 - Vite is configured to run on `0.0.0.0:5000` with `allowedHosts: true` for the Replit proxy
-- The `base` path was changed from `/mechanics-sims/` to `/` for Replit compatibility
-- The React Router `basename` was removed accordingly
+- `import.meta.env.BASE_URL` drives the React Router `basename` automatically
+  - Dev: BASE_URL = `/`, so basename = `""` (no prefix)
+  - GH Pages build: BASE_URL = `/mechanics-sims/`, so basename = `/mechanics-sims`
+
+## Simulation Improvements
+
+- **Instantaneous Velocity**: Proper axis tick labels & titles, Δt–Δx right-angle triangle on secant, drop lines, convergence % readout
+- **Friction**: Floor hatch marks, labeled f vs F_app plot with colored STATIC/KINETIC regions, regime badge, normal force readout
+- **Circular Motion**: Fading position trail, radius line with label, θ arc indicator, ω speed clamp at ±12 rad/s, period readout
+- **Newton's 3rd Law**: Scrolling velocity vs time chart, in-canvas force labels, hatch floor, mass labels on blocks
