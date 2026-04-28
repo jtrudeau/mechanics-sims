@@ -8,7 +8,7 @@ import NewtonsThirdLaw from './pages/simulations/NewtonsThirdLaw';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/mechanics-sims">
       <Routes>
         <Route path="/" element={<Dashboard />}>
           <Route index element={<Home />} />
