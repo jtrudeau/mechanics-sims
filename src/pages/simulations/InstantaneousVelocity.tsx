@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { InlineMath } from 'react-katex';
+import { InlineMath, BlockMath } from 'react-katex';
 import { scaleCanvas } from '../../components/physics/drawUtils';
+import { SimulationLayout } from '../../components/layout/SimulationLayout';
 
 export default function InstantaneousVelocity() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -116,46 +117,63 @@ export default function InstantaneousVelocity() {
   );
 
   return (
-    <div>
-      <h1>Instantaneous Velocity via Tangent</h1>
-      <p className="text-muted textbook-font" style={{ marginBottom: '24px' }}>1D Kinematics - As <InlineMath math="\Delta t \to 0" />, the secant line approaches the tangent.</p>
+    <SimulationLayout
+      title="Instantaneous Velocity via Tangent"
+      description="1D Kinematics - The geometric relationship between secant lines, tangent lines, and limits."
       
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-        <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+      canvasContent={
+        <>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '14px', background: '#f8fafc' }}>
             <span style={{ color: '#7c3aed', fontWeight: 600 }}>— Position <InlineMath math="x(t)" /></span>
             <span style={{ color: '#0891b2', fontWeight: 600 }}>- - Secant</span>
             <span style={{ color: '#db2777', fontWeight: 600 }}>— Tangent at <InlineMath math="t_1" /></span>
           </div>
-          <div style={{ width: '100%', height: '400px' }}>
-            <canvas ref={canvasRef} style={{ display: 'block' }}></canvas>
+          <div style={{ width: '100%', height: '400px', flex: 1 }}>
+            <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
           </div>
-        </div>
+        </>
+      }
 
-        <div>
-          <div className="glass-panel" style={{ marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Parameters</h2>
-            <ControlRow label={<><InlineMath math="x_0" /> (m)</>} name="x0" min="-20" max="20" step="0.1" />
-            <ControlRow label={<><InlineMath math="v_0" /> (m/s)</>} name="v0" min="-10" max="10" step="0.1" />
-            <ControlRow label={<><InlineMath math="a" /> (m/s²)</>} name="a" min="-5" max="5" step="0.1" />
-            <ControlRow label={<><InlineMath math="t_1" /> (s)</>} name="t1" min="0" max="20" step="0.01" />
-            <ControlRow label={<><InlineMath math="\Delta t" /> (s)</>} name="dt" min="0.001" max="10" step="0.001" />
-            <ControlRow label={<><InlineMath math="t_{\text{max}}" /> (s)</>} name="tMax" min="1" max="30" step="0.5" />
-          </div>
-
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Measurements</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Secant Slope <InlineMath math="\frac{\Delta x}{\Delta t}" /></span>
-              <span style={{ fontWeight: 600, color: '#0891b2' }}>{secantSlope.toFixed(2)} m/s</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span className="text-muted">Instant Velocity <InlineMath math="v(t_1)" /></span>
-              <span style={{ fontWeight: 600, color: '#db2777' }}>{tangentSlope.toFixed(2)} m/s</span>
-            </div>
-          </div>
+      theoryContent={
+        <div style={{ padding: '16px', fontSize: '15px', lineHeight: '1.6' }}>
+          <p>
+            Average velocity over a time interval <InlineMath math="\Delta t" /> is given by the slope of the <strong>secant line</strong> between two points on the position-time graph:
+          </p>
+          <BlockMath math="v_{\text{avg}} = \frac{\Delta x}{\Delta t} = \frac{x(t_1 + \Delta t) - x(t_1)}{\Delta t}" />
+          <p>
+            As the time interval shrinks to zero, this secant line approaches the <strong>tangent line</strong> at <InlineMath math="t_1" />. 
+            The slope of this tangent line is the instantaneous velocity:
+          </p>
+          <BlockMath math="v = \lim_{\Delta t \to 0} \frac{\Delta x}{\Delta t} = \frac{dx}{dt}" />
+          <p>
+            <strong>Interactive:</strong> Gradually decrease <InlineMath math="\Delta t" /> below and watch the blue secant line converge onto the pink tangent line.
+          </p>
         </div>
-      </div>
-    </div>
+      }
+
+      controlsContent={
+        <>
+          <ControlRow label={<><InlineMath math="x_0" /> (m)</>} name="x0" min="-20" max="20" step="0.1" />
+          <ControlRow label={<><InlineMath math="v_0" /> (m/s)</>} name="v0" min="-10" max="10" step="0.1" />
+          <ControlRow label={<><InlineMath math="a" /> (m/s²)</>} name="a" min="-5" max="5" step="0.1" />
+          <ControlRow label={<><InlineMath math="t_1" /> (s)</>} name="t1" min="0" max="20" step="0.01" />
+          <ControlRow label={<><InlineMath math="\Delta t" /> (s)</>} name="dt" min="0.001" max="10" step="0.001" />
+          <ControlRow label={<><InlineMath math="t_{\text{max}}" /> (s)</>} name="tMax" min="1" max="30" step="0.5" />
+        </>
+      }
+
+      metricsContent={
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Secant Slope <InlineMath math="\frac{\Delta x}{\Delta t}" /></span>
+            <span style={{ fontWeight: 600, color: '#0891b2' }}>{secantSlope.toFixed(2)} m/s</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span className="text-muted">Instant Velocity <InlineMath math="v(t_1)" /></span>
+            <span style={{ fontWeight: 600, color: '#db2777' }}>{tangentSlope.toFixed(2)} m/s</span>
+          </div>
+        </>
+      }
+    />
   );
 }

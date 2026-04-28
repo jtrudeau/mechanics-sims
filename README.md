@@ -1,73 +1,51 @@
-# React + TypeScript + Vite
+# Mechanics Simulations (SN1 Physics)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A suite of interactive physics simulations designed specifically for the SN1 mechanics curriculum. This project bridges the gap between static textbook theory and dynamic physical phenomena, providing students with immediate, interactive feedback as they explore core concepts in classical mechanics.
 
-Currently, two official plugins are available:
+## Design Philosophy
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This project takes a "Guided Companion" approach to interactive learning:
+1.  **Rigorous Typesetting:** All physics variables, equations, and textbook text are typeset using KaTeX and the STIX Two Text serif font to match the visual rigor of academic publications.
+2.  **Immediate Interactivity:** The theoretical framing sits directly alongside the simulation controls. Students are actively prompted to change variables and immediately observe the kinematic or dynamic consequences.
+3.  **Modern Aesthetics:** The application uses a clean, glassmorphic UI, ensuring that the tool feels premium and engaging.
 
-## React Compiler
+## Included Simulations
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1.  **Instantaneous Velocity:** Explores the limit definition of velocity ($v = \lim_{\Delta t \to 0} \frac{\Delta x}{\Delta t}$) using dynamic secant and tangent lines on a position-time graph.
+2.  **Friction vs. Applied Force:** Demonstrates the breakaway point from static to kinetic friction, with real-time vector visualization.
+3.  **Circular Motion:** Visualizes the relationship between tangential and radial acceleration components in both uniform and non-uniform circular motion.
+4.  **Newton's 3rd Law:** A multi-body simulation demonstrating that internal interaction forces ($F_{12}$ and $F_{21}$) are always equal and opposite, regardless of mass disparities.
 
-## Expanding the ESLint configuration
+## For Educators: How to Use and Modify
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+This repository is completely open source (MIT License). You are encouraged to fork, modify, and adapt these simulations for your own physics classroom.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+You will need [Node.js](https://nodejs.org/) installed on your machine.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Local Development
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/jtrudeau/mechanics-sims.git
+    cd mechanics-sims/app
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Start the local development server:
+    ```bash
+    npm run dev
+    ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Customizing the Content
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+The layout of the app is component-driven via React and Vite. 
+*   **To change the textbook text:** Open any file in `src/pages/simulations/` and modify the JSX inside the `<SimulationLayout>`'s `theoryContent` prop.
+*   **To change physics parameters:** Adjust the `useState` default values and ranges within the specific simulation component.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { InlineMath } from 'react-katex';
+import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, scaleCanvas } from '../../components/physics/drawUtils';
+import { SimulationLayout } from '../../components/layout/SimulationLayout';
 
 const g = 9.8; // m/s^2
 
@@ -195,69 +196,81 @@ export default function FrictionAppliedForce() {
   );
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1>Friction vs Applied Force</h1>
-          <p className="text-muted textbook-font">1D Dynamics - Static and Kinetic friction regimes.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+    <SimulationLayout
+      title="Friction vs Applied Force"
+      description="1D Dynamics - Static and Kinetic friction regimes."
+      
+      actionsContent={
+        <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
           <button className="secondary" onClick={reset}>Reset</button>
-        </div>
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '14px', background: '#f8fafc' }}>
-              <span style={{ color: 'var(--color-force-app)', fontWeight: 600 }}>→ Applied Force <InlineMath math="F_{\text{app}}" /></span>
-              <span style={{ color: 'var(--color-friction)', fontWeight: 600 }}>→ Friction <InlineMath math="f" /></span>
-              <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>→ Velocity <InlineMath math="v" /></span>
-            </div>
-            <div style={{ width: '100%', height: '300px' }}>
-              <canvas ref={canvasRef} style={{ display: 'block' }}></canvas>
-            </div>
-          </div>
+        </>
+      }
 
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '14px', marginBottom: '8px' }}>Friction (<InlineMath math="f" />) vs Applied Force (<InlineMath math="F_{\text{app}}" />)</h2>
+      canvasContent={
+        <>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '14px', background: '#f8fafc' }}>
+            <span style={{ color: 'var(--color-force-app)', fontWeight: 600 }}>→ Applied Force <InlineMath math="F_{\text{app}}" /></span>
+            <span style={{ color: 'var(--color-friction)', fontWeight: 600 }}>→ Friction <InlineMath math="f" /></span>
+            <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>→ Velocity <InlineMath math="v" /></span>
+          </div>
+          <div style={{ width: '100%', height: '300px', flex: 1 }}>
+            <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
+          </div>
+          <div style={{ borderTop: '1px solid var(--border-color)', backgroundColor: '#fff' }}>
+            <h2 style={{ fontSize: '14px', margin: '8px 16px' }}>Friction (<InlineMath math="f" />) vs Applied Force (<InlineMath math="F_{\text{app}}" />)</h2>
             <div style={{ width: '100%', height: '200px' }}>
-              <canvas ref={plotRef} style={{ display: 'block' }}></canvas>
+              <canvas ref={plotRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
             </div>
           </div>
-        </div>
+        </>
+      }
 
-        <div>
-          <div className="glass-panel" style={{ marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Parameters</h2>
-            <ControlRow label={<><InlineMath math="m" /> (kg)</>} name="mass" min="1" max="20" step="0.1" />
-            <ControlRow label={<>Static <InlineMath math="\mu_s" /></>} name="mu_s" min="0" max="1" step="0.01" />
-            <ControlRow label={<>Kinetic <InlineMath math="\mu_k" /></>} name="mu_k" min="0" max="1" step="0.01" />
-            <ControlRow label={<>App Force <InlineMath math="F_{\text{app}}" /> (N)</>} name="F_app" min="-50" max="50" step="0.5" />
-          </div>
-
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Dynamics</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Net Force <InlineMath math="F_{\text{net}}" /></span>
-              <span style={{ fontWeight: 600 }}>{(params.F_app + state.f_friction).toFixed(2)} N</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Acceleration <InlineMath math="a" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-accel)' }}>{state.a.toFixed(2)} m/s²</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Velocity <InlineMath math="v" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-vel)' }}>{state.v.toFixed(2)} m/s</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span className="text-muted">Friction <InlineMath math="f" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-friction)' }}>{Math.abs(state.f_friction).toFixed(2)} N</span>
-            </div>
-          </div>
+      theoryContent={
+        <div style={{ padding: '16px', fontSize: '15px', lineHeight: '1.6' }}>
+          <p>
+            When a pushing force <InlineMath math="F_{\text{app}}" /> is applied to a stationary object, <strong>static friction</strong> (<InlineMath math="f_s" />) pushes back with an equal and opposite force to keep the object at rest.
+          </p>
+          <BlockMath math="f_s \le \mu_s F_N" />
+          <p>
+            The object only accelerates once the applied force exceeds the maximum static friction threshold. Once moving, the opposing force drops to a constant <strong>kinetic friction</strong> (<InlineMath math="f_k" />).
+          </p>
+          <BlockMath math="f_k = \mu_k F_N" />
+          <p>
+            <strong>Interactive:</strong> Gradually increase the Applied Force slider. Watch the static friction vector grow to match it, until you "break away" and slip into the kinetic friction regime. Notice the drop in friction force on the graph.
+          </p>
         </div>
-      </div>
-    </div>
+      }
+
+      controlsContent={
+        <>
+          <ControlRow label={<><InlineMath math="m" /> (kg)</>} name="mass" min="1" max="20" step="0.1" />
+          <ControlRow label={<>Static <InlineMath math="\mu_s" /></>} name="mu_s" min="0" max="1" step="0.01" />
+          <ControlRow label={<>Kinetic <InlineMath math="\mu_k" /></>} name="mu_k" min="0" max="1" step="0.01" />
+          <ControlRow label={<>App Force <InlineMath math="F_{\text{app}}" /> (N)</>} name="F_app" min="-50" max="50" step="0.5" />
+        </>
+      }
+
+      metricsContent={
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Net Force <InlineMath math="F_{\text{net}}" /></span>
+            <span style={{ fontWeight: 600 }}>{(params.F_app + state.f_friction).toFixed(2)} N</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Acceleration <InlineMath math="a" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-accel)' }}>{state.a.toFixed(2)} m/s²</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Velocity <InlineMath math="v" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-vel)' }}>{state.v.toFixed(2)} m/s</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span className="text-muted">Friction <InlineMath math="f" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-friction)' }}>{Math.abs(state.f_friction).toFixed(2)} N</span>
+          </div>
+        </>
+      }
+    />
   );
 }

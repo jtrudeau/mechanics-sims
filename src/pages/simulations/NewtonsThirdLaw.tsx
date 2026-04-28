@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { InlineMath } from 'react-katex';
+import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, scaleCanvas } from '../../components/physics/drawUtils';
+import { SimulationLayout } from '../../components/layout/SimulationLayout';
 
 export default function NewtonsThirdLaw() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -168,60 +169,75 @@ export default function NewtonsThirdLaw() {
   const F21 = -F12;
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1>Newton's 3rd Law</h1>
-          <p className="text-muted textbook-font">Interacting Objects - Every action has an equal and opposite reaction.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+    <SimulationLayout
+      title="Newton's 3rd Law"
+      description="Interacting Objects - Every action has an equal and opposite reaction."
+      
+      actionsContent={
+        <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
           <button className="secondary" onClick={reset}>Reset</button>
-        </div>
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-        <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+        </>
+      }
+
+      canvasContent={
+        <>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '14px', background: '#f8fafc', flexWrap: 'wrap' }}>
             <span style={{ color: 'var(--color-force-app)', fontWeight: 600 }}>→ Applied Force <InlineMath math="F_{\text{app}}" /></span>
             <span style={{ color: '#be185d', fontWeight: 600 }}>→ Force 1 on 2 <InlineMath math="F_{12}" /></span>
             <span style={{ color: '#0284c7', fontWeight: 600 }}>→ Force 2 on 1 <InlineMath math="F_{21}" /></span>
             <span style={{ color: 'var(--color-accel)', fontWeight: 600 }}>→ Acceleration <InlineMath math="a" /></span>
           </div>
-          <div style={{ width: '100%', height: '400px' }}>
-            <canvas ref={canvasRef} style={{ display: 'block' }}></canvas>
+          <div style={{ width: '100%', height: '400px', flex: 1 }}>
+            <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
           </div>
-        </div>
+        </>
+      }
 
-        <div>
-          <div className="glass-panel" style={{ marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Parameters</h2>
-            <ControlRow label={<>Mass <InlineMath math="m_1" /> (kg)</>} name="m1" min="1" max="20" step="0.5" />
-            <ControlRow label={<>Mass <InlineMath math="m_2" /> (kg)</>} name="m2" min="1" max="20" step="0.5" />
-            <ControlRow label={<>App Force <InlineMath math="F_{\text{app}}" /> (N)</>} name="F_app" min="-50" max="50" step="1" />
-          </div>
-
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>System Dynamics</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Total Mass <InlineMath math="M" /></span>
-              <span style={{ fontWeight: 600 }}>{(params.m1 + params.m2).toFixed(1)} kg</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">System Accel <InlineMath math="a" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-accel)' }}>{a.toFixed(2)} m/s²</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted"><InlineMath math="F_{12}" /> (1 on 2)</span>
-              <span style={{ fontWeight: 600, color: '#be185d' }}>{F12.toFixed(2)} N</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span className="text-muted"><InlineMath math="F_{21}" /> (2 on 1)</span>
-              <span style={{ fontWeight: 600, color: '#0284c7' }}>{F21.toFixed(2)} N</span>
-            </div>
-          </div>
+      theoryContent={
+        <div style={{ padding: '16px', fontSize: '15px', lineHeight: '1.6' }}>
+          <p>
+            When two objects interact, the forces they exert on each other are always equal in magnitude and opposite in direction:
+          </p>
+          <BlockMath math="\vec{F}_{12} = -\vec{F}_{21}" />
+          <p>
+            Because the two blocks move together, they share the same system acceleration:
+          </p>
+          <BlockMath math="a = \frac{F_{\text{app}}}{m_1 + m_2}" />
+          <p>
+            <strong>Interactive:</strong> Notice that even if you make <InlineMath math="m_1" /> much larger than <InlineMath math="m_2" />, the interaction forces <InlineMath math="F_{12}" /> and <InlineMath math="F_{21}" /> at their boundary remain perfectly equal and opposite. The forces depend on the acceleration of the pushed mass!
+          </p>
         </div>
-      </div>
-    </div>
+      }
+
+      controlsContent={
+        <>
+          <ControlRow label={<>Mass <InlineMath math="m_1" /> (kg)</>} name="m1" min="1" max="20" step="0.5" />
+          <ControlRow label={<>Mass <InlineMath math="m_2" /> (kg)</>} name="m2" min="1" max="20" step="0.5" />
+          <ControlRow label={<>App Force <InlineMath math="F_{\text{app}}" /> (N)</>} name="F_app" min="-50" max="50" step="1" />
+        </>
+      }
+
+      metricsContent={
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Total Mass <InlineMath math="M" /></span>
+            <span style={{ fontWeight: 600 }}>{(params.m1 + params.m2).toFixed(1)} kg</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">System Accel <InlineMath math="a" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-accel)' }}>{a.toFixed(2)} m/s²</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted"><InlineMath math="F_{12}" /> (1 on 2)</span>
+            <span style={{ fontWeight: 600, color: '#be185d' }}>{F12.toFixed(2)} N</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span className="text-muted"><InlineMath math="F_{21}" /> (2 on 1)</span>
+            <span style={{ fontWeight: 600, color: '#0284c7' }}>{F21.toFixed(2)} N</span>
+          </div>
+        </>
+      }
+    />
   );
 }

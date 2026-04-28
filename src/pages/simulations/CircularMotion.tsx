@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { InlineMath } from 'react-katex';
+import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, scaleCanvas } from '../../components/physics/drawUtils';
+import { SimulationLayout } from '../../components/layout/SimulationLayout';
 
 export default function CircularMotion() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -147,64 +148,79 @@ export default function CircularMotion() {
   const v = params.R * state.w;
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1>Uniform vs Non-Uniform Circular Motion</h1>
-          <p className="text-muted textbook-font">2D Dynamics - Observe radial and tangential acceleration components.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+    <SimulationLayout
+      title="Uniform vs Non-Uniform Circular Motion"
+      description="2D Dynamics - Observe radial and tangential acceleration components."
+      
+      actionsContent={
+        <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
           <button className="secondary" onClick={reset}>Reset</button>
-        </div>
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px' }}>
-        <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+        </>
+      }
+
+      canvasContent={
+        <>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '14px', background: '#f8fafc', flexWrap: 'wrap' }}>
             <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>→ Velocity <InlineMath math="\vec{v}" /></span>
             <span style={{ color: 'var(--color-accel-radial)', fontWeight: 600 }}>→ Radial Accel <InlineMath math="\vec{a}_r" /></span>
             <span style={{ color: 'var(--color-accel-tangential)', fontWeight: 600 }}>→ Tangential Accel <InlineMath math="\vec{a}_t" /></span>
             <span style={{ color: 'var(--color-accel)', fontWeight: 600 }}>→ Total Accel <InlineMath math="\vec{a}" /></span>
           </div>
-          <div style={{ width: '100%', height: '400px' }}>
-            <canvas ref={canvasRef} style={{ display: 'block' }}></canvas>
+          <div style={{ width: '100%', height: '400px', flex: 1 }}>
+            <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }}></canvas>
           </div>
-        </div>
+        </>
+      }
 
-        <div>
-          <div className="glass-panel" style={{ marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Parameters</h2>
-            <ControlRow label={<>Radius <InlineMath math="R" /> (m)</>} name="R" min="1" max="10" step="0.5" />
-            <ControlRow label={<>Initial <InlineMath math="\omega_0" /> (rad/s)</>} name="w0" min="-5" max="5" step="0.1" />
-            <ControlRow label={<>Ang Accel <InlineMath math="\alpha" /> (rad/s²)</>} name="alpha" min="-2" max="2" step="0.1" />
-          </div>
-
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '16px', marginBottom: '16px' }}>Dynamics</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Angular Vel <InlineMath math="\omega" /></span>
-              <span style={{ fontWeight: 600 }}>{state.w.toFixed(2)} rad/s</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Tangential Vel <InlineMath math="v" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-vel)' }}>{Math.abs(v).toFixed(2)} m/s</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Radial Accel <InlineMath math="a_r" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-accel-radial)' }}>{ar.toFixed(2)} m/s²</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
-              <span className="text-muted">Tangential Accel <InlineMath math="a_t" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-accel-tangential)' }}>{Math.abs(at).toFixed(2)} m/s²</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span className="text-muted">Total Accel <InlineMath math="|\vec{a}|" /></span>
-              <span style={{ fontWeight: 600, color: 'var(--color-accel)' }}>{a_tot.toFixed(2)} m/s²</span>
-            </div>
-          </div>
+      theoryContent={
+        <div style={{ padding: '16px', fontSize: '15px', lineHeight: '1.6' }}>
+          <p>
+            An object moving in a circle always has <strong>radial (centripetal) acceleration</strong> <InlineMath math="\vec{a}_r" /> pointing toward the center, which changes the <em>direction</em> of the velocity vector:
+          </p>
+          <BlockMath math="a_r = \frac{v^2}{R} = \omega^2 R" />
+          <p>
+            If the object is also speeding up or slowing down, it has <strong>tangential acceleration</strong> <InlineMath math="\vec{a}_t" />, which changes the <em>magnitude</em> of the velocity vector:
+          </p>
+          <BlockMath math="a_t = \alpha R" />
+          <p>
+            <strong>Interactive:</strong> Set <InlineMath math="\alpha = 0" /> for uniform circular motion (only <InlineMath math="\vec{a}_r" /> exists). Set <InlineMath math="\alpha \neq 0" /> for non-uniform circular motion and observe how the total acceleration vector <InlineMath math="\vec{a}" /> is the vector sum of both components.
+          </p>
         </div>
-      </div>
-    </div>
+      }
+
+      controlsContent={
+        <>
+          <ControlRow label={<>Radius <InlineMath math="R" /> (m)</>} name="R" min="1" max="10" step="0.5" />
+          <ControlRow label={<>Initial <InlineMath math="\omega_0" /> (rad/s)</>} name="w0" min="-5" max="5" step="0.1" />
+          <ControlRow label={<>Ang Accel <InlineMath math="\alpha" /> (rad/s²)</>} name="alpha" min="-2" max="2" step="0.1" />
+        </>
+      }
+
+      metricsContent={
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Angular Vel <InlineMath math="\omega" /></span>
+            <span style={{ fontWeight: 600 }}>{state.w.toFixed(2)} rad/s</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Tangential Vel <InlineMath math="v" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-vel)' }}>{Math.abs(v).toFixed(2)} m/s</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Radial Accel <InlineMath math="a_r" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-accel-radial)' }}>{ar.toFixed(2)} m/s²</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
+            <span className="text-muted">Tangential Accel <InlineMath math="a_t" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-accel-tangential)' }}>{Math.abs(at).toFixed(2)} m/s²</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span className="text-muted">Total Accel <InlineMath math="|\vec{a}|" /></span>
+            <span style={{ fontWeight: 600, color: 'var(--color-accel)' }}>{a_tot.toFixed(2)} m/s²</span>
+          </div>
+        </>
+      }
+    />
   );
 }
