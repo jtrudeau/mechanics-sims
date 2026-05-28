@@ -8,8 +8,8 @@ type EngineOptions = {
 
 export function usePhysicsEngine({ onStep, onReset, maxDt = 0.05 }: EngineOptions) {
   const [isRunning, setIsRunning] = useState(false);
-  const requestRef = useRef<number>();
-  const lastTimeRef = useRef<number>();
+  const requestRef = useRef<number | null>(null);
+  const lastTimeRef = useRef<number | null>(null);
 
   const step = useCallback((time: number) => {
     if (lastTimeRef.current != null) {
@@ -26,13 +26,13 @@ export function usePhysicsEngine({ onStep, onReset, maxDt = 0.05 }: EngineOption
     if (isRunning) {
       requestRef.current = requestAnimationFrame(step);
     } else {
-      lastTimeRef.current = undefined; // Reset time so we don't get a huge jump when unpausing
-      if (requestRef.current) {
+      lastTimeRef.current = null; // Reset time so we don't get a huge jump when unpausing
+      if (requestRef.current != null) {
         cancelAnimationFrame(requestRef.current);
       }
     }
     return () => {
-      if (requestRef.current) {
+      if (requestRef.current != null) {
         cancelAnimationFrame(requestRef.current);
       }
     };
@@ -42,7 +42,7 @@ export function usePhysicsEngine({ onStep, onReset, maxDt = 0.05 }: EngineOption
   
   const reset = () => {
     setIsRunning(false);
-    lastTimeRef.current = undefined;
+    lastTimeRef.current = null;
     onReset();
   };
 

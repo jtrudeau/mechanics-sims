@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
-import { drawArrow, scaleCanvas, drawMixedText } from '../../components/physics/drawUtils';
+import { drawArrow, scaleCanvas, drawMixedText, drawCoordinateGrid, resolveColor } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 
 const VEL_HISTORY = 200;
@@ -11,6 +11,13 @@ export default function NewtonsThirdLaw() {
   const velChartRef = useRef<HTMLCanvasElement>(null);
   const velHistRef  = useRef<number[]>([]);
   const timeRef     = useRef<number>(0);
+
+  const [fontsReady, setFontsReady] = useState(false);
+  useEffect(() => {
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      document.fonts.ready.then(() => setFontsReady(true));
+    }
+  }, []);
 
   const [params, setParams] = useState({ m1: 5.0, m2: 3.0, F_app: 16.0 });
   const [state,  setState]  = useState({ x: -8, v: 0 });
@@ -53,17 +60,23 @@ export default function NewtonsThirdLaw() {
     const w   = canvas.parentElement!.clientWidth;
     const h   = 300;
 
-    ctx.clearRect(0, 0, w, h);
+    // Draw coordinate grid background
+    drawCoordinateGrid(ctx, w, h, {
+      backgroundColor: '#fcfdfd',
+      gridColor: '#e2e8f0',
+      subdivisionColor: '#f8fafc'
+    });
+
     const floorY = h - 55;
 
     // Floor
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#f1f5f9';
     ctx.fillRect(0, floorY, w, 55);
-    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(0, floorY); ctx.lineTo(w, floorY); ctx.stroke();
-    ctx.strokeStyle = '#b8c4d0'; ctx.lineWidth = 1;
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
     for (let hx = -50; hx < w + 50; hx += 20) {
-      ctx.beginPath(); ctx.moveTo(hx, floorY); ctx.lineTo(hx + 30, floorY + 30); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(hx, floorY); ctx.lineTo(hx + 15, floorY + 15); ctx.stroke();
     }
 
     const scale = 16;
@@ -88,12 +101,10 @@ export default function NewtonsThirdLaw() {
     ctx.fillRect(x1_left, cy - b1_h, b1_w, b1_h);
     ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 2;
     ctx.strokeRect(x1_left, cy - b1_h, b1_w, b1_h);
-    drawMixedText(ctx, x1_left + b1_w / 2, cy - b1_h * 0.65,
-      [{ text: 'm', italic: true }, { text: '₁' }],
-      { fontSize: 14, color: '#0284c7', align: 'center' });
-    drawMixedText(ctx, x1_left + b1_w / 2, cy - b1_h * 0.32,
-      [{ text: params.m1.toFixed(1) + ' kg' }],
-      { fontSize: 11, color: '#0369a1', align: 'center' });
+    // Center the italicized mass parameter label 'm1' inside the block
+    drawMixedText(ctx, x1_left + b1_w / 2, cy - b1_h / 2,
+      [{ text: 'm', italic: true }, { text: '1', subscript: true }],
+      { fontSize: 18, color: '#0284c7', align: 'center', baseline: 'middle' });
 
     // Block 2
     ctx.fillStyle = 'rgba(0,0,0,0.06)';
@@ -102,26 +113,33 @@ export default function NewtonsThirdLaw() {
     ctx.fillRect(x2_left, cy - b2_h, b2_w, b2_h);
     ctx.strokeStyle = '#be185d'; ctx.lineWidth = 2;
     ctx.strokeRect(x2_left, cy - b2_h, b2_w, b2_h);
-    drawMixedText(ctx, x2_left + b2_w / 2, cy - b2_h * 0.65,
-      [{ text: 'm', italic: true }, { text: '₂' }],
-      { fontSize: 14, color: '#be185d', align: 'center' });
-    drawMixedText(ctx, x2_left + b2_w / 2, cy - b2_h * 0.32,
-      [{ text: params.m2.toFixed(1) + ' kg' }],
-      { fontSize: 11, color: '#9d174d', align: 'center' });
+    // Center the italicized mass parameter label 'm2' inside the block
+    drawMixedText(ctx, x2_left + b2_w / 2, cy - b2_h / 2,
+      [{ text: 'm', italic: true }, { text: '2', subscript: true }],
+      { fontSize: 18, color: '#be185d', align: 'center', baseline: 'middle' });
 
     const vecScale = 3.5;
     const topY     = cy - Math.max(b1_h, b2_h) - 18;
 
     // Applied force
     if (Math.abs(params.F_app) > 0.1) {
-      const tip = drawArrow(ctx, x1_left, cy - b1_h / 2,
-        params.F_app * vecScale,
-        params.F_app > 0 ? Math.PI : 0,
-        'var(--color-force-app)', 4);
-      drawMixedText(ctx, tip.hx + (params.F_app > 0 ? -8 : 8), cy - b1_h / 2,
-        [{ text: 'F', italic: true }, { text: 'app = ' + params.F_app.toFixed(0) + ' N' }],
-        { fontSize: 12, color: 'var(--color-force-app)',
-          align: params.F_app > 0 ? 'right' : 'left' });
+      if (params.F_app >= 0) {
+        // Starts on left pointing right, pushing Block 1
+        drawArrow(ctx, x1_left - params.F_app * vecScale, cy - b1_h / 2,
+          params.F_app * vecScale, 0, 'var(--color-force-app)', 4.5);
+      } else {
+        // Starts on right pointing left, pushing Block 1 from the other side
+        drawArrow(ctx, x1_right + Math.abs(params.F_app) * vecScale, cy - b1_h / 2,
+          Math.abs(params.F_app) * vecScale, Math.PI, 'var(--color-force-app)', 4.5);
+      }
+
+      // Center the label perfectly above the arrow shaft
+      const shaftMidX = params.F_app >= 0
+        ? x1_left - (params.F_app * vecScale) / 2
+        : x1_right + (Math.abs(params.F_app) * vecScale) / 2;
+      drawMixedText(ctx, shaftMidX, cy - b1_h / 2 - 12,
+        [{ text: 'F', italic: true, vector: true }, { text: 'app', italic: false, subscript: true }, { text: ' = ' + Math.abs(params.F_app).toFixed(0) + ' N' }],
+        { fontSize: 16, color: 'var(--color-force-app)', align: 'center', baseline: 'bottom' });
     }
 
     // F₁₂ — force of 1 on 2
@@ -129,10 +147,10 @@ export default function NewtonsThirdLaw() {
       const tip = drawArrow(ctx, x1_right, topY - 8,
         Math.abs(F12) * vecScale,
         F12 > 0 ? 0 : Math.PI,
-        '#be185d', 3);
-      drawMixedText(ctx, tip.hx + (F12 > 0 ? 6 : -6), topY - 8,
-        [{ text: 'F', italic: true }, { text: '₁₂ = ' + F12.toFixed(1) + ' N' }],
-        { fontSize: 11, color: '#be185d', align: F12 > 0 ? 'left' : 'right' });
+        '#be185d', 4.5);
+      drawMixedText(ctx, tip.hx + (F12 > 0 ? 8 : -8), topY - 8,
+        [{ text: 'F', italic: true, vector: true }, { text: '12', italic: false, subscript: true }, { text: ' = ' + F12.toFixed(1) + ' N' }],
+        { fontSize: 16, color: '#be185d', align: F12 > 0 ? 'left' : 'right', baseline: 'middle' });
     }
 
     // F₂₁ — force of 2 on 1
@@ -140,10 +158,10 @@ export default function NewtonsThirdLaw() {
       const tip = drawArrow(ctx, x1_right, topY + 14,
         Math.abs(F21) * vecScale,
         F21 > 0 ? 0 : Math.PI,
-        '#0284c7', 3);
-      drawMixedText(ctx, tip.hx + (F21 > 0 ? 6 : -6), topY + 14,
-        [{ text: 'F', italic: true }, { text: '₂₁ = ' + Math.abs(F21).toFixed(1) + ' N' }],
-        { fontSize: 11, color: '#0284c7', align: F21 > 0 ? 'left' : 'right' });
+        '#0284c7', 4.5);
+      drawMixedText(ctx, tip.hx + (F21 > 0 ? 8 : -8), topY + 14,
+        [{ text: 'F', italic: true, vector: true }, { text: '21', italic: false, subscript: true }, { text: ' = ' + Math.abs(F21).toFixed(1) + ' N' }],
+        { fontSize: 16, color: '#0284c7', align: F21 > 0 ? 'left' : 'right', baseline: 'middle' });
     }
 
     // System acceleration
@@ -152,13 +170,13 @@ export default function NewtonsThirdLaw() {
       drawArrow(ctx, midBlock, topY - 34,
         Math.abs(a) * 14,
         a > 0 ? 0 : Math.PI,
-        'var(--color-accel)', 3);
-      drawMixedText(ctx, midBlock, topY - 48,
-        [{ text: 'a', italic: true }, { text: ' = ' + a.toFixed(2) + ' m/s²' }],
-        { fontSize: 12, color: 'var(--color-accel)', align: 'center' });
+        'var(--color-accel)', 4.5);
+      drawMixedText(ctx, midBlock, topY - 50,
+        [{ text: 'a', italic: true, vector: true }, { text: ' = ' + a.toFixed(2) + ' m/s²' }],
+        { fontSize: 16, color: 'var(--color-accel)', align: 'center', baseline: 'bottom' });
     }
 
-  }, [state, params]);
+  }, [state, params, fontsReady]);
 
   // ── Velocity vs time chart ───────────────────────────────────────────────
   useEffect(() => {
@@ -168,7 +186,12 @@ export default function NewtonsThirdLaw() {
     const w   = canvas.parentElement!.clientWidth;
     const h   = 160;
 
-    ctx.clearRect(0, 0, w, h);
+    // Coordinate Grid background for chart
+    drawCoordinateGrid(ctx, w, h, {
+      backgroundColor: '#fcfdfd',
+      gridColor: '#e2e8f0',
+      subdivisionColor: '#f8fafc'
+    });
 
     const padL = 52, padR = 14, padT = 16, padB = 36;
     const chartW = w - padL - padR;
@@ -181,7 +204,7 @@ export default function NewtonsThirdLaw() {
     const mapV = (v: number) => padT + chartH / 2 - (v / maxV) * (chartH / 2);
 
     // Zero line
-    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(padL, mapV(0)); ctx.lineTo(padL + chartW, mapV(0)); ctx.stroke();
 
     // Border
@@ -212,7 +235,7 @@ export default function NewtonsThirdLaw() {
 
     // Velocity curve
     if (hist.length > 1) {
-      ctx.strokeStyle = 'var(--color-vel)';
+      ctx.strokeStyle = resolveColor('var(--color-vel)');
       ctx.lineWidth   = 2;
       ctx.beginPath();
       hist.forEach((v, i) => {
@@ -224,22 +247,14 @@ export default function NewtonsThirdLaw() {
       ctx.stroke();
 
       const lastV = hist[hist.length - 1];
-      ctx.fillStyle = 'var(--color-vel)';
+      ctx.fillStyle = resolveColor('var(--color-vel)');
       ctx.beginPath();
       ctx.arc(mapI(VEL_HISTORY - 1), mapV(lastV), 4, 0, 2 * Math.PI);
       ctx.fill();
     }
-  }, [state]);
+  }, [state, fontsReady]);
 
-  const ControlRow = ({ label, name, min, max, step }: any) => (
-    <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 70px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
-      <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
-      <input type="range" name={name} min={min} max={max} step={step}
-        value={params[name as keyof typeof params]} onChange={handleChange} />
-      <input type="number" name={name} value={params[name as keyof typeof params]}
-        onChange={handleChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
-    </div>
-  );
+
 
   const a   = params.F_app / (params.m1 + params.m2);
   const F12 = params.m2 * a;
@@ -260,10 +275,10 @@ export default function NewtonsThirdLaw() {
       canvasContent={
         <>
           <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '12px', fontSize: '13px', background: '#f8fafc', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ color: 'var(--color-force-app)', fontWeight: 600 }}>→ <InlineMath math="F_{\text{app}}" /></span>
-            <span style={{ color: '#be185d',                fontWeight: 600 }}>→ <InlineMath math="F_{12}" /></span>
-            <span style={{ color: '#0284c7',                fontWeight: 600 }}>→ <InlineMath math="F_{21}" /></span>
-            <span style={{ color: 'var(--color-accel)',     fontWeight: 600 }}>→ <InlineMath math="a" /></span>
+            <span style={{ color: 'var(--color-force-app)', fontWeight: 600 }}>→ <InlineMath math="\vec{F}_{\text{app}}" /></span>
+            <span style={{ color: '#be185d',                fontWeight: 600 }}>→ <InlineMath math="\vec{F}_{12}" /></span>
+            <span style={{ color: '#0284c7',                fontWeight: 600 }}>→ <InlineMath math="\vec{F}_{21}" /></span>
+            <span style={{ color: 'var(--color-accel)',     fontWeight: 600 }}>→ <InlineMath math="\vec{a}" /></span>
           </div>
           <div style={{ width: '100%', height: '300px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
@@ -301,9 +316,9 @@ export default function NewtonsThirdLaw() {
 
       controlsContent={
         <>
-          <ControlRow label={<>Mass <InlineMath math="m_1" /> (kg)</>}              name="m1"    min="1"   max="20" step="0.5" />
-          <ControlRow label={<>Mass <InlineMath math="m_2" /> (kg)</>}              name="m2"    min="1"   max="20" step="0.5" />
-          <ControlRow label={<><InlineMath math="F_{\text{app}}" /> (N)</>}         name="F_app" min="-50" max="50" step="1"   />
+          <ControlRow label={<>Mass <InlineMath math="m_1" /> (kg)</>}              name="m1"    min="1"   max="20" step="0.5" value={params.m1} onChange={handleChange} />
+          <ControlRow label={<>Mass <InlineMath math="m_2" /> (kg)</>}              name="m2"    min="1"   max="20" step="0.5" value={params.m2} onChange={handleChange} />
+          <ControlRow label={<><InlineMath math="F_{\text{app}}" /> (N)</>}         name="F_app" min="-50" max="50" step="1"   value={params.F_app} onChange={handleChange} />
         </>
       }
 
@@ -334,3 +349,21 @@ export default function NewtonsThirdLaw() {
     />
   );
 }
+
+const ControlRow = ({ label, name, min, max, step, value, onChange }: {
+  label: React.ReactNode;
+  name: string;
+  min: string;
+  max: string;
+  step: string;
+  value: number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
+  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 70px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+    <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
+    <input type="range" name={name} min={min} max={max} step={step}
+      value={value} onChange={onChange} />
+    <input type="number" name={name} value={value}
+      onChange={onChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
+  </div>
+);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Activity, BookOpen, Circle, Box, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 

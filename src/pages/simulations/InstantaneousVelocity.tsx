@@ -1,10 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { InlineMath, BlockMath } from 'react-katex';
-import { scaleCanvas, drawMixedText } from '../../components/physics/drawUtils';
+import { scaleCanvas, drawMixedText, drawCoordinateGrid, resolveColor } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 
 export default function InstantaneousVelocity() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const [fontsReady, setFontsReady] = useState(false);
+  useEffect(() => {
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      document.fonts.ready.then(() => setFontsReady(true));
+    }
+  }, []);
   
   const [params, setParams] = useState({
     x0: 0,
@@ -38,7 +45,13 @@ export default function InstantaneousVelocity() {
     const padB = 52;
 
     const ctx = scaleCanvas(canvas, W, H);
-    ctx.clearRect(0, 0, W, H);
+    
+    // Draw textbook grid paper background first
+    drawCoordinateGrid(ctx, W, H, {
+      backgroundColor: '#fcfdfd',
+      gridColor: '#e2e8f0',
+      subdivisionColor: '#f8fafc'
+    });
 
     const tMin = 0;
     const tMax = params.tMax;
@@ -61,7 +74,7 @@ export default function InstantaneousVelocity() {
     const chartH = H - padT - padB;
 
     // ── Grid ──────────────────────────────────────────────────────
-    ctx.strokeStyle = '#e8edf3';
+    ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 1;
 
     const numTTicks = Math.min(8, Math.floor(tMax));
@@ -90,14 +103,14 @@ export default function InstantaneousVelocity() {
     for (let i = 0; i <= numTTicks; i++) {
       const tVal = tMin + (i / numTTicks) * (tMax - tMin);
       const px = mapT(tVal);
-      drawMixedText(ctx, px, H - padB + 14, [{ text: tVal.toFixed(1) }], { fontSize: 11, color: '#64748b', align: 'center' });
+      drawMixedText(ctx, px, H - padB + 16, [{ text: tVal.toFixed(1) }], { fontSize: 13, color: '#64748b', align: 'center' });
     }
 
     // X-axis (vertical) ticks
     for (let i = 0; i <= numXTicks; i++) {
       const xVal = xMin + (i / numXTicks) * (xMax - xMin);
       const py = mapX(xVal);
-      drawMixedText(ctx, padL - 7, py, [{ text: xVal.toFixed(1) }], { fontSize: 11, color: '#64748b', align: 'right' });
+      drawMixedText(ctx, padL - 10, py, [{ text: xVal.toFixed(1) }], { fontSize: 13, color: '#64748b', align: 'right' });
     }
 
     // ── Axis titles ───────────────────────────────────────────────
@@ -107,7 +120,7 @@ export default function InstantaneousVelocity() {
       padL + (W - padL - padR) / 2,
       H - 10,
       [{ text: 't', italic: true }, { text: ' (s)' }],
-      { fontSize: 13, color: '#334155', align: 'center' }
+      { fontSize: 16, color: '#334155', align: 'center' }
     );
 
     // Y-axis title:  x  (m)  — rotated
@@ -118,12 +131,12 @@ export default function InstantaneousVelocity() {
       ctx,
       0, 0,
       [{ text: 'x', italic: true }, { text: ' (m)' }],
-      { fontSize: 13, color: '#334155', align: 'center' }
+      { fontSize: 16, color: '#334155', align: 'center' }
     );
     ctx.restore();
 
     // ── Position curve ────────────────────────────────────────────
-    ctx.strokeStyle = '#7c3aed';
+    ctx.strokeStyle = resolveColor('var(--color-gravity)');
     ctx.lineWidth = 3;
     ctx.beginPath();
     for (let t = 0; t <= tMax; t += 0.02) {
@@ -141,7 +154,7 @@ export default function InstantaneousVelocity() {
     const secantSlope = params.dt !== 0 ? (x2 - x1) / params.dt : 0;
     const drawSecant = (t: number) => x1 + secantSlope * (t - params.t1);
 
-    ctx.strokeStyle = '#0891b2';
+    ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 5]);
     ctx.beginPath();
@@ -154,7 +167,7 @@ export default function InstantaneousVelocity() {
     const tangentSlope = v_of_t(params.t1);
     const drawTangent = (t: number) => x1 + tangentSlope * (t - params.t1);
 
-    ctx.strokeStyle = '#db2777';
+    ctx.strokeStyle = resolveColor('var(--color-vel)');
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(mapT(tMin), mapX(drawTangent(tMin)));
@@ -170,7 +183,7 @@ export default function InstantaneousVelocity() {
     const triDir = t2 > params.t1 ? 1 : -1;
     const xGoesUp = x2 > x1;
 
-    ctx.strokeStyle = '#0891b2';
+    ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
@@ -184,7 +197,7 @@ export default function InstantaneousVelocity() {
     const box = 8;
     const bxDir = triDir > 0 ? -1 : 1;
     const byDir = xGoesUp ? 1 : -1;
-    ctx.strokeStyle = '#0891b2';
+    ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(ptB.x + bxDir * box, ptB.y);
@@ -193,25 +206,25 @@ export default function InstantaneousVelocity() {
     ctx.stroke();
 
     // Δt label — centred on the horizontal leg, offset below (or above based on direction)
-    const dtLabelY = ptA.y + (xGoesUp ? 18 : -10);
+    const dtLabelY = ptA.y + (xGoesUp ? 22 : -14);
     drawMixedText(
       ctx,
       (ptA.x + ptB.x) / 2, dtLabelY,
       [{ text: 'Δ' }, { text: 't', italic: true }],
-      { fontSize: 12, color: '#0891b2', align: 'center' }
+      { fontSize: 16, color: '#0284c7', align: 'center' }
     );
 
     // Δx label — centred on the vertical leg, offset to the right (or left)
-    const dxLabelX = ptB.x + (triDir > 0 ? 20 : -20);
+    const dxLabelX = ptB.x + (triDir > 0 ? 24 : -24);
     drawMixedText(
       ctx,
       dxLabelX, (ptB.y + ptC.y) / 2,
       [{ text: 'Δ' }, { text: 'x', italic: true }],
-      { fontSize: 12, color: '#0891b2', align: triDir > 0 ? 'left' : 'right' }
+      { fontSize: 16, color: '#0284c7', align: triDir > 0 ? 'left' : 'right' }
     );
 
     // ── Drop lines from t₁ and t₂ ─────────────────────────────────
-    ctx.strokeStyle = '#059669';
+    ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 4]);
     ctx.beginPath(); ctx.moveTo(mapT(params.t1), H - padB); ctx.lineTo(mapT(params.t1), mapX(x1)); ctx.stroke();
@@ -220,27 +233,27 @@ export default function InstantaneousVelocity() {
 
     // ── Points ────────────────────────────────────────────────────
     const pointPairs = [
-      { t: params.t1, x: x1, sub: '₁' },
-      { t: t2,        x: x2, sub: '₂' },
+      { t: params.t1, x: x1, num: '1' },
+      { t: t2,        x: x2, num: '2' },
     ];
-    for (const { t, x, sub } of pointPairs) {
+    for (const { t, x, num } of pointPairs) {
       const px = mapT(t);
       const py = mapX(x);
-      ctx.fillStyle = '#059669';
+      ctx.fillStyle = '#1e293b';
       ctx.beginPath(); ctx.arc(px, py, 6, 0, 2 * Math.PI); ctx.fill();
 
       // Label: t₁ or t₂ — offset above and to the right
-      const labelX = px + 10;
-      const labelY = py - 10;
+      const labelX = px + 12;
+      const labelY = py - 12;
       drawMixedText(
         ctx,
         labelX, labelY,
-        [{ text: 't', italic: true }, { text: sub }],
-        { fontSize: 12, color: '#1e293b', align: 'left' }
+        [{ text: 't', italic: true }, { text: num, subscript: true }],
+        { fontSize: 16, color: '#1e293b', align: 'left' }
       );
     }
 
-  }, [params]);
+  }, [params, fontsReady]);
 
   const secantSlope = params.dt !== 0
     ? (x_of_t(params.t1 + params.dt) - x_of_t(params.t1)) / params.dt
@@ -250,16 +263,7 @@ export default function InstantaneousVelocity() {
     ? (1 - Math.abs(secantSlope - tangentSlope) / Math.abs(tangentSlope)) * 100
     : 100;
 
-  const ControlRow = ({ label, name, min, max, step }: any) => (
-    <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 70px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
-      <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
-      <input type="range" name={name} min={min} max={max} step={step}
-        value={params[name as keyof typeof params]}
-        onChange={handleChange} />
-      <input type="number" name={name} value={params[name as keyof typeof params]}
-        onChange={handleChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
-    </div>
-  );
+
 
   return (
     <SimulationLayout
@@ -269,20 +273,20 @@ export default function InstantaneousVelocity() {
       canvasContent={
         <>
           <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '16px', fontSize: '13px', background: '#f8fafc', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ color: '#7c3aed', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="28" height="10"><path d="M0 5 Q7 0 14 5 Q21 10 28 5" stroke="#7c3aed" strokeWidth="2.5" fill="none" /></svg>
+            <span style={{ color: 'var(--color-gravity)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="28" height="10"><path d="M0 5 Q7 0 14 5 Q21 10 28 5" stroke="var(--color-gravity)" strokeWidth="2.5" fill="none" /></svg>
               Position <InlineMath math="x(t)" />
             </span>
-            <span style={{ color: '#0891b2', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#0891b2" strokeWidth="2" strokeDasharray="5,4" /></svg>
+            <span style={{ color: '#0284c7', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#0284c7" strokeWidth="2" strokeDasharray="5,4" /></svg>
               Secant (avg vel)
             </span>
-            <span style={{ color: '#db2777', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#db2777" strokeWidth="2.5" /></svg>
+            <span style={{ color: 'var(--color-vel)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="var(--color-vel)" strokeWidth="2.5" /></svg>
               Tangent at <InlineMath math="t_1" />
             </span>
-            <span style={{ color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
-              <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#059669" /></svg>
+            <span style={{ color: '#1e293b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#1e293b" /></svg>
               Points
             </span>
           </div>
@@ -311,12 +315,12 @@ export default function InstantaneousVelocity() {
 
       controlsContent={
         <>
-          <ControlRow label={<><InlineMath math="x_0" /> (m)</>}           name="x0"   min="-20"  max="20"  step="0.1"   />
-          <ControlRow label={<><InlineMath math="v_0" /> (m/s)</>}         name="v0"   min="-10"  max="10"  step="0.1"   />
-          <ControlRow label={<><InlineMath math="a" /> (m/s²)</>}          name="a"    min="-5"   max="5"   step="0.1"   />
-          <ControlRow label={<><InlineMath math="t_1" /> (s)</>}           name="t1"   min="0"    max="20"  step="0.05"  />
-          <ControlRow label={<><InlineMath math="\Delta t" /> (s)</>}      name="dt"   min="0.01" max="10"  step="0.01"  />
-          <ControlRow label={<><InlineMath math="t_{\text{max}}" /> (s)</> } name="tMax" min="1"    max="30"  step="0.5"   />
+          <ControlRow label={<><InlineMath math="x_0" /> (m)</>}           name="x0"   min="-20"  max="20"  step="0.1"  value={params.x0} onChange={handleChange} />
+          <ControlRow label={<><InlineMath math="v_0" /> (m/s)</>}         name="v0"   min="-10"  max="10"  step="0.1"  value={params.v0} onChange={handleChange} />
+          <ControlRow label={<><InlineMath math="a" /> (m/s²)</>}          name="a"    min="-5"   max="5"   step="0.1"  value={params.a} onChange={handleChange} />
+          <ControlRow label={<><InlineMath math="t_1" /> (s)</>}           name="t1"   min="0"    max="20"  step="0.05" value={params.t1} onChange={handleChange} />
+          <ControlRow label={<><InlineMath math="\Delta t" /> (s)</>}      name="dt"   min="0.01" max="10"  step="0.01" value={params.dt} onChange={handleChange} />
+          <ControlRow label={<><InlineMath math="t_{\text{max}}" /> (s)</> } name="tMax" min="1"    max="30"  step="0.5"  value={params.tMax} onChange={handleChange} />
         </>
       }
 
@@ -324,11 +328,11 @@ export default function InstantaneousVelocity() {
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
             <span className="text-muted">Secant slope <InlineMath math="\Delta x / \Delta t" /></span>
-            <span style={{ fontWeight: 600, color: '#0891b2' }}>{secantSlope.toFixed(3)} m/s</span>
+            <span style={{ fontWeight: 600, color: '#0284c7' }}>{secantSlope.toFixed(3)} m/s</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
             <span className="text-muted">Instant vel <InlineMath math="v(t_1)" /></span>
-            <span style={{ fontWeight: 600, color: '#db2777' }}>{tangentSlope.toFixed(3)} m/s</span>
+            <span style={{ fontWeight: 600, color: 'var(--color-vel)' }}>{tangentSlope.toFixed(3)} m/s</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
             <span className="text-muted"><InlineMath math="x(t_1)" /></span>
@@ -352,3 +356,21 @@ export default function InstantaneousVelocity() {
     />
   );
 }
+
+const ControlRow = ({ label, name, min, max, step, value, onChange }: {
+  label: React.ReactNode;
+  name: string;
+  min: string;
+  max: string;
+  step: string;
+  value: number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
+  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 70px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+    <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
+    <input type="range" name={name} min={min} max={max} step={step}
+      value={value} onChange={onChange} />
+    <input type="number" name={name} value={value}
+      onChange={onChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
+  </div>
+);

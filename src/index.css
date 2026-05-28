@@ -15,15 +15,15 @@
   --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
   --font-textbook: 'STIX Two Text', serif;
   
-  /* Physics Colors */
-  --color-force-app: #2563eb;
-  --color-friction: #dc2626;
-  --color-normal: #059669;
-  --color-gravity: #8b5cf6;
-  --color-accel: #f59e0b;
-  --color-vel: #10b981;
-  --color-accel-radial: #06b6d4;
-  --color-accel-tangential: #f97316;
+  /* Physics Colors - Textbook Scientific Palette */
+  --color-force-app: #1d4ed8;       /* Royal Indigo */
+  --color-friction: #b91c1c;        /* Deep Crimson */
+  --color-normal: #0f766e;          /* Teal Forest */
+  --color-gravity: #581c87;         /* Slate Royal Purple */
+  --color-vel: #15803d;             /* Emerald Green */
+  --color-accel: #6b21a8;           /* Deep Violet */
+  --color-accel-radial: #b45309;     /* Ochre Orange */
+  --color-accel-tangential: #c2410c; /* Warm Vermillion */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
