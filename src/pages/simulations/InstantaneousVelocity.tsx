@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { InlineMath, BlockMath } from 'react-katex';
-import { scaleCanvas, drawMixedText, drawCoordinateGrid, resolveColor } from '../../components/physics/drawUtils';
+import { drawMixedText, drawCoordinateGrid, resolveColor, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
+import { useCanvasStage } from '../../hooks/useCanvasStage';
 
 export default function InstantaneousVelocity() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stageGen = useCanvasStage(canvasRef);
 
   const [fontsReady, setFontsReady] = useState(false);
   useEffect(() => {
@@ -32,21 +34,15 @@ export default function InstantaneousVelocity() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.parentElement?.getBoundingClientRect();
-    if (!rect) return;
-
-    const W = rect.width;
-    const H = 420;
+    const { ctx, w: W, h: H, s } = fitStage(canvas, 420);
 
     // Padding: extra left room for y-axis label, extra bottom for x-axis label
-    const padL = 72;
+    const padL = Math.round(72 * Math.min(s, 1.2));
     const padR = 22;
     const padT = 24;
-    const padB = 52;
+    const padB = Math.round(52 * Math.min(s, 1.2));
+    const fs = Math.round(16 * s);
 
-    const ctx = scaleCanvas(canvas, W, H);
-    
-    // Draw textbook grid paper background first
     drawCoordinateGrid(ctx, W, H, {
       backgroundColor: '#fcfdfd',
       gridColor: '#e2e8f0',
@@ -120,7 +116,7 @@ export default function InstantaneousVelocity() {
       padL + (W - padL - padR) / 2,
       H - 10,
       [{ text: 't', italic: true }, { text: ' (s)' }],
-      { fontSize: 16, color: '#334155', align: 'center' }
+      { fontSize: fs, color: '#334155', align: 'center' }
     );
 
     // Y-axis title:  x  (m)  — rotated
@@ -131,7 +127,7 @@ export default function InstantaneousVelocity() {
       ctx,
       0, 0,
       [{ text: 'x', italic: true }, { text: ' (m)' }],
-      { fontSize: 16, color: '#334155', align: 'center' }
+      { fontSize: fs, color: '#334155', align: 'center' }
     );
     ctx.restore();
 
@@ -211,7 +207,7 @@ export default function InstantaneousVelocity() {
       ctx,
       (ptA.x + ptB.x) / 2, dtLabelY,
       [{ text: 'Δ' }, { text: 't', italic: true }],
-      { fontSize: 16, color: '#0284c7', align: 'center' }
+      { fontSize: fs, color: '#0284c7', align: 'center' }
     );
 
     // Δx label — centred on the vertical leg, offset to the right (or left)
@@ -220,7 +216,7 @@ export default function InstantaneousVelocity() {
       ctx,
       dxLabelX, (ptB.y + ptC.y) / 2,
       [{ text: 'Δ' }, { text: 'x', italic: true }],
-      { fontSize: 16, color: '#0284c7', align: triDir > 0 ? 'left' : 'right' }
+      { fontSize: fs, color: '#0284c7', align: triDir > 0 ? 'left' : 'right' }
     );
 
     // ── Drop lines from t₁ and t₂ ─────────────────────────────────
@@ -249,11 +245,11 @@ export default function InstantaneousVelocity() {
         ctx,
         labelX, labelY,
         [{ text: 't', italic: true }, { text: num, subscript: true }],
-        { fontSize: 16, color: '#1e293b', align: 'left' }
+        { fontSize: fs, color: '#1e293b', align: 'left' }
       );
     }
 
-  }, [params, fontsReady]);
+  }, [params, fontsReady, stageGen]);
 
   const secantSlope = params.dt !== 0
     ? (x_of_t(params.t1 + params.dt) - x_of_t(params.t1)) / params.dt
@@ -269,6 +265,7 @@ export default function InstantaneousVelocity() {
     <SimulationLayout
       title="Instantaneous Velocity via Tangent"
       description="1D Kinematics — The geometric relationship between secant lines, tangent lines, and limits."
+      slug="instantaneous-velocity"
 
       canvasContent={
         <>
@@ -290,7 +287,7 @@ export default function InstantaneousVelocity() {
               Points
             </span>
           </div>
-          <div style={{ width: '100%', height: '420px' }}>
+          <div className="sim-stage" style={{ ['--sim-stage-h' as string]: '420px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
         </>

@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
-import { drawArrow, scaleCanvas, drawMixedText, drawCoordinateGrid, resolveColor } from '../../components/physics/drawUtils';
+import { drawArrow, drawMixedText, drawCoordinateGrid, resolveColor, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
+import { useCanvasStage } from '../../hooks/useCanvasStage';
 
 const MAX_OMEGA = 12;
 
 export default function CircularMotion() {
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const trailRef   = useRef<{ x: number; y: number }[]>([]);
+  const trailSizeRef = useRef({ w: 0, h: 0 });
+  const stageGen = useCanvasStage(canvasRef);
 
   const [fontsReady, setFontsReady] = useState(false);
   useEffect(() => {
@@ -48,9 +51,13 @@ export default function CircularMotion() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx   = scaleCanvas(canvas, canvas.parentElement!.clientWidth, 420);
-    const width = canvas.parentElement!.clientWidth;
-    const height = 420;
+    const { ctx, w: width, h: height, s } = fitStage(canvas, 420);
+    if (trailSizeRef.current.w !== width || trailSizeRef.current.h !== height) {
+      trailRef.current = [];
+      trailSizeRef.current = { w: width, h: height };
+    }
+    const lw = 4.5 * s;
+    const fs = Math.round(16 * s);
 
     // Draw textbook grid paper background first
     drawCoordinateGrid(ctx, width, height, {
@@ -61,7 +68,7 @@ export default function CircularMotion() {
 
     const cx    = width / 2;
     const cy    = height / 2;
-    const scale = Math.min(18, (Math.min(width, height) / 2 - 44) / params.R);
+    const scale = Math.min(18 * s, (Math.min(width, height) / 2 - 44 * s) / params.R);
 
     const objX = cx + params.R * scale * Math.cos(state.theta);
     const objY = cy - params.R * scale * Math.sin(state.theta);
@@ -74,7 +81,7 @@ export default function CircularMotion() {
     for (let i = 1; i < trail.length; i++) {
       const a = i / trail.length;
       ctx.strokeStyle = `rgba(148,163,184,${a * 0.4})`;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 2.5 * s;
       ctx.beginPath();
       ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
       ctx.lineTo(trail[i].x,     trail[i].y);
@@ -103,9 +110,9 @@ export default function CircularMotion() {
     const midY  = (cy + objY) / 2;
     const perpX = -(objY - cy) / (params.R * scale + 1e-9);
     const perpY =  (objX - cx) / (params.R * scale + 1e-9);
-    drawMixedText(ctx, midX + perpX * 22, midY + perpY * 22,
+    drawMixedText(ctx, midX + perpX * 22 * s, midY + perpY * 22 * s,
       [{ text: 'R', italic: true }],
-      { fontSize: 16, color: '#64748b', align: 'center' });
+      { fontSize: fs, color: '#64748b', align: 'center' });
 
     // θ arc from +x axis to current position
     if (Math.abs(state.theta) > 0.08) {
@@ -119,20 +126,20 @@ export default function CircularMotion() {
       const midAngle = -state.theta / 2;
       drawMixedText(
         ctx,
-        cx + (arcR + 18) * Math.cos(midAngle),
-        cy + (arcR + 18) * Math.sin(midAngle),
+        cx + (arcR + 18 * s) * Math.cos(midAngle),
+        cy + (arcR + 18 * s) * Math.sin(midAngle),
         [{ text: 'θ', italic: true }],
-        { fontSize: 16, color: 'var(--color-gravity)', align: 'center' }
+        { fontSize: fs, color: 'var(--color-gravity)', align: 'center' }
       );
     }
 
     // Centre dot
     ctx.fillStyle = '#64748b';
-    ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, 5 * s, 0, 2 * Math.PI); ctx.fill();
 
     // Object
     ctx.fillStyle = '#334155';
-    ctx.beginPath(); ctx.arc(objX, objY, 10, 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(objX, objY, 10 * s, 0, 2 * Math.PI); ctx.fill();
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
     // Vectors
@@ -141,8 +148,8 @@ export default function CircularMotion() {
     const at_mag = params.R * params.alpha;
     
     // Standardized scientific vector scaling
-    const velScale   = 2.2;
-    const accelScale = 0.85; // Standardized scale for ALL acceleration components!
+    const velScale   = 2.2 * s;
+    const accelScale = 0.85 * s; // Standardized scale for ALL acceleration components!
     
     const screenTheta = -state.theta;
     const radialPerpX = Math.sin(screenTheta);
@@ -151,11 +158,10 @@ export default function CircularMotion() {
     // 1. Velocity Vector
     if (Math.abs(v_mag) > 0.1) {
       const dir = screenTheta - Math.sign(state.w) * Math.PI / 2;
-      const tip = drawArrow(ctx, objX, objY, Math.abs(v_mag) * velScale, dir, 'var(--color-vel)', 4.5);
-      // Offset radially outward from the vector's tip to completely prevent collisions
-      drawMixedText(ctx, tip.hx + 16 * Math.cos(screenTheta), tip.hy + 16 * Math.sin(screenTheta),
+      const tip = drawArrow(ctx, objX, objY, Math.abs(v_mag) * velScale, dir, 'var(--color-vel)', lw);
+      drawMixedText(ctx, tip.hx + 16 * s * Math.cos(screenTheta), tip.hy + 16 * s * Math.sin(screenTheta),
         [{ text: 'v', italic: true, vector: true }],
-        { fontSize: 16, color: 'var(--color-vel)', align: 'center', baseline: 'middle' });
+        { fontSize: fs, color: 'var(--color-vel)', align: 'center', baseline: 'middle' });
     }
 
     // Directions
@@ -164,20 +170,18 @@ export default function CircularMotion() {
 
     // 2. Radial (Centripetal) Acceleration Vector
     if (ar_mag > 0.1) {
-      const tip = drawArrow(ctx, objX, objY, ar_mag * accelScale, dir_ar, 'var(--color-accel-radial)', 4.5);
-      // Offset inward toward center, shifted slightly perpendicular to the radial axis to avoid overlapping lines
-      drawMixedText(ctx, tip.hx + 12 * Math.cos(dir_ar) + 14 * radialPerpX, tip.hy + 12 * Math.sin(dir_ar) + 14 * radialPerpY,
+      const tip = drawArrow(ctx, objX, objY, ar_mag * accelScale, dir_ar, 'var(--color-accel-radial)', lw);
+      drawMixedText(ctx, tip.hx + 12 * s * Math.cos(dir_ar) + 14 * s * radialPerpX, tip.hy + 12 * s * Math.sin(dir_ar) + 14 * s * radialPerpY,
         [{ text: 'a', italic: true, vector: true }, { text: 'r', italic: true, subscript: true }],
-        { fontSize: 15, color: 'var(--color-accel-radial)', align: 'center', baseline: 'middle' });
+        { fontSize: Math.round(15 * s), color: 'var(--color-accel-radial)', align: 'center', baseline: 'middle' });
     }
 
     // 3. Tangential Acceleration Vector
     if (Math.abs(at_mag) > 0.1) {
-      const tip = drawArrow(ctx, objX, objY, Math.abs(at_mag) * accelScale, at_dir, 'var(--color-accel-tangential)', 4.5);
-      // Offset radially outward and slightly tangent-forward to completely avoid v vector overlap
-      drawMixedText(ctx, tip.hx + 16 * Math.cos(screenTheta) + 10 * Math.cos(at_dir), tip.hy + 16 * Math.sin(screenTheta) + 10 * Math.sin(at_dir),
+      const tip = drawArrow(ctx, objX, objY, Math.abs(at_mag) * accelScale, at_dir, 'var(--color-accel-tangential)', lw);
+      drawMixedText(ctx, tip.hx + 16 * s * Math.cos(screenTheta) + 10 * s * Math.cos(at_dir), tip.hy + 16 * s * Math.sin(screenTheta) + 10 * s * Math.sin(at_dir),
         [{ text: 'a', italic: true, vector: true }, { text: 't', italic: true, subscript: true }],
-        { fontSize: 15, color: 'var(--color-accel-tangential)', align: 'center', baseline: 'middle' });
+        { fontSize: Math.round(15 * s), color: 'var(--color-accel-tangential)', align: 'center', baseline: 'middle' });
     }
 
     // Total acceleration components math & drawing
@@ -219,22 +223,22 @@ export default function CircularMotion() {
 
     // 5. Total Acceleration Vector (draw only if it deviates from pure radial or has components)
     if (a_tot_mag > 0.1 && Math.abs(at_mag) > 0.1) {
-      const tip = drawArrow(ctx, objX, objY, a_tot_mag * accelScale, a_tot_dir, 'var(--color-accel)', 4.5);
-      drawMixedText(ctx, tip.hx + 16 * Math.cos(a_tot_dir), tip.hy + 16 * Math.sin(a_tot_dir),
+      const tip = drawArrow(ctx, objX, objY, a_tot_mag * accelScale, a_tot_dir, 'var(--color-accel)', lw);
+      drawMixedText(ctx, tip.hx + 16 * s * Math.cos(a_tot_dir), tip.hy + 16 * s * Math.sin(a_tot_dir),
         [{ text: 'a', italic: true, vector: true }],
-        { fontSize: 16, color: 'var(--color-accel)', align: 'center', baseline: 'middle' });
+        { fontSize: fs, color: 'var(--color-accel)', align: 'center', baseline: 'middle' });
     }
 
     // ω cap warning
     if (Math.abs(state.w) >= MAX_OMEGA - 0.05) {
       ctx.fillStyle   = 'rgba(220,38,38,0.9)';
-      ctx.font        = 'bold 12px "Inter", system-ui, sans-serif';
+      ctx.font        = `bold ${Math.round(12 * s)}px "Inter", system-ui, sans-serif`;
       ctx.textAlign   = 'center';
       ctx.textBaseline = 'top';
       ctx.fillText('ω capped at ±12 rad/s', cx, 12);
     }
 
-  }, [state, params, fontsReady]);
+  }, [state, params, fontsReady, stageGen]);
 
 
 
@@ -248,6 +252,7 @@ export default function CircularMotion() {
     <SimulationLayout
       title="Uniform vs Non-Uniform Circular Motion"
       description="2D Dynamics — Radial and tangential acceleration components."
+      slug="circular-motion"
 
       actionsContent={
         <>
@@ -255,6 +260,8 @@ export default function CircularMotion() {
           <button className="secondary" onClick={reset}>Reset</button>
         </>
       }
+
+      running={isRunning}
 
       canvasContent={
         <>
@@ -265,7 +272,7 @@ export default function CircularMotion() {
             <span style={{ color: 'var(--color-accel)',           fontWeight: 600 }}>→ <InlineMath math="\vec{a}" /></span>
             <span style={{ color: '#64748b',                      fontWeight: 600 }}>— trail</span>
           </div>
-          <div style={{ width: '100%', height: '420px' }}>
+          <div className="sim-stage" style={{ ['--sim-stage-h' as string]: '420px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
         </>

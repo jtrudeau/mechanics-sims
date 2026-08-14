@@ -4,10 +4,11 @@ type EngineOptions = {
   onStep: (dt: number) => void;
   onReset: () => void;
   maxDt?: number;
+  initialRunning?: boolean;
 };
 
-export function usePhysicsEngine({ onStep, onReset, maxDt = 0.05 }: EngineOptions) {
-  const [isRunning, setIsRunning] = useState(false);
+export function usePhysicsEngine({ onStep, onReset, maxDt = 0.05, initialRunning = false }: EngineOptions) {
+  const [isRunning, setIsRunning] = useState(initialRunning);
   const requestRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
 
