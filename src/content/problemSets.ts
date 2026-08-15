@@ -1,6 +1,14 @@
+import type { ProblemFigureId } from '../components/figures/ProblemFigures';
+import { homeworkBySet } from './multistepProblems';
+import { teacherWriteups } from './teacherWriteups';
 import type { TopicGroup } from './types';
 
 export type ProblemKind = 'numeric' | 'choice';
+
+export interface ProblemSource {
+  credit: string;
+  url?: string;
+}
 
 export interface StudentProblem {
   id: string;
@@ -18,16 +26,36 @@ export interface StudentProblem {
   simParams?: Record<string, string | number | boolean>;
 }
 
+export interface MultiStepProblem {
+  id: string;
+  kind: 'multistep';
+  title: string;
+  stem: string;
+  figure?: ProblemFigureId;
+  source?: ProblemSource;
+  simSlug?: string;
+  simParams?: Record<string, string | number | boolean>;
+  parts: StudentProblem[];
+  /** Full worked solution, shown after unlock. */
+  teacherSolution?: string[];
+}
+
+export type ProblemItem = StudentProblem | MultiStepProblem;
+
+export function isMultiStep(problem: ProblemItem): problem is MultiStepProblem {
+  return problem.kind === 'multistep';
+}
+
 export interface ProblemSet {
   id: string;
   title: string;
   topicGroup: TopicGroup;
   blurb: string;
   simSlug?: string;
-  problems: StudentProblem[];
+  problems: ProblemItem[];
 }
 
-export const problemSets: ProblemSet[] = [
+const baseSets: ProblemSet[] = [
   {
     id: 'graphs-1d',
     title: 'Graphical analysis (x, v, a)',
@@ -468,12 +496,29 @@ export const problemSets: ProblemSet[] = [
   },
 ];
 
+export const problemSets: ProblemSet[] = baseSets.map((set) => ({
+  ...set,
+  problems: [
+    ...set.problems,
+    ...(homeworkBySet[set.id] ?? []).map((p) => ({
+      ...p,
+      teacherSolution: teacherWriteups[p.id],
+    })),
+  ],
+}));
+
 export function allProblems(): (StudentProblem & { setId: string; setTitle: string })[] {
   return problemSets.flatMap((set) =>
-    set.problems.map((p) => ({ ...p, setId: set.id, setTitle: set.title }))
+    set.problems.flatMap((p) => {
+      const items = isMultiStep(p) ? p.parts : [p];
+      return items.map((item) => ({ ...item, setId: set.id, setTitle: set.title }));
+    })
   );
 }
 
 export function problemCount(): number {
-  return problemSets.reduce((n, s) => n + s.problems.length, 0);
+  return problemSets.reduce(
+    (n, s) => n + s.problems.reduce((m, p) => m + (isMultiStep(p) ? p.parts.length : 1), 0),
+    0
+  );
 }

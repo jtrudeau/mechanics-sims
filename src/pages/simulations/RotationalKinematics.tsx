@@ -4,6 +4,7 @@ import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { useQuerySeed } from '../../hooks/useQuerySeed';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
 import {
+  drawArrow,
   drawCoordinateGrid,
   drawMixedText,
   drawMotionGraph,
@@ -37,8 +38,8 @@ const DEFAULT: Params = {
 };
 
 const PROFILE_OPTIONS: { value: Profile; label: string }[] = [
-  { value: 'const-omega', label: 'Constant ω' },
-  { value: 'const-alpha', label: 'Constant α' },
+  { value: 'const-omega', label: 'Constant ω (UCM at the rim)' },
+  { value: 'const-alpha', label: 'Constant α (non-UCM)' },
   { value: 'spin-coast', label: 'Spin-up then coast' },
 ];
 
@@ -96,6 +97,7 @@ export default function RotationalKinematics() {
   const [showSlope, setShowSlope] = useState(true);
   const [showAreaW, setShowAreaW] = useState(true);
   const [showAreaA, setShowAreaA] = useState(false);
+  const [showRimVectors, setShowRimVectors] = useState(true);
 
   const physicsStep = useCallback(
     (dt: number) => {
@@ -122,6 +124,10 @@ export default function RotationalKinematics() {
   const dTh = atB.th - atA.th;
   const dW = atB.w - atA.w;
   const vt = now.w * params.R;
+  const ar = now.w * now.w * params.R;
+  const at = now.al * params.R;
+  const aTot = Math.hypot(ar, at);
+  const isUcm = Math.abs(now.al) < 1e-6;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -157,16 +163,55 @@ export default function RotationalKinematics() {
     ctx.fill();
 
     const markAng = -now.th;
+    const rimX = cx + diskR * Math.cos(markAng);
+    const rimY = cy + diskR * Math.sin(markAng);
     ctx.strokeStyle = '#0f172a';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + diskR * Math.cos(markAng), cy + diskR * Math.sin(markAng));
+    ctx.lineTo(rimX, rimY);
     ctx.stroke();
     ctx.fillStyle = '#b91c1c';
     ctx.beginPath();
-    ctx.arc(cx + diskR * Math.cos(markAng), cy + diskR * Math.sin(markAng), 6, 0, Math.PI * 2);
+    ctx.arc(rimX, rimY, 6, 0, Math.PI * 2);
     ctx.fill();
+
+    if (showRimVectors) {
+      const lw = 3.2;
+      const velScale = 18;
+      const accelScale = 10;
+      if (Math.abs(vt) > 0.05) {
+        const vDir = markAng - Math.sign(now.w || 1) * Math.PI / 2;
+        const vTip = drawArrow(ctx, rimX, rimY, Math.min(56, Math.max(20, Math.abs(vt) * velScale)), vDir, 'var(--color-vel)', lw);
+        drawMixedText(ctx, vTip.hx + 10 * Math.cos(vDir), vTip.hy + 10 * Math.sin(vDir), [{ text: 'v', italic: true, vector: true }], {
+          fontSize: 13,
+          color: 'var(--color-vel)',
+          align: 'center',
+        });
+      }
+      if (ar > 0.05) {
+        const arDir = markAng + Math.PI;
+        const arTip = drawArrow(ctx, rimX, rimY, Math.min(48, Math.max(16, ar * accelScale * 0.35)), arDir, 'var(--color-accel-radial)', lw);
+        drawMixedText(
+          ctx,
+          arTip.hx + 11 * Math.cos(arDir),
+          arTip.hy + 11 * Math.sin(arDir),
+          [{ text: 'a', italic: true, vector: true }, { text: 'r', italic: true, subscript: true }],
+          { fontSize: 12, color: 'var(--color-accel-radial)', align: 'center' }
+        );
+      }
+      if (Math.abs(at) > 0.05) {
+        const atDir = markAng - Math.sign(now.al) * Math.PI / 2;
+        const atTip = drawArrow(ctx, rimX, rimY, Math.min(48, Math.max(16, Math.abs(at) * accelScale)), atDir, 'var(--color-accel-tangential)', lw);
+        drawMixedText(
+          ctx,
+          atTip.hx + 11 * Math.cos(atDir),
+          atTip.hy + 11 * Math.sin(atDir),
+          [{ text: 'a', italic: true, vector: true }, { text: 't', italic: true, subscript: true }],
+          { fontSize: 12, color: 'var(--color-accel-tangential)', align: 'center' }
+        );
+      }
+    }
 
     drawMixedText(
       ctx,
@@ -215,7 +260,7 @@ export default function RotationalKinematics() {
       xLabel: [{ text: 't', italic: true }, { text: ' (s)' }],
       color: 'var(--color-gravity)',
     });
-  }, [fontsReady, params, tCursor, showSlope, showAreaW, showAreaA, now.th, stageGen]);
+  }, [fontsReady, params, tCursor, showSlope, showAreaW, showAreaA, showRimVectors, now, vt, ar, at, stageGen]);
 
   const handleNum = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as keyof Params;
@@ -230,7 +275,7 @@ export default function RotationalKinematics() {
   return (
     <SimulationLayout
       title="Rotational Kinematics Graphs"
-      description="θ, ω, α versus time — the rotational analogues of x, v, a."
+      description="θ, ω, α versus time, with UCM vs non-UCM at a rim point (v, a_r, a_t)."
       slug="rotational-kinematics"
       running={isRunning}
       actionsContent={
@@ -260,9 +305,20 @@ export default function RotationalKinematics() {
             <span style={{ color: 'var(--color-accel)', fontWeight: 600 }}>α–t</span>
             <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>ω–t</span>
             <span style={{ color: 'var(--color-gravity)', fontWeight: 600 }}>θ–t</span>
-            <span style={{ marginLeft: 'auto', color: '#475569' }}>
-              cursor t = {tCursor.toFixed(2)} s
+            <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>v</span>
+            <span style={{ color: 'var(--color-accel-radial)', fontWeight: 600 }}>a<sub>r</sub></span>
+            <span style={{ color: 'var(--color-accel-tangential)', fontWeight: 600 }}>a<sub>t</sub></span>
+            <span
+              className="topic-chip"
+              style={{
+                marginLeft: 'auto',
+                background: isUcm ? '#dcfce7' : '#ffedd5',
+                color: isUcm ? '#166534' : '#9a3412',
+              }}
+            >
+              {isUcm ? 'UCM at the rim' : 'non-UCM'}
             </span>
+            <span style={{ color: '#475569' }}>cursor t = {tCursor.toFixed(2)} s</span>
           </div>
           <div className="sim-stage" style={{ ['--sim-stage-h' as string]: '540px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
@@ -282,6 +338,24 @@ export default function RotationalKinematics() {
           <p>
             Changing <InlineMath math="R" /> scales <InlineMath math="v_t" /> but leaves{' '}
             <InlineMath math="\theta,\omega,\alpha" /> unchanged for a prescribed angular profile.
+          </p>
+          <p style={{ marginTop: 12 }}>
+            A point on the rim is in circular motion. That is the same language as the Circular Motion
+            simulation:
+          </p>
+          <BlockMath math="a_r = \omega^2 R = v_t^2/R,\qquad a_t = \alpha R" />
+          <p>
+            <strong>Uniform circular motion (UCM):</strong> constant speed, so{' '}
+            <InlineMath math="\alpha = 0" /> and <InlineMath math="a_t = 0" />. Only{' '}
+            <InlineMath math="\vec{a}_r" /> (toward the axis) changes the direction of{' '}
+            <InlineMath math="\vec{v}" />. Choose Constant <InlineMath math="\omega" />.
+          </p>
+          <p>
+            <strong>Non-UCM:</strong> speed is changing, so both <InlineMath math="a_r" /> and{' '}
+            <InlineMath math="a_t" /> are present and <InlineMath math="|\vec{a}| = \sqrt{a_r^2+a_t^2}" />.
+            Choose Constant <InlineMath math="\alpha" />, or watch Spin-up then coast: after{' '}
+            <InlineMath math="\alpha" /> drops to zero the rim motion becomes UCM again at the new{' '}
+            <InlineMath math="\omega" />.
           </p>
         </div>
       }
@@ -360,6 +434,7 @@ export default function RotationalKinematics() {
           <ToggleRow label="Show slope secant" checked={showSlope} onChange={setShowSlope} />
           <ToggleRow label="Shade area under ω–t (Δθ)" checked={showAreaW} onChange={setShowAreaW} />
           <ToggleRow label="Shade area under α–t (Δω)" checked={showAreaA} onChange={setShowAreaA} />
+          <ToggleRow label="Show rim vectors v, a_r, a_t" checked={showRimVectors} onChange={setShowRimVectors} />
         </>
       }
       metricsContent={
@@ -368,7 +443,23 @@ export default function RotationalKinematics() {
           <Metric label={<InlineMath math="\theta" />} value={`${now.th.toFixed(2)} rad`} color="var(--color-gravity)" />
           <Metric label={<InlineMath math="\omega" />} value={`${now.w.toFixed(2)} rad/s`} color="var(--color-vel)" />
           <Metric label={<InlineMath math="\alpha" />} value={`${now.al.toFixed(2)} rad/s²`} color="var(--color-accel)" />
-          <Metric label={<InlineMath math="v_t = \omega R" />} value={`${vt.toFixed(2)} m/s`} />
+          <Metric label={<InlineMath math="v_t = \omega R" />} value={`${vt.toFixed(2)} m/s`} color="var(--color-vel)" />
+          <Metric
+            label={<InlineMath math="a_r = \omega^2 R" />}
+            value={`${ar.toFixed(2)} m/s²`}
+            color="var(--color-accel-radial)"
+          />
+          <Metric
+            label={<InlineMath math="a_t = \alpha R" />}
+            value={`${at.toFixed(2)} m/s²`}
+            color="var(--color-accel-tangential)"
+          />
+          <Metric
+            label={<InlineMath math="|\vec{a}| = \sqrt{a_r^2+a_t^2}" />}
+            value={`${aTot.toFixed(2)} m/s²`}
+            color="var(--color-accel)"
+          />
+          <Metric label="Rim motion" value={isUcm ? 'UCM (α = 0)' : 'non-UCM'} />
           <div style={{ borderTop: '1px solid var(--border-color)', margin: '8px 0' }} />
           <Metric label={<>Slope of <InlineMath math="\theta" />–<InlineMath math="t" /></>} value={`${wAvg.toFixed(2)} rad/s`} />
           <Metric label={<InlineMath math="\omega_\mathrm{avg}" />} value={`${wAvg.toFixed(2)} rad/s`} />

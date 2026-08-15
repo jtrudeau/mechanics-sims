@@ -2,8 +2,15 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Check, FlaskConical, RotateCcw, X } from 'lucide-react';
 import { MathText } from '../components/MathText';
+import { ProblemFigure } from '../components/figures/ProblemFigures';
 import { SolutionUnlock, SolutionsLockedNote } from '../components/SolutionUnlock';
-import { problemCount, problemSets, type StudentProblem } from '../content/problemSets';
+import {
+  isMultiStep,
+  problemCount,
+  problemSets,
+  type MultiStepProblem,
+  type StudentProblem,
+} from '../content/problemSets';
 import { TOPIC_GROUP_LABELS } from '../content/simulations';
 import type { TopicGroup } from '../content/types';
 import { simPathWithParams } from '../hooks/useQuerySeed';
@@ -82,9 +89,9 @@ export default function ProblemSetsPage() {
         <p className="home-eyebrow">Student practice</p>
         <h1>Problem sets</h1>
         <p className="home-lede textbook-font">
-          Work numerically or by multiple choice, then check. Each item can load the matching
-          simulation. Progress is stored in this browser only. Hints and worked solutions stay
-          hidden until a teacher unlocks them.
+          Work numerically or by multiple choice, then check. After the short items, each
+          topic has a multi-step homework / class problem. Progress is stored in this browser
+          only. Hints and worked solutions stay hidden until a teacher unlocks them.
         </p>
         <div className="problems-progress-row">
           <span className="topic-chip">
@@ -131,21 +138,117 @@ export default function ProblemSetsPage() {
               )}
             </div>
             <ol className="problems-list">
-              {set.problems.map((problem, i) => (
-                <ProblemCard
-                  key={problem.id}
-                  index={i + 1}
-                  problem={problem}
-                  record={progress[problem.id]}
-                  onCheck={record}
-                  unlocked={unlocked}
-                />
-              ))}
+              {set.problems.map((problem, i) =>
+                isMultiStep(problem) ? (
+                  <MultiStepCard
+                    key={problem.id}
+                    index={i + 1}
+                    problem={problem}
+                    progress={progress}
+                    onCheck={record}
+                    unlocked={unlocked}
+                  />
+                ) : (
+                  <ProblemCard
+                    key={problem.id}
+                    index={i + 1}
+                    problem={problem}
+                    record={progress[problem.id]}
+                    onCheck={record}
+                    unlocked={unlocked}
+                  />
+                )
+              )}
             </ol>
           </section>
         ))}
       </div>
     </div>
+  );
+}
+
+function MultiStepCard({
+  index,
+  problem,
+  progress,
+  onCheck,
+  unlocked,
+}: {
+  index: number;
+  problem: MultiStepProblem;
+  progress: ProgressMap;
+  onCheck: (id: string, ok: boolean) => void;
+  unlocked: boolean;
+}) {
+  const simPath = problem.simSlug
+    ? simPathWithParams(`/simulations/${problem.simSlug}`, problem.simParams)
+    : null;
+  const partCorrect = problem.parts.filter((p) => progress[p.id]?.status === 'correct').length;
+
+  return (
+    <li className="problems-card problems-multistep">
+      <div className="problems-multistep-head">
+        <span className="guide-problem-num">{index}</span>
+        <div>
+          <span className="topic-chip">Homework / class</span>
+          <h3>{problem.title}</h3>
+        </div>
+        <span className="text-muted" style={{ marginLeft: 'auto', fontSize: 13 }}>
+          {partCorrect} / {problem.parts.length} parts
+        </span>
+      </div>
+
+      {problem.figure && <ProblemFigure id={problem.figure} />}
+
+      <div className="problems-stem textbook-font">
+        <MathText text={problem.stem} />
+      </div>
+
+      {problem.source && (
+        <p className="problem-source">
+          {problem.source.url ? (
+            <a href={problem.source.url} target="_blank" rel="noreferrer">
+              {problem.source.credit}
+            </a>
+          ) : (
+            problem.source.credit
+          )}
+        </p>
+      )}
+
+      {simPath && (
+        <Link to={simPath} className="btn-link secondary" style={{ marginBottom: 12 }}>
+          <FlaskConical size={15} />
+          Open related simulation
+        </Link>
+      )}
+
+      <ol className="problems-parts">
+        {problem.parts.map((part) => (
+          <ProblemCard
+            key={part.id}
+            problem={part}
+            record={progress[part.id]}
+            onCheck={onCheck}
+            unlocked={unlocked}
+            nested
+          />
+        ))}
+      </ol>
+
+      {unlocked && problem.teacherSolution && problem.teacherSolution.length > 0 && (
+        <details className="guide-reveal answer" style={{ marginTop: 12 }}>
+          <summary>Teacher solution</summary>
+          <div className="teacher-solution textbook-font">
+            {problem.teacherSolution.map((para, i) => (
+              <p key={i}>
+                <MathText text={para} />
+              </p>
+            ))}
+          </div>
+        </details>
+      )}
+    </li>
   );
 }
 
@@ -155,12 +258,14 @@ function ProblemCard({
   record,
   onCheck,
   unlocked,
+  nested = false,
 }: {
-  index: number;
+  index?: number;
   problem: StudentProblem;
   record?: { status: 'correct' | 'wrong'; attempts: number };
   onCheck: (id: string, ok: boolean) => void;
   unlocked: boolean;
+  nested?: boolean;
 }) {
   const [input, setInput] = useState('');
   const [choice, setChoice] = useState('');
@@ -182,9 +287,9 @@ function ProblemCard({
     : null;
 
   return (
-    <li className={`problems-card${feedback === 'correct' ? ' is-correct' : ''}${feedback === 'wrong' ? ' is-wrong' : ''}`}>
+    <li className={`problems-card${nested ? ' is-part' : ''}${feedback === 'correct' ? ' is-correct' : ''}${feedback === 'wrong' ? ' is-wrong' : ''}`}>
       <h3>
-        <span className="guide-problem-num">{index}</span>
+        {!nested && index != null && <span className="guide-problem-num">{index}</span>}
         <span className="guide-problem-prompt">
           <MathText text={problem.prompt} />
         </span>

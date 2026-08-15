@@ -6,6 +6,8 @@ export const rotationalKinematicsGuide: SimGuideContent = {
     'Read slope of $\\theta$–$t$ as $\\omega$ and slope of $\\omega$–$t$ as $\\alpha$.',
     'Read signed area under $\\omega$–$t$ as $\\Delta\\theta$ and under $\\alpha$–$t$ as $\\Delta\\omega$.',
     'Connect a spinning disk’s kinematics graphs to $v_t = \\omega R$ at the rim.',
+    'Classify a rim point as UCM ($\\alpha = 0$, $a_t = 0$) or non-UCM (both $a_r$ and $a_t$).',
+    'Compute $a_r = \\omega^2 R$ and $a_t = \\alpha R$ from the same $\\omega(t)$ and $\\alpha(t)$ shown on the graphs.',
   ],
   howToUse: [
     'Pick a profile: constant $\\omega$, constant $\\alpha$, or spin-up then coast.',
@@ -13,21 +15,25 @@ export const rotationalKinematicsGuide: SimGuideContent = {
     'Measure slope on $\\theta$–$t$ and compare with $\\omega_\\mathrm{avg}$ in Live Dynamics.',
     'Shade $\\omega$–$t$ and check that the area equals $\\Delta\\theta$ (radians).',
     'Change $R$ and confirm that graphs of $\\theta,\\omega,\\alpha$ are unchanged while $v_t$ scales.',
+    'On Constant $\\omega$, confirm $a_t = 0$ (UCM). On Constant $\\alpha$, read both $a_r$ and $a_t$ at the rim.',
   ],
   watchFors: [
     'Mixing degrees and radians — the graphs and $\\tau = I\\alpha$ use radians.',
     'Thinking a horizontal $\\omega$–$t$ graph means the disk has stopped; it means constant spin rate.',
     'Confusing $\\alpha$ (how fast $\\omega$ changes) with $\\omega$ (how fast $\\theta$ changes).',
     'Forgetting that $\\Delta\\theta$ from area can exceed $2\\pi$ (multiple revolutions).',
+    'Calling constant $\\omega$ “no acceleration”: a rim point still has $a_r$ toward the axis.',
+    'Mixing $a_t = \\alpha R$ (changes speed) with $a_r = \\omega^2 R$ (changes direction).',
   ],
   canvasTips: [
     'The disk mark tracks $\\theta$. Graphs use the unwrapped angle (not wrapped to $[0, 2\\pi)$).',
     'Blue secant = average $\\omega$ or $\\alpha$ on $[t_A, t_B]$.',
     'Green shading on $\\omega$–$t$ is $\\Delta\\theta$; purple on $\\alpha$–$t$ is $\\Delta\\omega$.',
-    'Rim speed $v_t = \\omega R$ is in Live Dynamics, not on the $\\omega$ graph.',
+    'Rim speed $v_t = \\omega R$ is in Live Dynamics; with rim vectors on, green $= \\vec{v}$, ochre $= \\vec{a}_r$, vermillion $= \\vec{a}_t$.',
+    'The UCM / non-UCM chip follows $\\alpha$ at the cursor, including after coast begins.',
   ],
   tryThis:
-    'On constant $\\alpha$, double $R$. Do $\\omega(t)$ and $\\alpha$ change? Does $v_t$ change? Explain with the analogue table.',
+    'On Constant $\\alpha$, freeze at a time when $\\omega \\neq 0$. Compare $a_r$ and $a_t$. Then switch to Constant $\\omega$ with the same $\\omega$ and $R$: which vector disappears, and why?',
   revisionProblems: [
     {
       id: 'rk-1',
@@ -77,6 +83,32 @@ export const rotationalKinematicsGuide: SimGuideContent = {
       ],
       answer: '$v_t = 5.0 \\times 0.40 = 2.0\\,\\mathrm{m/s}$. Doubling $R$ doubles $v_t$ to $4.0\\,\\mathrm{m/s}$; $\\omega$ is unchanged.',
       simParams: { profile: 'const-omega', w0: 5, R: 0.4, tCursor: 2 },
+    },
+    {
+      id: 'rk-5',
+      prompt:
+        'Constant $\\omega = 4.0\\,\\mathrm{rad/s}$, $R = 0.50\\,\\mathrm{m}$. Is a rim point in UCM or non-UCM? Find $a_r$ and $a_t$.',
+      hint: 'UCM means constant speed on a circle: $\\alpha = 0$ so $a_t = 0$, but $a_r = \\omega^2 R$ is not zero.',
+      checkWithSim: [
+        'Choose Constant $\\omega$ (UCM at the rim), set $\\omega_0 = 4$, $R = 0.5$.',
+        'Turn on rim vectors. Read $a_r$ and $a_t$ in Live Dynamics.',
+      ],
+      answer:
+        'UCM. $a_t = 0$. $a_r = (4)^2(0.50) = 8.0\\,\\mathrm{m/s}^2$ toward the axis. Speed is constant; velocity still changes direction.',
+      simParams: { profile: 'const-omega', w0: 4, R: 0.5, tCursor: 1 },
+    },
+    {
+      id: 'rk-6',
+      prompt:
+        'Same $R = 0.50\\,\\mathrm{m}$, now constant $\\alpha = 2.0\\,\\mathrm{rad/s}^2$ from rest. At $t = 2.0\\,\\mathrm{s}$, find $\\omega$, $a_t$, $a_r$, and $|\\vec{a}|$ at the rim.',
+      hint: '$\\omega = \\alpha t$, $a_t = \\alpha R$, $a_r = \\omega^2 R$, $|a| = \\sqrt{a_r^2+a_t^2}$.',
+      checkWithSim: [
+        'Choose Constant $\\alpha$, $\\alpha = 2$, $\\omega_0 = 0$, $R = 0.5$, cursor at $t = 2$.',
+        'Compare Live Dynamics with the chip “non-UCM”.',
+      ],
+      answer:
+        '$\\omega = 4.0\\,\\mathrm{rad/s}$, $a_t = 1.0\\,\\mathrm{m/s}^2$, $a_r = 8.0\\,\\mathrm{m/s}^2$, $|a| = \\sqrt{65} \\approx 8.06\\,\\mathrm{m/s}^2$. Non-UCM: both components.',
+      simParams: { profile: 'const-alpha', alpha: 2, w0: 0, R: 0.5, tCursor: 2 },
     },
   ],
 };

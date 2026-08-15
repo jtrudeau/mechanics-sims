@@ -125,7 +125,7 @@ export const simulations: SimulationEntry[] = [
     title: 'Rotational Kinematics Graphs',
     shortTitle: 'Rotational Kinematics',
     topicGroup: 'energy-rotation',
-    blurb: 'Stacked θ–t, ω–t, and α–t graphs: slope and signed area for fixed-axis rotation.',
+    blurb: 'Stacked θ–t, ω–t, and α–t graphs, plus UCM vs non-UCM at a rim point.',
     icon: 'orbit',
     simPath: '/simulations/rotational-kinematics',
     guidePath: '/guides/rotational-kinematics',

@@ -119,7 +119,7 @@ export default function Home() {
       <section className="glass-panel problems-hero" style={{ marginTop: 8 }}>
         <h2 style={{ marginBottom: 8 }}>Problem sets</h2>
         <p className="text-muted textbook-font" style={{ maxWidth: 640 }}>
-          Checkable practice across kinematics graphs, Newton’s laws, energy, and rotation. Load
+          Checkable short items, then a multi-step homework / class problem on each topic. Load
           setup opens the matching simulation with the problem’s parameters.
         </p>
         <div className="home-card-actions" style={{ marginTop: 14 }}>

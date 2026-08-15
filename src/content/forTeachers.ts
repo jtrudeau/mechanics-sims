@@ -38,7 +38,7 @@ export const forTeachers = {
     'Unlock lasts for this browser tab. Lock (or close the tab) before a student uses the same machine.',
     'For a closed warm-up on a projector, open Tips & Revision with ?quiz=1 so answers stay hidden even if this tab is unlocked.',
     'Use Load setup on a problem to open the simulation with matching control values.',
-    'The Problem sets page (/problems) checks numeric and multiple-choice answers in the browser; progress is local only.',
+    'The Problem sets page (/problems) begins with short checks, then a multi-step homework / class problem with a figure. Unlock to see per-part solutions and a full teacher write-up. Progress is local only.',
     'Ask pairs to agree on an answer before you unlock and walk through the explanation.',
   ],
   suggestedSequence: [

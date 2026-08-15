@@ -1104,6 +1104,121 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   color: #991b1b;
 }
 
+.problems-multistep {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.problems-multistep-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.problems-multistep-head h3 {
+  margin: 6px 0 0;
+  font-size: 18px;
+}
+
+.problems-stem {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-main);
+  margin: 8px 0 12px;
+  max-width: 62em;
+}
+
+.problem-source {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+  line-height: 1.45;
+}
+
+.problem-source a {
+  color: var(--text-secondary);
+}
+
+.problems-parts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.problems-card.is-part {
+  background: #fff;
+}
+
+.problem-figure {
+  margin: 4px 0 16px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.problem-figure-svg {
+  display: block;
+  width: min(100%, 440px);
+  height: auto;
+  margin: 0 auto;
+}
+
+.fig-label,
+.fig-caption {
+  font-family: 'STIX Two Text', 'Times New Roman', serif;
+  fill: #0f172a;
+}
+
+.fig-label {
+  font-size: 13px;
+}
+
+.fig-caption {
+  font-size: 12px;
+  font-style: italic;
+  fill: #334155;
+  text-anchor: middle;
+}
+
+.fig-katex {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  overflow: visible;
+}
+
+.fig-katex-start { justify-content: flex-start; }
+.fig-katex-middle { justify-content: center; }
+.fig-katex-end { justify-content: flex-end; }
+
+.fig-katex .katex {
+  font-size: 14.5px;
+}
+
+.fig-katex .katex-html {
+  white-space: nowrap;
+}
+
+.teacher-solution {
+  padding: 4px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.teacher-solution p {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--text-main);
+}
+
 /* ─── Responsive ─────────────────────────────────────────────── */
 
 @media (max-width: 980px) {
