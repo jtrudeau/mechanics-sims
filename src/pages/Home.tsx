@@ -129,6 +129,13 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      <p className="text-muted" style={{ fontSize: 13 }}>
+        Joel Trudeau, Dawson College Physics.{' '}
+        <Link to="/about" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+          About
+        </Link>
+      </p>
     </div>
   );
 }

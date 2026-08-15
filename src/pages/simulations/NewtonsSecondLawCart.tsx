@@ -273,7 +273,7 @@ export default function NewtonsSecondLawCart() {
     ctx.lineTo(pulleyX - pulleyR, trackY + 7);
     ctx.stroke();
 
-    ctx.strokeStyle = '#64748b';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(pulleyX, trackY);
@@ -297,7 +297,7 @@ export default function NewtonsSecondLawCart() {
     ctx.strokeStyle = '#475569';
     ctx.lineWidth = 2.5;
     ctx.stroke();
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = '#475569';
     ctx.beginPath();
     ctx.arc(pulleyX, stringY, 4 * s, 0, 2 * Math.PI);
     ctx.fill();
@@ -342,7 +342,7 @@ export default function NewtonsSecondLawCart() {
       { fontSize: Math.round(17 * s), color: '#92400e', align: 'center', baseline: 'middle' }
     );
 
-    ctx.strokeStyle = '#64748b';
+    ctx.strokeStyle = '#475569';
     ctx.setLineDash([4, 4]);
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -355,7 +355,7 @@ export default function NewtonsSecondLawCart() {
       limitX + cartW / 2,
       trackY + 42,
       [{ text: 'travel limit' }],
-      { fontSize: Math.round(11 * s), color: '#64748b', align: 'center', baseline: 'top' }
+      { fontSize: Math.round(11 * s), color: '#475569', align: 'center', baseline: 'top' }
     );
 
     drawMixedText(
@@ -520,7 +520,7 @@ export default function NewtonsSecondLawCart() {
         padL - 7,
         mapV(tick),
         [{ text: tick.toFixed(1) }],
-        { fontSize: 11, color: '#64748b', align: 'right', baseline: 'middle' }
+        { fontSize: 11, color: '#475569', align: 'right', baseline: 'middle' }
       );
     }
 
@@ -541,7 +541,7 @@ export default function NewtonsSecondLawCart() {
       padL + chartW / 2,
       height - 5,
       [{ text: 'recent time' }],
-      { fontSize: 11, color: '#64748b', align: 'center', baseline: 'bottom' }
+      { fontSize: 11, color: '#475569', align: 'center', baseline: 'bottom' }
     );
 
     if (hist.length > 1) {
@@ -606,7 +606,7 @@ export default function NewtonsSecondLawCart() {
           </div>
           {params.showGraph && (
             <div style={{ borderTop: '1px solid var(--border-color)', background: '#fff' }}>
-              <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>
+              <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
                 Speed <InlineMath math="v" /> vs recent time
               </div>
               <div style={{ width: '100%', height: '170px' }}>

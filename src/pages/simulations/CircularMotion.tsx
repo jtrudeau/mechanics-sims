@@ -112,7 +112,7 @@ export default function CircularMotion() {
     const perpY =  (objX - cx) / (params.R * scale + 1e-9);
     drawMixedText(ctx, midX + perpX * 22 * s, midY + perpY * 22 * s,
       [{ text: 'R', italic: true }],
-      { fontSize: fs, color: '#64748b', align: 'center' });
+      { fontSize: fs, color: '#475569', align: 'center' });
 
     // θ arc from +x axis to current position
     if (Math.abs(state.theta) > 0.08) {
@@ -134,7 +134,7 @@ export default function CircularMotion() {
     }
 
     // Centre dot
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = '#475569';
     ctx.beginPath(); ctx.arc(cx, cy, 5 * s, 0, 2 * Math.PI); ctx.fill();
 
     // Object
@@ -270,7 +270,7 @@ export default function CircularMotion() {
             <span style={{ color: 'var(--color-accel-radial)',    fontWeight: 600 }}>→ <InlineMath math="\vec{a}_r" /></span>
             <span style={{ color: 'var(--color-accel-tangential)', fontWeight: 600 }}>→ <InlineMath math="\vec{a}_t" /></span>
             <span style={{ color: 'var(--color-accel)',           fontWeight: 600 }}>→ <InlineMath math="\vec{a}" /></span>
-            <span style={{ color: '#64748b',                      fontWeight: 600 }}>— trail</span>
+            <span style={{ color: '#475569',                      fontWeight: 600 }}>— trail</span>
           </div>
           <div className="sim-stage" style={{ ['--sim-stage-h' as string]: '420px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />

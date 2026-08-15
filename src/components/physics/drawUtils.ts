@@ -564,7 +564,7 @@ export function drawMotionGraph(
     const yVal = yHi - (i / ticks) * ySpan;
     drawMixedText(ctx, plotX - 6, mapY(yVal), [{ text: yVal.toFixed(Math.abs(yVal) >= 10 ? 0 : 1) }], {
       fontSize: 11,
-      color: '#64748b',
+      color: '#475569',
       align: 'right',
       baseline: 'middle',
     });
@@ -586,7 +586,7 @@ export function drawMotionGraph(
       const tVal = tMin + (i / tTicks) * tSpan;
       drawMixedText(ctx, mapT(tVal), plotY + plotH + 12, [{ text: tVal.toFixed(tSpan > 8 ? 0 : 1) }], {
         fontSize: 11,
-        color: '#64748b',
+        color: '#475569',
         align: 'center',
         baseline: 'middle',
       });

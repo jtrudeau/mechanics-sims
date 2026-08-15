@@ -236,9 +236,9 @@ export default function FrictionAppliedForce() {
     const ticks = [0, 10, 20, 30, 40, 50];
     for (const v of ticks) {
       drawMixedText(ctx, mapFx(v), padT + chartH + 12,
-        [{ text: v.toString() }], { fontSize: 11, color: '#64748b', align: 'center' });
+        [{ text: v.toString() }], { fontSize: 11, color: '#475569', align: 'center' });
       drawMixedText(ctx, padL - 6, mapFy(v),
-        [{ text: v.toString() }], { fontSize: 11, color: '#64748b', align: 'right' });
+        [{ text: v.toString() }], { fontSize: 11, color: '#475569', align: 'right' });
     }
 
     // X-axis title:  F_app (N)
@@ -308,7 +308,7 @@ export default function FrictionAppliedForce() {
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
           <div style={{ borderTop: '1px solid var(--border-color)', background: '#fff' }}>
-            <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>
+            <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
               Friction <InlineMath math="f" /> vs Applied Force <InlineMath math="F_{\text{app}}" />
             </div>
             <div style={{ width: '100%', height: '220px' }}>

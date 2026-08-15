@@ -180,7 +180,7 @@ export default function RotationalKinematics() {
       cx,
       sceneH - 14,
       [{ text: 'fixed axis · θ unwrapped on graphs' }],
-      { fontSize: 12, color: '#64748b', align: 'center', baseline: 'bottom' }
+      { fontSize: 12, color: '#475569', align: 'center', baseline: 'bottom' }
     );
 
     const tA = Math.min(params.tA, params.tB);
@@ -260,7 +260,7 @@ export default function RotationalKinematics() {
             <span style={{ color: 'var(--color-accel)', fontWeight: 600 }}>α–t</span>
             <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>ω–t</span>
             <span style={{ color: 'var(--color-gravity)', fontWeight: 600 }}>θ–t</span>
-            <span style={{ marginLeft: 'auto', color: '#64748b' }}>
+            <span style={{ marginLeft: 'auto', color: '#475569' }}>
               cursor t = {tCursor.toFixed(2)} s
             </span>
           </div>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { SolutionUnlock } from '../components/SolutionUnlock';
 import { forTeachers } from '../content/forTeachers';
 import { TOPIC_GROUP_LABELS } from '../content/simulations';
 import type { TopicGroup } from '../content/types';
@@ -31,6 +32,8 @@ export default function ForTeachers() {
         <h1>{suiteTitle}</h1>
         <p className="home-lede textbook-font">{courseLine}</p>
       </header>
+
+      <SolutionUnlock />
 
       <div className="teachers-grid">
         <section className="glass-panel">

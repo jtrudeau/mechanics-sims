@@ -1,51 +1,66 @@
-# Mechanics Simulations (SN1 Physics)
+# SN1 Mechanics Simulations
 
-A suite of interactive physics simulations designed specifically for the SN1 mechanics curriculum. This project bridges the gap between static textbook theory and dynamic physical phenomena, providing students with immediate, interactive feedback as they explore core concepts in classical mechanics.
+Interactive figures for college Mechanics (**203-SN1-RE**) and related classical mechanics courses. Each simulation pairs a live canvas with equations, free-body diagrams, and graphs so students can predict, interact, and explain.
 
-## Design Philosophy
+**Author:** [Joel Trudeau](mailto:jtrudeau@dawsoncollege.qc.ca), Physics, Dawson College (office 7A.20, local 4019).
 
-This project takes a "Guided Companion" approach to interactive learning:
-1.  **Rigorous Typesetting:** All physics variables, equations, and textbook text are typeset using KaTeX and the STIX Two Text serif font to match the visual rigor of academic publications.
-2.  **Immediate Interactivity:** The theoretical framing sits directly alongside the simulation controls. Students are actively prompted to change variables and immediately observe the kinematic or dynamic consequences.
-3.  **Modern Aesthetics:** The application uses a clean, glassmorphic UI, ensuring that the tool feels premium and engaging.
+MIT License. You are welcome to use and adapt the suite in your own classroom.
 
-## Included Simulations
+## For teachers
 
-1.  **Instantaneous Velocity:** Explores the limit definition of velocity ($v = \lim_{\Delta t \to 0} \frac{\Delta x}{\Delta t}$) using dynamic secant and tangent lines on a position-time graph.
-2.  **Friction vs. Applied Force:** Demonstrates the breakaway point from static to kinetic friction, with real-time vector visualization.
-3.  **Circular Motion:** Visualizes the relationship between tangential and radial acceleration components in both uniform and non-uniform circular motion.
-4.  **Newton's 3rd Law:** A multi-body simulation demonstrating that internal interaction forces ($F_{12}$ and $F_{21}$) are always equal and opposite, regardless of mass disparities.
+Share the site with students as you would any other web resource. There is no sign-in.
 
-## For Educators: How to Use and Modify
+**Simulations** — open a topic, set parameters, and use Play. Collapse the sidebar or use **Widen canvas** when projecting.
 
-This repository is completely open source (MIT License). You are encouraged to fork, modify, and adapt these simulations for your own physics classroom.
+**Tips & Revision** — learning goals, operating notes, common difficulties, and revision problems that can load a matching control setup.
 
-### Prerequisites
+**Problem sets** (`/problems`) — numeric and multiple-choice checks in the browser. Progress stays on that device only.
 
-You will need [Node.js](https://nodejs.org/) installed on your machine.
+**For Teachers** (`/for-teachers`) — a short classroom pattern, suggested topic order, and the control to reveal hints and worked solutions.
 
-### Local Development
+### Keeping solutions out of student view
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/jtrudeau/mechanics-sims.git
-    cd mechanics-sims/app
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the local development server:
-    ```bash
-    npm run dev
-    ```
+Hints and worked solutions are **hidden by default**. Check still grades an attempt (correct / not yet) without showing the write-up.
 
-### Customizing the Content
+Unlock from **For Teachers** with the instructor passphrase. Unlock lasts for that browser tab; use **Lock solutions** (or close the tab) before handing a machine to a student. **Quiz mode** (`?quiz=1` on a Tips & Revision page) keeps answers hidden even after unlock, which is useful on a projector.
 
-The layout of the app is component-driven via React and Vite. 
-*   **To change the textbook text:** Open any file in `src/pages/simulations/` and modify the JSX inside the `<SimulationLayout>`'s `theoryContent` prop.
-*   **To change physics parameters:** Adjust the `useState` default values and ranges within the specific simulation component.
+This is a classroom deterrent, not true access control. The site is a static web app with no accounts: a determined student can still inspect the page source. Do not put the passphrase in student-facing materials or in this README.
+
+To set your own passphrase at build time, put the SHA-256 hex digest (lowercase, of the trimmed lowercase passphrase) in `VITE_TEACHER_UNLOCK_HASH`.
+
+## Run locally
+
+You need [Node.js](https://nodejs.org/).
+
+```bash
+git clone https://github.com/jtrudeau/mechanics-sims.git
+cd mechanics-sims
+npm install
+npm run dev
+```
+
+Then open the URL Vite prints (usually `http://localhost:5173`).
+
+```bash
+npm run build          # production build
+npm run build:gh-pages # same, with base path /mechanics-sims/
+```
+
+## Simulations
+
+Kinematics, forces, then energy and rotation:
+
+1. Instantaneous velocity
+2. Kinematics graphs
+3. Friction
+4. Circular motion
+5. Newton’s third law
+6. Newton’s second law (cart)
+7. Force table
+8. Work–energy track
+9. Fixed-axis rotation
+10. Rotational kinematics
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 Joel Trudeau.

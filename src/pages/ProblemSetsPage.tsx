@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Check, FlaskConical, RotateCcw, X } from 'lucide-react';
 import { MathText } from '../components/MathText';
+import { SolutionUnlock, SolutionsLockedNote } from '../components/SolutionUnlock';
 import { problemCount, problemSets, type StudentProblem } from '../content/problemSets';
 import { TOPIC_GROUP_LABELS } from '../content/simulations';
 import type { TopicGroup } from '../content/types';
 import { simPathWithParams } from '../hooks/useQuerySeed';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useTeacherUnlock } from '../hooks/useTeacherUnlock';
 
 const STORAGE_KEY = 'sn1-problem-progress-v1';
 
@@ -38,6 +40,7 @@ export default function ProblemSetsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const topic = (searchParams.get('topic') ?? 'all') as TopicGroup | 'all';
   const [progress, setProgress] = useState<ProgressMap>(() => loadProgress());
+  const { unlocked } = useTeacherUnlock();
 
   const sets = useMemo(
     () => (topic === 'all' ? problemSets : problemSets.filter((s) => s.topicGroup === topic)),
@@ -80,7 +83,8 @@ export default function ProblemSetsPage() {
         <h1>Problem sets</h1>
         <p className="home-lede textbook-font">
           Work numerically or by multiple choice, then check. Each item can load the matching
-          simulation. Progress is stored in this browser only.
+          simulation. Progress is stored in this browser only. Hints and worked solutions stay
+          hidden until a teacher unlocks them.
         </p>
         <div className="problems-progress-row">
           <span className="topic-chip">
@@ -91,6 +95,8 @@ export default function ProblemSetsPage() {
             Reset progress
           </button>
         </div>
+        <SolutionUnlock compact />
+        {!unlocked && <SolutionsLockedNote />}
       </header>
 
       <div className="problems-filters">
@@ -132,6 +138,7 @@ export default function ProblemSetsPage() {
                   problem={problem}
                   record={progress[problem.id]}
                   onCheck={record}
+                  unlocked={unlocked}
                 />
               ))}
             </ol>
@@ -147,11 +154,13 @@ function ProblemCard({
   problem,
   record,
   onCheck,
+  unlocked,
 }: {
   index: number;
   problem: StudentProblem;
   record?: { status: 'correct' | 'wrong'; attempts: number };
   onCheck: (id: string, ok: boolean) => void;
+  unlocked: boolean;
 }) {
   const [input, setInput] = useState('');
   const [choice, setChoice] = useState('');
@@ -231,19 +240,21 @@ function ProblemCard({
         </p>
       )}
 
-      <details className="guide-reveal">
-        <summary>Hint</summary>
-        <p>
-          <MathText text={problem.hint} />
-        </p>
-      </details>
-      {feedback !== 'idle' && (
-        <details className="guide-reveal answer">
-          <summary>Solution</summary>
-          <p>
-            <MathText text={problem.solution} />
-          </p>
-        </details>
+      {unlocked && (
+        <>
+          <details className="guide-reveal">
+            <summary>Hint</summary>
+            <p>
+              <MathText text={problem.hint} />
+            </p>
+          </details>
+          <details className="guide-reveal answer">
+            <summary>Solution</summary>
+            <p>
+              <MathText text={problem.solution} />
+            </p>
+          </details>
+        </>
       )}
 
       {simPath && (

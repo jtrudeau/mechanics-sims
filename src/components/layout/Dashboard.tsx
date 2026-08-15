@@ -28,6 +28,7 @@ import {
   getSimulation,
 } from '../../content/simulations';
 import type { SimIconName } from '../../content/types';
+import { TeacherUnlockProvider } from '../../hooks/useTeacherUnlock';
 import { LayoutContext } from './LayoutContext';
 
 const ICON_MAP: Record<SimIconName, LucideIcon> = {
@@ -207,7 +208,7 @@ const Sidebar = ({
               <Box size={18} />
               SN1 Mechanics
             </h2>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
               Interactive Physics
             </p>
           </div>
@@ -280,6 +281,7 @@ export const Dashboard = () => {
     <LayoutContext.Provider
       value={{ sidebarCollapsed, setSidebarCollapsed, wideCanvas, setWideCanvas }}
     >
+      <TeacherUnlockProvider>
       <div className={`app-container${wideCanvas ? ' wide-canvas' : ''}`}>
         <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((c) => !c)} />
 
@@ -334,6 +336,7 @@ export const Dashboard = () => {
           </main>
         </div>
       </div>
+      </TeacherUnlockProvider>
     </LayoutContext.Provider>
   );
 };

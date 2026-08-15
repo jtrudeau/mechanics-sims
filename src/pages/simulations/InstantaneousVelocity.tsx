@@ -93,20 +93,20 @@ export default function InstantaneousVelocity() {
     ctx.beginPath(); ctx.moveTo(padL, H - padB); ctx.lineTo(W - padR, H - padB); ctx.stroke();
 
     // ── Tick labels ───────────────────────────────────────────────
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = '#475569';
 
     // T-axis (horizontal) ticks
     for (let i = 0; i <= numTTicks; i++) {
       const tVal = tMin + (i / numTTicks) * (tMax - tMin);
       const px = mapT(tVal);
-      drawMixedText(ctx, px, H - padB + 16, [{ text: tVal.toFixed(1) }], { fontSize: 13, color: '#64748b', align: 'center' });
+      drawMixedText(ctx, px, H - padB + 16, [{ text: tVal.toFixed(1) }], { fontSize: 13, color: '#475569', align: 'center' });
     }
 
     // X-axis (vertical) ticks
     for (let i = 0; i <= numXTicks; i++) {
       const xVal = xMin + (i / numXTicks) * (xMax - xMin);
       const py = mapX(xVal);
-      drawMixedText(ctx, padL - 10, py, [{ text: xVal.toFixed(1) }], { fontSize: 13, color: '#64748b', align: 'right' });
+      drawMixedText(ctx, padL - 10, py, [{ text: xVal.toFixed(1) }], { fontSize: 13, color: '#475569', align: 'right' });
     }
 
     // ── Axis titles ───────────────────────────────────────────────
@@ -220,7 +220,7 @@ export default function InstantaneousVelocity() {
     );
 
     // ── Drop lines from t₁ and t₂ ─────────────────────────────────
-    ctx.strokeStyle = '#64748b';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 4]);
     ctx.beginPath(); ctx.moveTo(mapT(params.t1), H - padB); ctx.lineTo(mapT(params.t1), mapX(x1)); ctx.stroke();

@@ -1,14 +1,18 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, FlaskConical } from 'lucide-react';
 import { MathText } from '../components/MathText';
+import { SolutionUnlock, SolutionsLockedNote } from '../components/SolutionUnlock';
 import { getSimulation, TOPIC_GROUP_LABELS } from '../content/simulations';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { simPathWithParams, useQuizMode } from '../hooks/useQuerySeed';
+import { useTeacherUnlock } from '../hooks/useTeacherUnlock';
 
 export default function SimGuidePage() {
   const { slug = '' } = useParams();
   const sim = getSimulation(slug);
   const quiz = useQuizMode();
+  const { unlocked } = useTeacherUnlock();
+  const showAnswers = unlocked && !quiz;
 
   usePageTitle(sim ? `Tips: ${sim.shortTitle} · SN1 Mechanics` : 'Tips & Revision · SN1 Mechanics');
 
@@ -49,7 +53,7 @@ export default function SimGuidePage() {
           )}
           {quiz && (
             <Link to={sim.guidePath} className="btn-link secondary">
-              Show answers
+              Exit quiz mode
             </Link>
           )}
         </div>
@@ -106,10 +110,19 @@ export default function SimGuidePage() {
           <h2>Revision problems</h2>
           <p className="text-muted">
             {quiz
-              ? 'Answer sections are hidden. Use Load setup to open the simulation with the parameters for each problem.'
-              : 'Work each problem before revealing the hint or solution. Load setup opens the simulation with matching controls.'}
+              ? 'Quiz mode keeps hints and solutions hidden on this page, including after unlock. Use Load setup to open the matching simulation.'
+              : showAnswers
+                ? 'Work each problem before opening the hint or solution. Load setup opens the simulation with matching controls.'
+                : 'Work each problem, then Load setup to open the matching simulation. Hints and solutions stay hidden until a teacher unlocks them.'}
           </p>
         </div>
+        {!quiz && !showAnswers && <SolutionsLockedNote />}
+        {!quiz && <SolutionUnlock compact />}
+        {quiz && unlocked && (
+          <p className="solutions-locked-note">
+            This tab is unlocked, but quiz mode is on — answers stay hidden for projection.
+          </p>
+        )}
 
         <div className="guide-problem-list">
           {guide.revisionProblems.map((problem, index) => (
@@ -142,7 +155,7 @@ export default function SimGuidePage() {
                 )}
               </div>
 
-              {!quiz && (
+              {showAnswers && (
                 <>
                   <details className="guide-reveal">
                     <summary>Hint</summary>

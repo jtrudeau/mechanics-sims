@@ -299,7 +299,7 @@ export default function KinematicsGraphs() {
             <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>v–t</span>
             <span style={{ color: 'var(--color-gravity)', fontWeight: 600 }}>x–t</span>
             <span style={{ color: '#1d4ed8', fontWeight: 600 }}>secant slope</span>
-            <span style={{ marginLeft: 'auto', color: '#64748b' }}>
+            <span style={{ marginLeft: 'auto', color: '#475569' }}>
               cursor t = {tCursor.toFixed(2)} s
             </span>
           </div>

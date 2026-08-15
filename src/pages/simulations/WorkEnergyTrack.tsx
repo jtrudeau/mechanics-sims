@@ -475,7 +475,7 @@ function drawTrackScene(
 
   drawMixedText(ctx, trackBox.x + trackBox.w / 2, axisY + 20,
     [{ text: 'position x (m)' }],
-    { fontSize: 12, color: '#64748b', align: 'center' });
+    { fontSize: 12, color: '#475569', align: 'center' });
 
   for (let tick = Math.ceil(preset.xMin / 2) * 2; tick <= preset.xMax; tick += 2) {
     const px = mapX(tick);
@@ -487,7 +487,7 @@ function drawTrackScene(
     ctx.stroke();
     drawMixedText(ctx, px, axisY + 10, [{ text: tick.toFixed(0) }], {
       fontSize: 11,
-      color: '#64748b',
+      color: '#475569',
       align: 'center',
       baseline: 'top'
     });
@@ -655,7 +655,7 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, rect: { x: number; y: num
   ctx.setLineDash([]);
   drawMixedText(ctx, chart.x + chart.w, initialY - 5, [{ text: 'initial E' }], {
     fontSize: 10,
-    color: '#64748b',
+    color: '#475569',
     align: 'right',
     baseline: 'bottom'
   });
@@ -771,7 +771,7 @@ function drawWorkGraph(
 
   drawMixedText(ctx, chart.x + chart.w / 2, rect.y + rect.h - 6, [{ text: 'position x' }], {
     fontSize: 11,
-    color: '#64748b',
+    color: '#475569',
     align: 'center',
     baseline: 'bottom'
   });
@@ -780,7 +780,7 @@ function drawWorkGraph(
   ctx.rotate(-Math.PI / 2);
   drawMixedText(ctx, 0, 0, [{ text: 'F tangent (N)' }], {
     fontSize: 11,
-    color: '#64748b',
+    color: '#475569',
     align: 'center'
   });
   ctx.restore();
@@ -810,7 +810,7 @@ function drawEndStop(ctx: CanvasRenderingContext2D, x: number, y: number, direct
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(direction === 1 ? -0.25 : 0.25);
-  ctx.strokeStyle = '#64748b';
+  ctx.strokeStyle = '#475569';
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(0, -26);

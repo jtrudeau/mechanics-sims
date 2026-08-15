@@ -237,15 +237,15 @@ export default function FixedAxisRotation() {
     });
 
     if (params.forceRadius > 0.02) {
-      const leverTip = drawArrow(ctx, pivotX, pivotY, params.forceRadius * pxPerMeter, -theta, '#64748b', 2.5 * s);
+      const leverTip = drawArrow(ctx, pivotX, pivotY, params.forceRadius * pxPerMeter, -theta, '#475569', 2.5 * s);
       const labelPoint = pointFromPivot(pivotX, pivotY, params.forceRadius * pxPerMeter * 0.5, theta);
       const offset = normalOffset(theta, 18 * s);
       drawMixedText(ctx, labelPoint.x + offset.x, labelPoint.y + offset.y, [{ text: 'r', italic: true }], {
         fontSize: Math.round(16 * s),
-        color: '#64748b',
+        color: '#475569',
         align: 'center'
       });
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#475569';
       ctx.beginPath();
       ctx.arc(leverTip.hx, leverTip.hy, 3.5 * s, 0, TWO_PI);
       ctx.fill();
@@ -306,7 +306,7 @@ export default function FixedAxisRotation() {
           <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '14px', fontSize: '13px', background: '#f8fafc', flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ color: 'var(--color-force-app)', fontWeight: 600 }}>{'-> '}<InlineMath math="\vec{F}" /></span>
             <span style={{ color: 'var(--color-accel-tangential)', fontWeight: 600 }}>{'-> '}<InlineMath math="\vec{F}_t" /></span>
-            <span style={{ color: '#64748b', fontWeight: 600 }}>{'-> '}<InlineMath math="\vec{r}" /></span>
+            <span style={{ color: '#475569', fontWeight: 600 }}>{'-> '}<InlineMath math="\vec{r}" /></span>
             <span style={{ color: 'var(--color-vel)', fontWeight: 600 }}>{'-> '}<InlineMath math="\vec{v}_t" /></span>
             <span style={{ color: '#7c2d12', fontWeight: 600 }}>curved <InlineMath math="\tau_{\text{net}}" /></span>
             <span style={{ marginLeft: 'auto', fontWeight: 700, fontSize: '12px', padding: '3px 12px', borderRadius: 99, background: torques.netTorque >= 0 ? '#dcfce7' : '#fee2e2', color: torques.netTorque >= 0 ? '#166534' : '#991b1b' }}>
@@ -488,7 +488,7 @@ function drawBody(
       ctx.stroke();
     }
 
-    ctx.strokeStyle = '#64748b';
+    ctx.strokeStyle = '#475569';
     ctx.lineWidth = 1.5;
     for (const angle of [theta, theta + Math.PI / 2]) {
       const a = -angle;
@@ -553,7 +553,7 @@ function drawReferenceLine(ctx: CanvasRenderingContext2D, cx: number, cy: number
   ctx.setLineDash([]);
   drawMixedText(ctx, Math.min(width - 18, cx + width * 0.28 + 10), cy - 12, [{ text: 'reference' }], {
     fontSize: 11,
-    color: '#94a3b8',
+    color: '#475569',
     align: 'right'
   });
   ctx.restore();

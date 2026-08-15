@@ -5,7 +5,8 @@
   --bg-color: #f8fafc;
   --panel-bg: #ffffff;
   --text-main: #0f172a;
-  --text-muted: #64748b;
+  --text-secondary: #334155;
+  --text-muted: #475569;
   --border-color: #e2e8f0;
 
   --primary: #3b82f6;
@@ -43,6 +44,8 @@ body {
   font-family: var(--font-ui);
   background-color: var(--bg-color);
   color: var(--text-main);
+  font-size: 15px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -107,7 +110,9 @@ input[type="range"] {
   overflow-y: clip;
 }
 
-input[type="number"] {
+input[type="number"],
+input[type="text"],
+input[type="password"] {
   width: 100%;
   padding: 8px 12px;
   border-radius: var(--radius-sm);
@@ -118,7 +123,13 @@ input[type="number"] {
   font-size: 14px;
 }
 
-input[type="number"]:focus {
+input::placeholder {
+  color: #64748b;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+input[type="password"]:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
@@ -182,7 +193,19 @@ h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.0
 h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
 h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .text-muted { color: var(--text-muted); }
-.textbook-font { font-family: var(--font-textbook); font-size: 15px; line-height: 1.6; }
+.textbook-font { font-family: var(--font-textbook); font-size: 16px; line-height: 1.65; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* ─── Nav ─────────────────────────────────────────────────────── */
 
@@ -195,7 +218,7 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   text-decoration: none;
   color: var(--text-main);
   font-weight: 500;
-  font-size: 13px;
+  font-size: 14px;
   transition: all 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
@@ -228,11 +251,11 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 }
 
 .nav-group-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   padding: 4px 10px 6px;
 }
 
@@ -428,11 +451,11 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 
 .sim-section-heading {
   font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
   margin-bottom: 14px;
 }
 
@@ -464,7 +487,7 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .home-lede {
   max-width: 540px;
   margin: 8px 0 20px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .home-cta-row,
@@ -549,8 +572,8 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 }
 
 .home-card-blurb {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.55;
   flex: 1;
   margin-bottom: 8px;
 }
@@ -598,7 +621,7 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
@@ -632,9 +655,9 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 
 .guide-list {
   padding-left: 18px;
-  line-height: 1.55;
   color: var(--text-main);
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.65;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -701,7 +724,7 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .guide-check ol {
@@ -745,8 +768,8 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 
 .guide-reveal p {
   padding: 0 14px 12px;
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--text-main);
 }
 
@@ -937,7 +960,7 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .nav-sublink {
   font-size: 12px !important;
   padding: 4px 10px 4px 36px !important;
-  color: var(--text-muted) !important;
+  color: var(--text-secondary) !important;
   font-weight: 500 !important;
 }
 
@@ -1199,4 +1222,64 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 
 .sim-layout.is-wide .sim-companion {
   display: none;
+}
+
+/* ─── Solution unlock ────────────────────────────────────────── */
+
+.solution-unlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.solution-unlock h2 {
+  margin-bottom: 0;
+}
+
+.solution-unlock p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.solution-unlock-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.solution-unlock-row input,
+.solution-unlock.compact input {
+  width: auto;
+  min-width: 180px;
+  flex: 1;
+}
+
+.solution-unlock.compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.solution-unlock-error {
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.solutions-locked-note {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.solutions-locked-note a {
+  color: var(--primary);
+  font-weight: 600;
 }

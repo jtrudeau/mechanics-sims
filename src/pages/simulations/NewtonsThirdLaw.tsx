@@ -219,7 +219,7 @@ export default function NewtonsThirdLaw() {
     for (const vt of vTicks) {
       drawMixedText(ctx, padL - 6, mapV(vt),
         [{ text: vt.toFixed(0) }],
-        { fontSize: 11, color: '#64748b', align: 'right' });
+        { fontSize: 11, color: '#475569', align: 'right' });
     }
 
     // Y-axis title:  v  (m/s)
@@ -234,7 +234,7 @@ export default function NewtonsThirdLaw() {
     // X-axis title
     drawMixedText(ctx, padL + chartW / 2, h - 4,
       [{ text: 'time →' }],
-      { fontSize: 11, color: '#94a3b8', align: 'center', baseline: 'bottom' });
+      { fontSize: 11, color: '#475569', align: 'center', baseline: 'bottom' });
 
     // Velocity curve
     if (hist.length > 1) {
@@ -290,7 +290,7 @@ export default function NewtonsThirdLaw() {
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
           <div style={{ borderTop: '1px solid var(--border-color)', background: '#fff' }}>
-            <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>
+            <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
               Velocity <InlineMath math="v" /> vs time
             </div>
             <div style={{ width: '100%', height: '160px' }}>

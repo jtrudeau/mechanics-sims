@@ -246,7 +246,7 @@ export default function ForceTableEquilibrium() {
         <>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', marginBottom: '12px' }}>
             <thead>
-              <tr style={{ color: '#64748b', textAlign: 'right' }}>
+              <tr style={{ color: '#475569', textAlign: 'right' }}>
                 <th style={{ textAlign: 'left', fontWeight: 600, padding: '0 6px 6px 0' }}>Force</th>
                 <th style={{ fontWeight: 600, padding: '0 6px 6px' }}><InlineMath math="F_x" /></th>
                 <th style={{ fontWeight: 600, padding: '0 0 6px 6px' }}><InlineMath math="F_y" /></th>
@@ -355,7 +355,7 @@ function drawTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = '#64748b';
+  ctx.strokeStyle = '#475569';
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -388,7 +388,7 @@ function drawTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius
     const innerX = cx + (radius - tickLength) * Math.cos(angle);
     const innerY = cy + (radius - tickLength) * Math.sin(angle);
 
-    ctx.strokeStyle = deg % 30 === 0 ? '#64748b' : '#cbd5e1';
+    ctx.strokeStyle = deg % 30 === 0 ? '#475569' : '#cbd5e1';
     ctx.lineWidth = deg % 30 === 0 ? 1.5 : 1;
     ctx.beginPath();
     ctx.moveTo(innerX, innerY);
@@ -405,8 +405,8 @@ function drawTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius
     ctx.fillText(`${deg} deg`, cx + (radius + 22 * s) * Math.cos(angle), cy + (radius + 22 * s) * Math.sin(angle));
   }
 
-  drawMixedText(ctx, cx + radius - 12, cy + 16, [{ text: '+x' }], { fontSize: Math.round(12 * s), color: '#64748b', align: 'right' });
-  drawMixedText(ctx, cx + 16, cy - radius + 12, [{ text: '+y' }], { fontSize: Math.round(12 * s), color: '#64748b', align: 'left' });
+  drawMixedText(ctx, cx + radius - 12, cy + 16, [{ text: '+x' }], { fontSize: Math.round(12 * s), color: '#475569', align: 'right' });
+  drawMixedText(ctx, cx + 16, cy - radius + 12, [{ text: '+y' }], { fontSize: Math.round(12 * s), color: '#475569', align: 'left' });
 
   ctx.restore();
 }

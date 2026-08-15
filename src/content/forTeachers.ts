@@ -34,11 +34,12 @@ export const forTeachers = {
     ],
   },
   revisionUse: [
-    'Assign one or two revision problems as an exit ticket; answers may be revealed for self-check.',
-    'For a closed warm-up, open the guide with ?quiz=1 (or use Quiz mode) so answer sections stay hidden.',
+    'Hints and worked solutions stay hidden until you unlock them (passphrase on this page). Check still grades an attempt without showing the write-up.',
+    'Unlock lasts for this browser tab. Lock (or close the tab) before a student uses the same machine.',
+    'For a closed warm-up on a projector, open Tips & Revision with ?quiz=1 so answers stay hidden even if this tab is unlocked.',
     'Use Load setup on a problem to open the simulation with matching control values.',
     'The Problem sets page (/problems) checks numeric and multiple-choice answers in the browser; progress is local only.',
-    'Ask pairs to agree on an answer before revealing the explanation.',
+    'Ask pairs to agree on an answer before you unlock and walk through the explanation.',
   ],
   suggestedSequence: [
     'Instantaneous velocity, then Kinematics graphs (slope and area on x–t, v–t, a–t).',
@@ -52,6 +53,7 @@ export const forTeachers = {
     'On a projector, collapse the sidebar and keep attention on the canvas; the companion column scrolls separately on desktop.',
     'On phones and small tablets, use the menu in the top bar (the desktop sidebar is hidden below 540 px width).',
     'Students may keep the simulation and Tips & Revision open in two tabs, or use the header link.',
+    'Do not put the solution passphrase in student handouts. It is a classroom deterrent, not an account system.',
   ],
   simIndex: simulations.map((s) => ({
     title: s.shortTitle,
@@ -77,11 +79,11 @@ export const aboutPage = {
   projectNotes: [
     'The simulations began as standalone HTML prototypes and were consolidated into a single React application so that layout, vector styling, and pedagogical scaffolding stay consistent across topics.',
     'Each simulation pairs a live canvas with a Tips & Revision page: learning goals, operating notes, common difficulties, and formative problems that can load a matching control setup.',
-    'A Problem sets hub lets students check numeric and multiple-choice answers in the browser; progress stays on the device.',
+    'A Problem sets hub lets students check numeric and multiple-choice answers in the browser; hints and worked solutions stay locked until an instructor unlocks them on this device. Progress stays on the device.',
     'The For Teachers page describes a short classroom pattern and a suggested topic order. Hosting may use GitHub Pages or institutional servers as deployment decisions mature.',
   ],
   acknowledgements:
     'Course framing follows the Dawson College Mechanics (203-SN1-RE) syllabus. Colleagues teaching other sections of the same course share that curriculum context.',
   repoNote:
-    'Source and research notes live in the sn1-mechanics-simulations project. The runnable app is under app/.',
+    'Source is at github.com/jtrudeau/mechanics-sims. Clone, install, and run from the repository root.',
 };
