@@ -21,7 +21,8 @@ export default function NewtonsThirdLaw() {
     }
   }, []);
 
-  const [params, setParams] = useState({ m1: 5.0, m2: 3.0, F_app: 16.0 });
+  const DEFAULT_PARAMS = { m1: 5.0, m2: 3.0, F_app: 16.0 };
+  const [params, setParams] = useState(DEFAULT_PARAMS);
   const [state,  setState]  = useState({ x: -8, v: 0 });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +43,7 @@ export default function NewtonsThirdLaw() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => {
       setState({ x: -8, v: 0 });
@@ -272,6 +273,7 @@ export default function NewtonsThirdLaw() {
       actionsContent={
         <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
+          <button className="secondary" onClick={() => stepForward(0.05)} title="Advance 1 frame (+0.05s)">Step</button>
           <button className="secondary" onClick={reset}>Reset</button>
         </>
       }
@@ -322,9 +324,9 @@ export default function NewtonsThirdLaw() {
 
       controlsContent={
         <>
-          <ControlRow label={<>Mass <InlineMath math="m_1" /> (kg)</>}              name="m1"    min="1"   max="20" step="0.5" value={params.m1} onChange={handleChange} />
-          <ControlRow label={<>Mass <InlineMath math="m_2" /> (kg)</>}              name="m2"    min="1"   max="20" step="0.5" value={params.m2} onChange={handleChange} />
-          <ControlRow label={<><InlineMath math="F_{\text{app}}" /> (N)</>}         name="F_app" min="-50" max="50" step="1"   value={params.F_app} onChange={handleChange} />
+          <ControlRow label={<>Mass <InlineMath math="m_1" /> (kg)</>}              name="m1"    min="1"   max="20" step="0.5" value={params.m1} onChange={handleChange} onReset={() => setParams(p => ({ ...p, m1: DEFAULT_PARAMS.m1 }))} />
+          <ControlRow label={<>Mass <InlineMath math="m_2" /> (kg)</>}              name="m2"    min="1"   max="20" step="0.5" value={params.m2} onChange={handleChange} onReset={() => setParams(p => ({ ...p, m2: DEFAULT_PARAMS.m2 }))} />
+          <ControlRow label={<><InlineMath math="F_{\text{app}}" /> (N)</>}         name="F_app" min="-50" max="50" step="1"   value={params.F_app} onChange={handleChange} onReset={() => setParams(p => ({ ...p, F_app: DEFAULT_PARAMS.F_app }))} />
         </>
       }
 
@@ -356,7 +358,7 @@ export default function NewtonsThirdLaw() {
   );
 }
 
-const ControlRow = ({ label, name, min, max, step, value, onChange }: {
+const ControlRow = ({ label, name, min, max, step, value, onChange, onReset }: {
   label: React.ReactNode;
   name: string;
   min: string;
@@ -364,12 +366,32 @@ const ControlRow = ({ label, name, min, max, step, value, onChange }: {
   step: string;
   value: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onReset?: () => void;
 }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 70px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 68px auto', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
     <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
     <input type="range" name={name} min={min} max={max} step={step}
       value={value} onChange={onChange} />
     <input type="number" name={name} value={value}
       onChange={onChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
+    {onReset && (
+      <button
+        type="button"
+        onClick={onReset}
+        title="Reset parameter to default"
+        style={{
+          padding: '2px 6px',
+          fontSize: '11px',
+          lineHeight: 1,
+          border: '1px solid var(--border-color)',
+          borderRadius: '4px',
+          background: 'transparent',
+          cursor: 'pointer',
+          color: 'var(--text-muted)'
+        }}
+      >
+        ↺
+      </button>
+    )}
   </div>
 );

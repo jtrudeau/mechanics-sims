@@ -109,7 +109,7 @@ export default function RotationalKinematics() {
     [params.tMax]
   );
 
-  const { isRunning, toggle, reset } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => setTPlay(params.tA),
   });
@@ -282,6 +282,9 @@ export default function RotationalKinematics() {
         <>
           <button type="button" onClick={toggle}>
             {isRunning ? 'Pause' : 'Play'}
+          </button>
+          <button type="button" className="secondary" onClick={() => stepForward(0.05)} title="Advance 1 frame (+0.05s)">
+            Step
           </button>
           <button type="button" className="secondary" onClick={reset}>
             Reset

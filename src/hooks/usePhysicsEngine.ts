@@ -47,5 +47,11 @@ export function usePhysicsEngine({ onStep, onReset, maxDt = 0.05, initialRunning
     onReset();
   };
 
-  return { isRunning, toggle, reset };
+  const stepForward = (dt = 0.05) => {
+    setIsRunning(false);
+    lastTimeRef.current = null;
+    onStep(dt);
+  };
+
+  return { isRunning, toggle, reset, stepForward };
 }

@@ -43,7 +43,7 @@ export default function CircularMotion() {
     });
   }, [params.alpha]);
 
-  const { isRunning, toggle, reset } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => { setState({ theta: 0, w: params.w0 }); trailRef.current = []; }
   });
@@ -257,6 +257,7 @@ export default function CircularMotion() {
       actionsContent={
         <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
+          <button className="secondary" onClick={() => stepForward(0.05)} title="Advance 1 frame (+0.05s)">Step</button>
           <button className="secondary" onClick={reset}>Reset</button>
         </>
       }

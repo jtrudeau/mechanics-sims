@@ -1398,3 +1398,228 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   color: var(--primary);
   font-weight: 600;
 }
+
+/* ─── Unified 3-Layer Tabbed Hub Navigation ──────────────────── */
+
+.sim-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sim-tab-bar {
+  display: inline-flex;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  width: fit-content;
+  box-shadow: var(--shadow-sm);
+}
+
+.sim-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sim-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.sim-tab-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.btn-projector-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-projector-toggle.active {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #0f172a;
+}
+
+.btn-projector-toggle.secondary {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-projector-toggle:hover {
+  filter: brightness(0.95);
+}
+
+.sim-tab-content {
+  animation: tabFadeIn 0.16s ease-in;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Topic Hub (Tips & Homework inside Simulation Layout) ──── */
+
+.in-topic-hub {
+  max-width: 1280px;
+  width: 100%;
+}
+
+.in-topic-hub .guide-header,
+.in-topic-hub .problems-hero {
+  padding: 24px 28px;
+}
+
+.in-topic-hub .guide-header h2,
+.in-topic-hub .problems-hero h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.in-topic-hub .guide-header p,
+.in-topic-hub .problems-hero p {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 1100px;
+}
+
+.in-topic-hub .guide-grid {
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 20px;
+}
+
+.in-topic-hub .guide-section {
+  padding: 22px 26px;
+}
+
+.in-topic-hub .guide-section h2 {
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.in-topic-hub .guide-list {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.in-topic-hub .guide-list li {
+  margin-bottom: 8px;
+}
+
+.in-topic-hub .guide-problems {
+  margin-top: 28px;
+}
+
+.in-topic-hub .home-section-head h2 {
+  font-size: 22px;
+}
+
+.in-topic-hub .home-section-head p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.in-topic-hub .guide-problem-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.in-topic-hub .guide-problem {
+  padding: 24px 28px;
+}
+
+.in-topic-hub .guide-problem h3 {
+  font-size: 17px;
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.in-topic-hub .guide-problem-num {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.in-topic-hub .guide-check {
+  font-size: 15px;
+  line-height: 1.65;
+  padding: 14px 18px;
+}
+
+.in-topic-hub .problems-card {
+  padding: 24px 28px;
+  font-size: 16px;
+}
+
+.in-topic-hub .problems-card h3 {
+  font-size: 17px;
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.in-topic-hub .problems-choice {
+  font-size: 16px;
+  padding: 10px 14px;
+}
+
+.in-topic-hub .problems-answer-row {
+  margin-top: 14px;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.in-topic-hub .problems-answer-row input[type='text'] {
+  font-size: 16px;
+  padding: 8px 14px;
+  width: 170px;
+}
+
+.in-topic-hub .problems-answer-row button,
+.in-topic-hub .problems-choice button,
+.in-topic-hub .problems-choices button {
+  font-size: 15px;
+  padding: 8px 18px;
+}
+
+.in-topic-hub .problems-feedback {
+  font-size: 15px;
+}
+
+.in-topic-hub .guide-reveal summary {
+  font-size: 15px;
+}
+
+.in-topic-hub .guide-reveal p {
+  font-size: 15.5px;
+  line-height: 1.65;
+}
+
+

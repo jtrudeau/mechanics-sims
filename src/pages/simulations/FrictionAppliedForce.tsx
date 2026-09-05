@@ -7,10 +7,17 @@ import { useCanvasStage } from '../../hooks/useCanvasStage';
 
 const g = 9.8;
 
+const DEFAULT_PARAMS = {
+  mass: 5.0,
+  mu_s: 0.6,
+  mu_k: 0.4,
+  F_app: 10.0,
+};
+
 export default function FrictionAppliedForce() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const plotRef   = useRef<HTMLCanvasElement>(null);
-  const sceneWidthRef = useRef<number>(800);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const plotRef   = useRef<HTMLCanvasElement | null>(null);
+  const sceneWidthRef = useRef<number>(600);
   const stageGen = useCanvasStage(canvasRef);
 
   const [fontsReady, setFontsReady] = useState(false);
@@ -20,12 +27,7 @@ export default function FrictionAppliedForce() {
     }
   }, []);
 
-  const [params, setParams] = useState({
-    mass: 5.0,
-    mu_s: 0.6,
-    mu_k: 0.4,
-    F_app: 10.0
-  });
+  const [params, setParams] = useState(DEFAULT_PARAMS);
 
   const [state, setState] = useState({ x: 0, v: 0, a: 0, f_friction: 0 });
 
@@ -79,7 +81,7 @@ export default function FrictionAppliedForce() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => setState({ x: 0, v: 0, a: 0, f_friction: 0 })
   });
@@ -284,6 +286,7 @@ export default function FrictionAppliedForce() {
       actionsContent={
         <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
+          <button className="secondary" onClick={() => stepForward(0.05)} title="Advance 1 frame (+0.05s)">Step</button>
           <button className="secondary" onClick={reset}>Reset</button>
         </>
       }
@@ -336,10 +339,10 @@ export default function FrictionAppliedForce() {
 
       controlsContent={
         <>
-          <ControlRow label={<><InlineMath math="m" /> (kg)</>}                     name="mass"  min="1"  max="20" step="0.1"  value={params.mass} onChange={handleChange} />
-          <ControlRow label={<>Static <InlineMath math="\mu_s" /></>}               name="mu_s"  min="0"  max="1"  step="0.01" value={params.mu_s} onChange={handleChange} />
-          <ControlRow label={<>Kinetic <InlineMath math="\mu_k" /></>}              name="mu_k"  min="0"  max="1"  step="0.01" value={params.mu_k} onChange={handleChange} />
-          <ControlRow label={<><InlineMath math="F_{\text{app}}" /> (N)</>}         name="F_app" min="0" max="50" step="0.5" value={params.F_app} onChange={handleChange} />
+          <ControlRow label={<><InlineMath math="m" /> (kg)</>}                     name="mass"  min="1"  max="20" step="0.1"  value={params.mass} onChange={handleChange} onReset={() => setParams(p => ({ ...p, mass: DEFAULT_PARAMS.mass }))} />
+          <ControlRow label={<>Static <InlineMath math="\mu_s" /></>}               name="mu_s"  min="0"  max="1"  step="0.01" value={params.mu_s} onChange={handleChange} onReset={() => setParams(p => ({ ...p, mu_s: DEFAULT_PARAMS.mu_s }))} />
+          <ControlRow label={<>Kinetic <InlineMath math="\mu_k" /></>}              name="mu_k"  min="0"  max="1"  step="0.01" value={params.mu_k} onChange={handleChange} onReset={() => setParams(p => ({ ...p, mu_k: DEFAULT_PARAMS.mu_k }))} />
+          <ControlRow label={<><InlineMath math="F_{\text{app}}" /> (N)</>}         name="F_app" min="0" max="50" step="0.5" value={params.F_app} onChange={handleChange} onReset={() => setParams(p => ({ ...p, F_app: DEFAULT_PARAMS.F_app }))} />
         </>
       }
 
@@ -375,7 +378,16 @@ export default function FrictionAppliedForce() {
   );
 }
 
-const ControlRow = ({ label, name, min, max, step, value, onChange }: {
+const ControlRow = ({
+  label,
+  name,
+  min,
+  max,
+  step,
+  value,
+  onChange,
+  onReset,
+}: {
   label: React.ReactNode;
   name: string;
   min: string;
@@ -383,12 +395,32 @@ const ControlRow = ({ label, name, min, max, step, value, onChange }: {
   step: string;
   value: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onReset?: () => void;
 }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 70px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 65px auto', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
     <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
     <input type="range" name={name} min={min} max={max} step={step}
       value={value} onChange={onChange} />
     <input type="number" name={name} value={value}
       onChange={onChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
+    {onReset && (
+      <button
+        type="button"
+        onClick={onReset}
+        title="Reset parameter to default"
+        style={{
+          padding: '2px 6px',
+          fontSize: '11px',
+          lineHeight: 1,
+          border: '1px solid var(--border-color)',
+          borderRadius: '4px',
+          background: 'transparent',
+          cursor: 'pointer',
+          color: 'var(--text-muted)'
+        }}
+      >
+        ↺
+      </button>
+    )}
   </div>
 );

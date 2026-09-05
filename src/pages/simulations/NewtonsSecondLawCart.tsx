@@ -115,7 +115,7 @@ export default function NewtonsSecondLawCart() {
     }
   }, []);
 
-  const [params, setParams] = useState<Params>({
+  const DEFAULT_PARAMS: Params = {
     mCart: 4.0,
     mHanger: 1.2,
     g: 9.8,
@@ -124,7 +124,9 @@ export default function NewtonsSecondLawCart() {
     muK: 0.25,
     showFbd: true,
     showGraph: true
-  });
+  };
+
+  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
 
   const [state, setState] = useState<MotionState>({ x: 0, v: 0, atLimit: false });
 
@@ -192,7 +194,7 @@ export default function NewtonsSecondLawCart() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => {
       setState({ x: 0, v: 0, atLimit: false });
@@ -583,6 +585,7 @@ export default function NewtonsSecondLawCart() {
       actionsContent={
         <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
+          <button className="secondary" onClick={() => stepForward(0.05)} title="Advance 1 frame (+0.05s)">Step</button>
           <button className="secondary" onClick={reset}>Reset</button>
         </>
       }
@@ -640,14 +643,14 @@ export default function NewtonsSecondLawCart() {
 
       controlsContent={
         <>
-          <ControlRow label={<>Cart mass <InlineMath math="m_c" /> (kg)</>} name="mCart" min="0.5" max="12" step="0.1" value={params.mCart} onChange={handleNumberChange} />
-          <ControlRow label={<>Hanging mass <InlineMath math="m_h" /> (kg)</>} name="mHanger" min="0.1" max="6" step="0.1" value={params.mHanger} onChange={handleNumberChange} />
-          <ControlRow label={<>Gravity <InlineMath math="g" /> (m/s^2)</>} name="g" min="1" max="20" step="0.1" value={params.g} onChange={handleNumberChange} />
+          <ControlRow label={<>Cart mass <InlineMath math="m_c" /> (kg)</>} name="mCart" min="0.5" max="12" step="0.1" value={params.mCart} onChange={handleNumberChange} onReset={() => setParams(p => ({ ...p, mCart: DEFAULT_PARAMS.mCart }))} />
+          <ControlRow label={<>Hanging mass <InlineMath math="m_h" /> (kg)</>} name="mHanger" min="0.1" max="6" step="0.1" value={params.mHanger} onChange={handleNumberChange} onReset={() => setParams(p => ({ ...p, mHanger: DEFAULT_PARAMS.mHanger }))} />
+          <ControlRow label={<>Gravity <InlineMath math="g" /> (m/s^2)</>} name="g" min="1" max="20" step="0.1" value={params.g} onChange={handleNumberChange} onReset={() => setParams(p => ({ ...p, g: DEFAULT_PARAMS.g }))} />
           <ToggleRow label="Enable friction" name="frictionEnabled" checked={params.frictionEnabled} onChange={handleToggleChange} />
           {params.frictionEnabled && (
             <>
-              <ControlRow label={<>Static <InlineMath math="\mu_s" /></>} name="muS" min="0" max="1.2" step="0.01" value={params.muS} onChange={handleNumberChange} />
-              <ControlRow label={<>Kinetic <InlineMath math="\mu_k" /></>} name="muK" min="0" max={params.muS.toString()} step="0.01" value={params.muK} onChange={handleNumberChange} />
+              <ControlRow label={<>Static <InlineMath math="\mu_s" /></>} name="muS" min="0" max="1.2" step="0.01" value={params.muS} onChange={handleNumberChange} onReset={() => setParams(p => ({ ...p, muS: DEFAULT_PARAMS.muS }))} />
+              <ControlRow label={<>Kinetic <InlineMath math="\mu_k" /></>} name="muK" min="0" max={params.muS.toString()} step="0.01" value={params.muK} onChange={handleNumberChange} onReset={() => setParams(p => ({ ...p, muK: DEFAULT_PARAMS.muK }))} />
             </>
           )}
           <ToggleRow label="Free-body vectors" name="showFbd" checked={params.showFbd} onChange={handleToggleChange} />
@@ -671,7 +674,7 @@ export default function NewtonsSecondLawCart() {
   );
 }
 
-const ControlRow = ({ label, name, min, max, step, value, onChange }: {
+const ControlRow = ({ label, name, min, max, step, value, onChange, onReset }: {
   label: React.ReactNode;
   name: string;
   min: string;
@@ -679,11 +682,31 @@ const ControlRow = ({ label, name, min, max, step, value, onChange }: {
   step: string;
   value: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onReset?: () => void;
 }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '142px 1fr 76px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+  <div style={{ display: 'grid', gridTemplateColumns: '142px 1fr 68px auto', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
     <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
     <input type="range" name={name} min={min} max={max} step={step} value={value} onChange={onChange} />
     <input type="number" name={name} min={min} max={max} step={step} value={value} onChange={onChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
+    {onReset && (
+      <button
+        type="button"
+        onClick={onReset}
+        title="Reset parameter to default"
+        style={{
+          padding: '2px 6px',
+          fontSize: '11px',
+          lineHeight: 1,
+          border: '1px solid var(--border-color)',
+          borderRadius: '4px',
+          background: 'transparent',
+          cursor: 'pointer',
+          color: 'var(--text-muted)'
+        }}
+      >
+        ↺
+      </button>
+    )}
   </div>
 );
 

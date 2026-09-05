@@ -71,9 +71,12 @@ function NavBody({
 }) {
   const groups = simulationsByTopic();
   const location = useLocation();
+  const onGuideTab = location.pathname.startsWith('/simulations/') && location.search.includes('tab=guide');
   const guideSlug = location.pathname.startsWith('/guides/')
     ? location.pathname.replace(/^\/guides\//, '').split(/[/?#]/)[0]
-    : null;
+    : onGuideTab
+      ? location.pathname.replace(/^\/simulations\//, '').split(/[/?#]/)[0]
+      : null;
 
   return (
     <>
@@ -125,7 +128,8 @@ function NavBody({
           )}
           {items.map((sim) => {
             const Icon = ICON_MAP[sim.icon];
-            const onGuide = guideSlug === sim.slug;
+            const isCurrentSim = location.pathname === sim.simPath;
+            const isCurrentGuide = guideSlug === sim.slug;
             return (
               <div key={sim.slug} className="nav-sim-block">
                 <NavLink
@@ -133,26 +137,17 @@ function NavBody({
                   onClick={onNavigate}
                   title={collapsed ? sim.shortTitle : undefined}
                   className={({ isActive }) =>
-                    `nav-link${isActive || onGuide ? ' active' : ''}${collapsed ? ' collapsed' : ''}`
+                    `nav-link${isActive && !onGuideTab ? ' active' : ''}${collapsed ? ' collapsed' : ''}`
                   }
                 >
                   <Icon size={17} className="nav-link-icon" />
                   {!collapsed && <span>{sim.shortTitle}</span>}
                 </NavLink>
-                {!collapsed && onGuide && (
+                {!collapsed && (isCurrentSim || isCurrentGuide) && (
                   <NavLink
-                    to={sim.guidePath}
+                    to={`${sim.simPath}?tab=guide`}
                     onClick={onNavigate}
-                    className="nav-link nav-sublink active"
-                  >
-                    <span>Tips &amp; Revision</span>
-                  </NavLink>
-                )}
-                {!collapsed && !onGuide && location.pathname === sim.simPath && (
-                  <NavLink
-                    to={sim.guidePath}
-                    onClick={onNavigate}
-                    className="nav-link nav-sublink"
+                    className={`nav-link nav-sublink${isCurrentGuide ? ' active' : ''}`}
                   >
                     <span>Tips &amp; Revision</span>
                   </NavLink>

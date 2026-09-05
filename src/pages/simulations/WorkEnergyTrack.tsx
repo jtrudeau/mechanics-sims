@@ -127,7 +127,7 @@ export default function WorkEnergyTrack() {
     setState(createInitialState(params));
   }, [params]);
 
-  const { isRunning, toggle, reset } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: resetToInitial,
     maxDt: 0.035
@@ -247,6 +247,7 @@ export default function WorkEnergyTrack() {
       actionsContent={
         <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
+          <button className="secondary" onClick={() => stepForward(0.035)} title="Advance 1 frame (+0.035s)">Step</button>
           <button className="secondary" onClick={reset}>Reset</button>
         </>
       }
@@ -302,11 +303,11 @@ export default function WorkEnergyTrack() {
 
       controlsContent={
         <>
-          <ControlRow label={<><InlineMath math="m" /> (kg)</>} name="mass" min="0.5" max="8" step="0.1" value={params.mass} onChange={handleNumberChange} />
-          <ControlRow label={<><InlineMath math="v_0" /> (m/s)</>} name="initialSpeed" min="0" max="9" step="0.1" value={params.initialSpeed} onChange={handleNumberChange} />
+          <ControlRow label={<><InlineMath math="m" /> (kg)</>} name="mass" min="0.5" max="8" step="0.1" value={params.mass} onChange={handleNumberChange} onReset={() => setParams(p => ({ ...p, mass: DEFAULT_PARAMS.mass }))} />
+          <ControlRow label={<><InlineMath math="v_0" /> (m/s)</>} name="initialSpeed" min="0" max="9" step="0.1" value={params.initialSpeed} onChange={handleNumberChange} onReset={() => setParams(p => ({ ...p, initialSpeed: DEFAULT_PARAMS.initialSpeed }))} />
           <SelectRow label="Track preset" value={params.preset} onChange={handlePresetChange} />
           <ToggleRow label={<>Kinetic friction</>} name="frictionEnabled" checked={params.frictionEnabled} onChange={handleToggleChange} />
-          <ControlRow label={<><InlineMath math="\mu_k" /></>} name="muK" min="0" max="0.35" step="0.01" value={params.muK} onChange={handleNumberChange} disabled={!params.frictionEnabled} />
+          <ControlRow label={<><InlineMath math="\mu_k" /></>} name="muK" min="0" max="0.35" step="0.01" value={params.muK} onChange={handleNumberChange} disabled={!params.frictionEnabled} onReset={() => setParams(p => ({ ...p, muK: DEFAULT_PARAMS.muK }))} />
           <ToggleRow label={<>Energy bars</>} name="showEnergyBars" checked={params.showEnergyBars} onChange={handleToggleChange} />
           <ToggleRow label={<>Force/work graph</>} name="showWorkGraph" checked={params.showWorkGraph} onChange={handleToggleChange} />
         </>
@@ -933,7 +934,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-const ControlRow = ({ label, name, min, max, step, value, onChange, disabled = false }: {
+const ControlRow = ({ label, name, min, max, step, value, onChange, disabled = false, onReset }: {
   label: React.ReactNode;
   name: string;
   min: string;
@@ -942,13 +943,34 @@ const ControlRow = ({ label, name, min, max, step, value, onChange, disabled = f
   value: number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
+  onReset?: () => void;
 }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 70px', gap: '10px', alignItems: 'center', marginBottom: '8px', opacity: disabled ? 0.55 : 1 }}>
+  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 68px auto', gap: '8px', alignItems: 'center', marginBottom: '8px', opacity: disabled ? 0.55 : 1 }}>
     <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
     <input type="range" name={name} min={min} max={max} step={step}
       value={value} onChange={onChange} disabled={disabled} />
     <input type="number" name={name} min={min} max={max} step={step} value={value}
       onChange={onChange} disabled={disabled} style={{ fontSize: '13px', padding: '4px 6px' }} />
+    {onReset && (
+      <button
+        type="button"
+        onClick={onReset}
+        disabled={disabled}
+        title="Reset parameter to default"
+        style={{
+          padding: '2px 6px',
+          fontSize: '11px',
+          lineHeight: 1,
+          border: '1px solid var(--border-color)',
+          borderRadius: '4px',
+          background: 'transparent',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          color: 'var(--text-muted)'
+        }}
+      >
+        ↺
+      </button>
+    )}
   </div>
 );
 

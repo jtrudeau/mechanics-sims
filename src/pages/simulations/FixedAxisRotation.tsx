@@ -181,7 +181,7 @@ export default function FixedAxisRotation() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => resetState(params.omega0),
     maxDt: 0.035
@@ -297,6 +297,7 @@ export default function FixedAxisRotation() {
       actionsContent={
         <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>
+          <button className="secondary" onClick={() => stepForward(0.035)} title="Advance 1 frame (+0.035s)">Step</button>
           <button className="secondary" onClick={reset}>Reset</button>
         </>
       }
@@ -341,13 +342,13 @@ export default function FixedAxisRotation() {
       controlsContent={
         <>
           <SelectRow label="Body preset" value={params.preset} options={bodyOptions} onChange={handlePresetChange} />
-          <ControlRow label={<>Mass <InlineMath math="M" /> (kg)</>} name="mass" min={1} max={12} step={0.1} value={params.mass} onChange={handleNumericChange} />
-          <ControlRow label={<>{model.dimensionLabel} <InlineMath math={model.dimensionSymbol} /> (m)</>} name="size" min={1} max={5} step={0.1} value={params.size} onChange={handleNumericChange} />
-          <ControlRow label={<>Force <InlineMath math="F" /> (N)</>} name="force" min={0} max={30} step={0.5} value={params.force} onChange={handleNumericChange} />
-          <ControlRow label={<>Apply radius <InlineMath math="r" /> (m)</>} name="forceRadius" min={0} max={radiusMax} step={0.05} value={params.forceRadius} onChange={handleNumericChange} />
-          <ControlRow label={<>Force angle <InlineMath math="\phi" /> (deg)</>} name="forceAngleDeg" min={-180} max={180} step={1} value={params.forceAngleDeg} onChange={handleNumericChange} />
-          <ControlRow label={<>Brake torque (N m)</>} name="brakeTorque" min={0} max={12} step={0.2} value={params.brakeTorque} onChange={handleNumericChange} />
-          <ControlRow label={<>Initial <InlineMath math="\omega_0" /> (rad/s)</>} name="omega0" min={-6} max={6} step={0.1} value={params.omega0} onChange={handleNumericChange} />
+          <ControlRow label={<>Mass <InlineMath math="M" /> (kg)</>} name="mass" min={1} max={12} step={0.1} value={params.mass} onChange={handleNumericChange} onReset={() => handleNumericChange('mass', initialParams.mass)} />
+          <ControlRow label={<>{model.dimensionLabel} <InlineMath math={model.dimensionSymbol} /> (m)</>} name="size" min={1} max={5} step={0.1} value={params.size} onChange={handleNumericChange} onReset={() => handleNumericChange('size', initialParams.size)} />
+          <ControlRow label={<>Force <InlineMath math="F" /> (N)</>} name="force" min={0} max={30} step={0.5} value={params.force} onChange={handleNumericChange} onReset={() => handleNumericChange('force', initialParams.force)} />
+          <ControlRow label={<>Apply radius <InlineMath math="r" /> (m)</>} name="forceRadius" min={0} max={radiusMax} step={0.05} value={params.forceRadius} onChange={handleNumericChange} onReset={() => handleNumericChange('forceRadius', initialParams.forceRadius)} />
+          <ControlRow label={<>Force angle <InlineMath math="\phi" /> (deg)</>} name="forceAngleDeg" min={-180} max={180} step={1} value={params.forceAngleDeg} onChange={handleNumericChange} onReset={() => handleNumericChange('forceAngleDeg', initialParams.forceAngleDeg)} />
+          <ControlRow label={<>Brake torque (N m)</>} name="brakeTorque" min={0} max={12} step={0.2} value={params.brakeTorque} onChange={handleNumericChange} onReset={() => handleNumericChange('brakeTorque', initialParams.brakeTorque)} />
+          <ControlRow label={<>Initial <InlineMath math="\omega_0" /> (rad/s)</>} name="omega0" min={-6} max={6} step={0.1} value={params.omega0} onChange={handleNumericChange} onReset={() => handleNumericChange('omega0', initialParams.omega0)} />
           <div style={{ borderTop: '1px solid var(--border-color)', marginTop: '10px', paddingTop: '10px' }}>
             <ToggleRow label="Torque decomposition" name="showDecomposition" checked={params.showDecomposition} onChange={handleToggle} />
             <ToggleRow label="Rim tangential speed" name="showTangentialSpeed" checked={params.showTangentialSpeed} onChange={handleToggle} />
@@ -808,7 +809,7 @@ function SelectRow({ label, value, options, onChange }: {
   );
 }
 
-function ControlRow({ label, name, min, max, step, value, onChange }: {
+function ControlRow({ label, name, min, max, step, value, onChange, onReset }: {
   label: React.ReactNode;
   name: NumericParam;
   min: number;
@@ -816,16 +817,36 @@ function ControlRow({ label, name, min, max, step, value, onChange }: {
   step: number;
   value: number;
   onChange: (name: NumericParam, value: number) => void;
+  onReset?: () => void;
 }) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(name, parseFloat(e.target.value));
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 72px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 68px auto', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
       <label style={{ fontSize: '13px', fontWeight: 500 }}>{label}</label>
       <input type="range" min={min} max={max} step={step} value={value} onChange={handleChange} />
       <input type="number" min={min} max={max} step={step} value={Number(value.toFixed(3))} onChange={handleChange} style={{ fontSize: '13px', padding: '4px 6px' }} />
+      {onReset && (
+        <button
+          type="button"
+          onClick={onReset}
+          title="Reset parameter to default"
+          style={{
+            padding: '2px 6px',
+            fontSize: '11px',
+            lineHeight: 1,
+            border: '1px solid var(--border-color)',
+            borderRadius: '4px',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: 'var(--text-muted)'
+          }}
+        >
+          ↺
+        </button>
+      )}
     </div>
   );
 }
