@@ -28,7 +28,7 @@ export default function FrictionAppliedForce() {
   }, []);
 
   const [params, setParams] = useState(DEFAULT_PARAMS);
-
+  const [showGraph, setShowGraph] = useState(true);
   const [state, setState] = useState({ x: 0, v: 0, a: 0, f_friction: 0 });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,51 +123,58 @@ export default function FrictionAppliedForce() {
     const scale = 20 * s;
     const cx = w / 2 + state.x * scale;
     const cy = floorY;
-    const bw = 80 * s, bh = 60 * s;
+    const bw = 115 * s, bh = 80 * s;
 
     // Block shadow + body
     ctx.fillStyle = 'rgba(15, 23, 42, 0.04)';
-    ctx.fillRect(cx - bw / 2 + 4, cy - bh + 4, bw, bh);
+    ctx.fillRect(cx - bw / 2 + 5, cy - bh + 5, bw, bh);
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(cx - bw / 2, cy - bh, bw, bh);
     ctx.strokeStyle = '#475569'; ctx.lineWidth = 2.5;
     ctx.strokeRect(cx - bw / 2, cy - bh, bw, bh);
 
-    // Center the italicized mass parameter label 'm' inside the block
-    drawMixedText(ctx, cx, cy - bh / 2,
+    // Center of mass indicator dot
+    ctx.fillStyle = '#64748b';
+    ctx.beginPath();
+    ctx.arc(cx, cy - bh / 2, 3.5 * s, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Position the italicized mass parameter label 'm' in upper-left of block
+    // completely unobscured by vertical or horizontal force vectors
+    drawMixedText(ctx, cx - bw * 0.28, cy - bh + 22 * s,
       [{ text: 'm', italic: true }],
-      { fontSize: Math.round(16 * s), color: '#334155', align: 'center', baseline: 'middle' });
+      { fontSize: Math.round(20 * s), color: '#334155', align: 'center', baseline: 'middle', halo: true });
 
     // Adaptive Force Vector Scale Factor
-    // Standardizes the normal force vector to be exactly 90px on screen.
+    // Standardizes the normal force vector to be exactly 100px on screen.
     const F_N = params.mass * g;
-    const forceScale = (90 * s) / F_N;
+    const forceScale = (100 * s) / F_N;
 
     // 1. Gravity Vector (points straight down from center of mass)
     const gMag = F_N;
     const lw = 4.5 * s;
-    const fs = Math.round(16 * s);
-    const gTip = drawArrow(ctx, cx, cy - bh / 2, gMag * forceScale, Math.PI / 2, 'var(--color-gravity)', lw);
-    drawMixedText(ctx, gTip.hx, gTip.hy + 12 * s,
+    const fs = Math.round(18 * s);
+    const gTip = drawArrow(ctx, cx, cy - bh / 2, gMag * forceScale, Math.PI / 2, 'var(--color-gravity)', lw, true);
+    drawMixedText(ctx, gTip.hx, gTip.hy + 14 * s,
       [{ text: 'F', italic: true, vector: true }, { text: 'g', italic: false, subscript: true }],
-      { fontSize: fs, color: 'var(--color-gravity)', align: 'center', baseline: 'top' });
+      { fontSize: fs, color: 'var(--color-gravity)', align: 'center', baseline: 'top', halo: true });
 
-    // 2. Normal Force Vector (points straight up from center of mass, avoiding shaft overlaps)
-    const nTip = drawArrow(ctx, cx, cy - bh / 2, F_N * forceScale, -Math.PI / 2, 'var(--color-normal)', lw);
-    drawMixedText(ctx, nTip.hx, nTip.hy - 12 * s,
+    // 2. Normal Force Vector (points straight up from center of mass)
+    const nTip = drawArrow(ctx, cx, cy - bh / 2, F_N * forceScale, -Math.PI / 2, 'var(--color-normal)', lw, true);
+    drawMixedText(ctx, nTip.hx, nTip.hy - 14 * s,
       [{ text: 'F', italic: true, vector: true }, { text: 'N', italic: false, subscript: true }],
-      { fontSize: fs, color: 'var(--color-normal)', align: 'center', baseline: 'bottom' });
+      { fontSize: fs, color: 'var(--color-normal)', align: 'center', baseline: 'bottom', halo: true });
 
     // 3. Applied Force Vector (points left/right from center of mass)
     if (Math.abs(params.F_app) > 0.1) {
       const dir = params.F_app >= 0 ? 0 : Math.PI;
       const tip = drawArrow(ctx, cx, cy - bh / 2,
         Math.abs(params.F_app) * forceScale, dir,
-        'var(--color-force-app)', lw);
-      drawMixedText(ctx, tip.hx + (params.F_app >= 0 ? 12 : -12) * s, cy - bh / 2,
+        'var(--color-force-app)', lw, true);
+      drawMixedText(ctx, tip.hx + (params.F_app >= 0 ? 14 : -14) * s, cy - bh / 2,
         [{ text: 'F', italic: true, vector: true }, { text: 'app', italic: false, subscript: true }],
         { fontSize: fs, color: 'var(--color-force-app)',
-          align: params.F_app >= 0 ? 'left' : 'right', baseline: 'middle' });
+          align: params.F_app >= 0 ? 'left' : 'right', baseline: 'middle', halo: true });
     }
 
     // 4. Friction Force Vector (points left/right from contact floor surface)
@@ -175,28 +182,29 @@ export default function FrictionAppliedForce() {
       const dir = state.f_friction >= 0 ? 0 : Math.PI;
       const ftip = drawArrow(ctx, cx, cy - 2,
         Math.abs(state.f_friction) * forceScale, dir,
-        'var(--color-friction)', lw);
-      drawMixedText(ctx, ftip.hx + (state.f_friction >= 0 ? 12 : -12) * s, cy - 14 * s,
+        'var(--color-friction)', lw, true);
+      drawMixedText(ctx, ftip.hx + (state.f_friction >= 0 ? 14 : -14) * s, cy - 16 * s,
         [{ text: 'f', italic: true, vector: true }],
         { fontSize: fs, color: 'var(--color-friction)',
-          align: state.f_friction >= 0 ? 'left' : 'right', baseline: 'middle' });
+          align: state.f_friction >= 0 ? 'left' : 'right', baseline: 'middle', halo: true });
     }
 
     // 5. Velocity Vector (kinematic quantity, independent scale)
     if (Math.abs(state.v) > 0.1) {
       const dir = state.v >= 0 ? 0 : Math.PI;
-      const vtip = drawArrow(ctx, cx, cy - bh - 20 * s,
-        Math.abs(state.v) * 15 * s, dir,
-        'var(--color-vel)', lw);
-      drawMixedText(ctx, vtip.hx + (state.v >= 0 ? 12 : -12) * s, cy - bh - 20 * s,
+      const vtip = drawArrow(ctx, cx, cy - bh - 24 * s,
+        Math.abs(state.v) * 16 * s, dir,
+        'var(--color-vel)', lw, true);
+      drawMixedText(ctx, vtip.hx + (state.v >= 0 ? 14 : -14) * s, cy - bh - 24 * s,
         [{ text: 'v', italic: true, vector: true }],
         { fontSize: fs, color: 'var(--color-vel)',
-          align: state.v >= 0 ? 'left' : 'right', baseline: 'middle' });
+          align: state.v >= 0 ? 'left' : 'right', baseline: 'middle', halo: true });
     }
   }, [state, params, fontsReady, stageGen]);
 
   // ── f vs F_app mini plot ──────────────────────────────────────────────────
   useEffect(() => {
+    if (!showGraph) return;
     const canvas = plotRef.current;
     if (!canvas) return;
     const ctx = scaleCanvas(canvas, canvas.parentElement!.clientWidth, 220);
@@ -222,13 +230,12 @@ export default function FrictionAppliedForce() {
     ctx.fillRect(mapFx(fs_max), padT, padL + chartW - mapFx(fs_max), chartH);
 
     // Region labels
-    ctx.font = 'bold 10px "Inter", system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = '#16a34a';
-    ctx.fillText('STATIC', mapFx(fs_max / 2), padT + 5);
-    ctx.fillStyle = '#ea580c';
-    ctx.fillText('KINETIC', mapFx((fs_max + fMax) / 2), padT + 5);
+    drawMixedText(ctx, mapFx(fs_max / 2), padT + 8,
+      [{ text: 'STATIC' }],
+      { fontSize: 12, color: '#15803d', align: 'center', baseline: 'top', halo: true });
+    drawMixedText(ctx, mapFx((fs_max + fMax) / 2), padT + 8,
+      [{ text: 'KINETIC' }],
+      { fontSize: 12, color: '#c2410c', align: 'center', baseline: 'top', halo: true });
 
     // Border
     ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
@@ -238,50 +245,63 @@ export default function FrictionAppliedForce() {
     const ticks = [0, 10, 20, 30, 40, 50];
     for (const v of ticks) {
       drawMixedText(ctx, mapFx(v), padT + chartH + 12,
-        [{ text: v.toString() }], { fontSize: 11, color: '#475569', align: 'center' });
-      drawMixedText(ctx, padL - 6, mapFy(v),
-        [{ text: v.toString() }], { fontSize: 11, color: '#475569', align: 'right' });
+        [{ text: v.toString() }], { fontSize: 12, color: '#475569', align: 'center' });
+      drawMixedText(ctx, padL - 8, mapFy(v),
+        [{ text: v.toString() }], { fontSize: 12, color: '#475569', align: 'right' });
     }
 
     // X-axis title:  F_app (N)
     drawMixedText(
       ctx, padL + chartW / 2, h - 6,
       [{ text: 'F', italic: true }, { text: 'app', subscript: true }, { text: '  (N)' }],
-      { fontSize: 12, color: '#334155', align: 'center', baseline: 'bottom' }
+      { fontSize: 14, color: '#334155', align: 'center', baseline: 'bottom' }
     );
 
     // Y-axis title:  f  (N)  — rotated
     ctx.save();
-    ctx.translate(12, padT + chartH / 2);
+    ctx.translate(14, padT + chartH / 2);
     ctx.rotate(-Math.PI / 2);
-    drawMixedText(ctx, 0, 0,
+    drawMixedText(
+      ctx, 0, 0,
       [{ text: 'f', italic: true }, { text: '  (N)' }],
-      { fontSize: 12, color: '#334155', align: 'center' });
+      { fontSize: 14, color: '#334155', align: 'center' }
+    );
     ctx.restore();
 
-    // Theoretical curve (positive magnitudes only!)
-    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+    // Theoretical curve:
+    // 0 -> fs_max: slope 1 (f = F_app)
+    // fs_max -> fMax: drops to fk (f = fk)
+    ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(mapFx(0), mapFy(0));
+    ctx.moveTo(mapFx(0),      mapFy(0));
     ctx.lineTo(mapFx(fs_max), mapFy(fs_max));
     ctx.lineTo(mapFx(fs_max), mapFy(fk));
-    ctx.lineTo(mapFx(fMax), mapFy(fk));
+    ctx.lineTo(mapFx(fMax),   mapFy(fk));
     ctx.stroke();
 
-    // Current point
-    ctx.fillStyle = resolveColor('var(--color-friction)');
+    // Drop line at fs_max
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.arc(mapFx(params.F_app), mapFy(-state.f_friction), 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.moveTo(mapFx(fs_max), padT + chartH);
+    ctx.lineTo(mapFx(fs_max), mapFy(fs_max));
+    ctx.stroke();
+    ctx.setLineDash([]);
 
-  }, [state.f_friction, params, fontsReady]);
+    // Current operating point
+    const currF_app = Math.min(params.F_app, fMax);
+    const currF     = Math.abs(state.f_friction);
+    ctx.fillStyle   = resolveColor('var(--color-friction)');
+    ctx.beginPath();
+    ctx.arc(mapFx(currF_app), mapFy(currF), 6, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  }, [state, params, F_N, fs_max, fontsReady, showGraph]);
 
   return (
     <SimulationLayout
-      title="Friction vs Applied Force"
-      description="1D Dynamics — Static and kinetic friction regimes."
-      slug="friction"
+      title="Static and Kinetic Friction"
+      description="1D Dynamics — The transition from static grip to kinetic sliding."
+      slug="friction-applied-force"
 
       actionsContent={
         <>
@@ -307,16 +327,39 @@ export default function FrictionAppliedForce() {
               {isStatic ? 'STATIC' : 'KINETIC'}
             </span>
           </div>
-          <div className="sim-stage sim-stage-split" style={{ ['--sim-stage-h' as string]: '390px' }}>
+          <div className="sim-stage sim-stage-split" style={{ ['--sim-stage-h' as string]: showGraph ? '380px' : '560px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
           <div style={{ borderTop: '1px solid var(--border-color)', background: '#fff' }}>
-            <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
-              Friction <InlineMath math="f" /> vs Applied Force <InlineMath math="F_{\text{app}}" />
+            <div 
+              onClick={() => setShowGraph(p => !p)}
+              style={{ 
+                padding: '8px 16px', 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                background: '#f8fafc',
+                userSelect: 'none'
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>
+                Friction <InlineMath math="f" /> vs Applied Force <InlineMath math="F_{\text{app}}" />
+              </span>
+              <button 
+                type="button" 
+                className="secondary" 
+                style={{ padding: '2px 10px', fontSize: '12px', height: 'auto', lineHeight: '1.4' }}
+                onClick={(e) => { e.stopPropagation(); setShowGraph(p => !p); }}
+              >
+                {showGraph ? '▲ Collapse Graph' : '▼ Expand Graph'}
+              </button>
             </div>
-            <div style={{ width: '100%', height: '220px' }}>
-              <canvas ref={plotRef} style={{ display: 'block', width: '100%', height: '100%' }} />
-            </div>
+            {showGraph && (
+              <div style={{ width: '100%', height: '220px', background: '#fff' }}>
+                <canvas ref={plotRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+              </div>
+            )}
           </div>
         </>
       }

@@ -305,7 +305,7 @@ function drawForceTableScene(
 
   const cx = width / 2;
   const cy = height / 2 + 12;
-  const tableRadius = Math.max(112, Math.min(width * 0.38, height * 0.36));
+  const tableRadius = Math.max(130, Math.min(width * 0.44, height * 0.42));
   const maxApplied = forces.reduce((max, force) => Math.max(max, force.magnitude), 0);
   const maxVector = Math.max(maxApplied, summary.resultantMagnitude, 1);
   const forceScale = (tableRadius - 34 * s) / maxVector;
@@ -333,12 +333,16 @@ function drawForceTableScene(
   drawCentralRing(ctx, cx, cy, summary, s);
 
   if (summary.resultantMagnitude < EPSILON_FORCE && (options.showResultant || options.showEquilibrant)) {
-    drawMixedText(ctx, cx, cy - tableRadius - 22 * s, [{ text: 'R = 0 N' }], {
-      fontSize: Math.round(13 * s),
-      color: '#166534',
-      align: 'center',
-      baseline: 'middle'
-    });
+    drawMixedText(ctx, cx, cy - tableRadius - 22 * s,
+      [{ text: 'R', italic: true, vector: true }, { text: ' = 0 N' }],
+      {
+        fontSize: Math.round(16 * s),
+        color: '#166534',
+        align: 'center',
+        baseline: 'middle',
+        halo: true
+      }
+    );
   }
 }
 
@@ -402,11 +406,17 @@ function drawTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius
   ctx.textBaseline = 'middle';
   for (const deg of [0, 90, 180, 270]) {
     const angle = -degToRad(deg);
-    ctx.fillText(`${deg} deg`, cx + (radius + 22 * s) * Math.cos(angle), cy + (radius + 22 * s) * Math.sin(angle));
+    drawMixedText(ctx, cx + (radius + 22 * s) * Math.cos(angle), cy + (radius + 22 * s) * Math.sin(angle),
+      [{ text: `${deg}°` }],
+      { fontSize: Math.round(11 * s), color: '#475569', align: 'center', baseline: 'middle', halo: true });
   }
 
-  drawMixedText(ctx, cx + radius - 12, cy + 16, [{ text: '+x' }], { fontSize: Math.round(12 * s), color: '#475569', align: 'right' });
-  drawMixedText(ctx, cx + 16, cy - radius + 12, [{ text: '+y' }], { fontSize: Math.round(12 * s), color: '#475569', align: 'left' });
+  drawMixedText(ctx, cx + radius - 12, cy + 16,
+    [{ text: '+' }, { text: 'x', italic: true }],
+    { fontSize: Math.round(12 * s), color: '#475569', align: 'right', halo: true });
+  drawMixedText(ctx, cx + 16, cy - radius + 12,
+    [{ text: '+' }, { text: 'y', italic: true }],
+    { fontSize: Math.round(12 * s), color: '#475569', align: 'left', halo: true });
 
   ctx.restore();
 }
@@ -486,7 +496,7 @@ function drawForceVector(
   if (vectorLength < 1) return;
 
   const screenAngle = -force.angleRad;
-  const tip = drawArrow(ctx, cx, cy, vectorLength, screenAngle, force.color, 4.5 * s);
+  const tip = drawArrow(ctx, cx, cy, vectorLength, screenAngle, force.color, 4.5 * s, true);
   const pad = 18 * s;
   const labelX = clamp(tip.hx + pad * Math.cos(screenAngle), pad, width - pad);
   const labelY = clamp(tip.hy + pad * Math.sin(screenAngle), pad, height - pad);
@@ -495,8 +505,8 @@ function drawForceVector(
     ctx,
     labelX,
     labelY,
-    [{ text: 'F', italic: true, vector: true }, { text: `${force.index + 1}`, subscript: true }],
-    { fontSize: Math.round(15 * s), color: force.color, align: 'center', baseline: 'middle' }
+    [{ text: 'F', italic: true, vector: true }, { text: `${force.index + 1}`, subscript: true, italic: false }],
+    { fontSize: Math.round(15 * s), color: force.color, align: 'center', baseline: 'middle', halo: true }
   );
 }
 
@@ -519,13 +529,13 @@ function drawSummaryVector(
   const screenAngle = -degToRad(angleDeg);
   ctx.save();
   if (dashed) ctx.setLineDash([8, 5]);
-  const tip = drawArrow(ctx, cx, cy, magnitude * forceScale, screenAngle, color, 5 * s);
+  const tip = drawArrow(ctx, cx, cy, magnitude * forceScale, screenAngle, color, 5 * s, true);
   ctx.restore();
 
   const pad = 20 * s;
   const labelX = clamp(tip.hx + 22 * s * Math.cos(screenAngle), pad, width - pad);
   const labelY = clamp(tip.hy + 22 * s * Math.sin(screenAngle), pad, height - pad);
-  drawMixedText(ctx, labelX, labelY, label, { fontSize: Math.round(17 * s), color, align: 'center', baseline: 'middle' });
+  drawMixedText(ctx, labelX, labelY, label, { fontSize: Math.round(17 * s), color, align: 'center', baseline: 'middle', halo: true });
 }
 
 function drawCentralRing(ctx: CanvasRenderingContext2D, cx: number, cy: number, summary: ForceSummary, s: number) {
@@ -533,7 +543,7 @@ function drawCentralRing(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
   const angleRad = degToRad(summary.resultantAngleDeg);
   const ringX = cx + displacement * Math.cos(angleRad);
   const ringY = cy - displacement * Math.sin(angleRad);
-  const ringR = 13 * s;
+  const ringR = 18 * s;
 
   ctx.save();
 
@@ -554,7 +564,7 @@ function drawCentralRing(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 
   ctx.fillStyle = '#ffffff';
   ctx.strokeStyle = displacement > 0 ? '#dc2626' : '#166534';
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 2.8;
   ctx.beginPath();
   ctx.arc(ringX, ringY, ringR, 0, Math.PI * 2);
   ctx.fill();
@@ -562,7 +572,7 @@ function drawCentralRing(ctx: CanvasRenderingContext2D, cx: number, cy: number, 
 
   ctx.fillStyle = displacement > 0 ? '#dc2626' : '#166534';
   ctx.beginPath();
-  ctx.arc(ringX, ringY, 3.5 * s, 0, Math.PI * 2);
+  ctx.arc(ringX, ringY, 5 * s, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();

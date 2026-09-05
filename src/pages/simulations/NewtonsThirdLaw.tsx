@@ -23,6 +23,7 @@ export default function NewtonsThirdLaw() {
 
   const DEFAULT_PARAMS = { m1: 5.0, m2: 3.0, F_app: 16.0 };
   const [params, setParams] = useState(DEFAULT_PARAMS);
+  const [showGraph, setShowGraph] = useState(true);
   const [state,  setState]  = useState({ x: -8, v: 0 });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,8 +62,8 @@ export default function NewtonsThirdLaw() {
     if (!canvas) return;
     const { ctx, w, h, s } = fitStage(canvas, 300);
     const lw = 4.5 * s;
-    const fs = Math.round(16 * s);
-    const fsMass = Math.round(18 * s);
+    const fs = Math.round(18 * s);
+    const fsMass = Math.round(20 * s);
 
     // Draw coordinate grid background
     drawCoordinateGrid(ctx, w, h, {
@@ -89,10 +90,10 @@ export default function NewtonsThirdLaw() {
     const F12   = params.m2 * a;
     const F21   = -F12;
 
-    const b1_w = (44 + params.m1 * 4) * s;
-    const b1_h = (44 + params.m1 * 4) * s;
-    const b2_w = (44 + params.m2 * 4) * s;
-    const b2_h = (44 + params.m2 * 4) * s;
+    const b1_w = (65 + params.m1 * 6) * s;
+    const b1_h = (65 + params.m1 * 6) * s;
+    const b2_w = (65 + params.m2 * 6) * s;
+    const b2_h = (65 + params.m2 * 6) * s;
 
     const x1_left  = w / 2 + state.x * scale;
     const x1_right = x1_left + b1_w;
@@ -100,27 +101,37 @@ export default function NewtonsThirdLaw() {
 
     // Block 1
     ctx.fillStyle = 'rgba(0,0,0,0.06)';
-    ctx.fillRect(x1_left + 4, cy - b1_h + 4, b1_w, b1_h);
+    ctx.fillRect(x1_left + 5, cy - b1_h + 5, b1_w, b1_h);
     ctx.fillStyle = '#e0f2fe';
     ctx.fillRect(x1_left, cy - b1_h, b1_w, b1_h);
-    ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 2.2;
     ctx.strokeRect(x1_left, cy - b1_h, b1_w, b1_h);
-    // Center the italicized mass parameter label 'm1' inside the block
-    drawMixedText(ctx, x1_left + b1_w / 2, cy - b1_h / 2,
+
+    // Block 1 center of mass dot
+    ctx.fillStyle = '#0284c7';
+    ctx.beginPath(); ctx.arc(x1_left + b1_w / 2, cy - b1_h / 2, 3.5 * s, 0, Math.PI * 2); ctx.fill();
+
+    // Position mass label 'm1' in upper region of block 1, clear of push line
+    drawMixedText(ctx, x1_left + b1_w / 2, cy - b1_h + 22 * s,
       [{ text: 'm', italic: true }, { text: '1', subscript: true }],
-      { fontSize: fsMass, color: '#0284c7', align: 'center', baseline: 'middle' });
+      { fontSize: fsMass, color: '#0284c7', align: 'center', baseline: 'middle', halo: true });
 
     // Block 2
     ctx.fillStyle = 'rgba(0,0,0,0.06)';
-    ctx.fillRect(x2_left + 4, cy - b2_h + 4, b2_w, b2_h);
+    ctx.fillRect(x2_left + 5, cy - b2_h + 5, b2_w, b2_h);
     ctx.fillStyle = '#fce7f3';
     ctx.fillRect(x2_left, cy - b2_h, b2_w, b2_h);
-    ctx.strokeStyle = '#be185d'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#be185d'; ctx.lineWidth = 2.2;
     ctx.strokeRect(x2_left, cy - b2_h, b2_w, b2_h);
-    // Center the italicized mass parameter label 'm2' inside the block
-    drawMixedText(ctx, x2_left + b2_w / 2, cy - b2_h / 2,
+
+    // Block 2 center of mass dot
+    ctx.fillStyle = '#be185d';
+    ctx.beginPath(); ctx.arc(x2_left + b2_w / 2, cy - b2_h / 2, 3.5 * s, 0, Math.PI * 2); ctx.fill();
+
+    // Position mass label 'm2' in upper region of block 2
+    drawMixedText(ctx, x2_left + b2_w / 2, cy - b2_h + 22 * s,
       [{ text: 'm', italic: true }, { text: '2', subscript: true }],
-      { fontSize: fsMass, color: '#be185d', align: 'center', baseline: 'middle' });
+      { fontSize: fsMass, color: '#be185d', align: 'center', baseline: 'middle', halo: true });
 
     const vecScale = 3.5 * s;
     const topY     = cy - Math.max(b1_h, b2_h) - 18 * s;
@@ -130,11 +141,11 @@ export default function NewtonsThirdLaw() {
       if (params.F_app >= 0) {
         // Starts on left pointing right, pushing Block 1
         drawArrow(ctx, x1_left - params.F_app * vecScale, cy - b1_h / 2,
-          params.F_app * vecScale, 0, 'var(--color-force-app)', lw);
+          params.F_app * vecScale, 0, 'var(--color-force-app)', lw, true);
       } else {
         // Starts on right pointing left, pushing Block 1 from the other side
         drawArrow(ctx, x1_right + Math.abs(params.F_app) * vecScale, cy - b1_h / 2,
-          Math.abs(params.F_app) * vecScale, Math.PI, 'var(--color-force-app)', lw);
+          Math.abs(params.F_app) * vecScale, Math.PI, 'var(--color-force-app)', lw, true);
       }
 
       // Center the label perfectly above the arrow shaft
@@ -143,7 +154,7 @@ export default function NewtonsThirdLaw() {
         : x1_right + (Math.abs(params.F_app) * vecScale) / 2;
       drawMixedText(ctx, shaftMidX, cy - b1_h / 2 - 12 * s,
         [{ text: 'F', italic: true, vector: true }, { text: 'app', italic: false, subscript: true }, { text: ' = ' + Math.abs(params.F_app).toFixed(0) + ' N' }],
-        { fontSize: fs, color: 'var(--color-force-app)', align: 'center', baseline: 'bottom' });
+        { fontSize: fs, color: 'var(--color-force-app)', align: 'center', baseline: 'bottom', halo: true });
     }
 
     // F₁₂ — force of 1 on 2
@@ -151,10 +162,10 @@ export default function NewtonsThirdLaw() {
       const tip = drawArrow(ctx, x1_right, topY - 8 * s,
         Math.abs(F12) * vecScale,
         F12 > 0 ? 0 : Math.PI,
-        '#be185d', lw);
+        '#be185d', lw, true);
       drawMixedText(ctx, tip.hx + (F12 > 0 ? 8 : -8) * s, topY - 8 * s,
         [{ text: 'F', italic: true, vector: true }, { text: '12', italic: false, subscript: true }, { text: ' = ' + F12.toFixed(1) + ' N' }],
-        { fontSize: fs, color: '#be185d', align: F12 > 0 ? 'left' : 'right', baseline: 'middle' });
+        { fontSize: fs, color: '#be185d', align: F12 > 0 ? 'left' : 'right', baseline: 'middle', halo: true });
     }
 
     // F₂₁ — force of 2 on 1
@@ -162,10 +173,10 @@ export default function NewtonsThirdLaw() {
       const tip = drawArrow(ctx, x1_right, topY + 14 * s,
         Math.abs(F21) * vecScale,
         F21 > 0 ? 0 : Math.PI,
-        '#0284c7', lw);
+        '#0284c7', lw, true);
       drawMixedText(ctx, tip.hx + (F21 > 0 ? 8 : -8) * s, topY + 14 * s,
         [{ text: 'F', italic: true, vector: true }, { text: '21', italic: false, subscript: true }, { text: ' = ' + Math.abs(F21).toFixed(1) + ' N' }],
-        { fontSize: fs, color: '#0284c7', align: F21 > 0 ? 'left' : 'right', baseline: 'middle' });
+        { fontSize: fs, color: '#0284c7', align: F21 > 0 ? 'left' : 'right', baseline: 'middle', halo: true });
     }
 
     // System acceleration
@@ -174,16 +185,17 @@ export default function NewtonsThirdLaw() {
       drawArrow(ctx, midBlock, topY - 34 * s,
         Math.abs(a) * 14 * s,
         a > 0 ? 0 : Math.PI,
-        'var(--color-accel)', lw);
+        'var(--color-accel)', lw, true);
       drawMixedText(ctx, midBlock, topY - 50 * s,
         [{ text: 'a', italic: true, vector: true }, { text: ' = ' + a.toFixed(2) + ' m/s²' }],
-        { fontSize: fs, color: 'var(--color-accel)', align: 'center', baseline: 'bottom' });
+        { fontSize: fs, color: 'var(--color-accel)', align: 'center', baseline: 'bottom', halo: true });
     }
 
   }, [state, params, fontsReady, stageGen]);
 
   // ── Velocity vs time chart ───────────────────────────────────────────────
   useEffect(() => {
+    if (!showGraph) return;
     const canvas = velChartRef.current;
     if (!canvas) return;
     const ctx = scaleCanvas(canvas, canvas.parentElement!.clientWidth, 160);
@@ -197,7 +209,7 @@ export default function NewtonsThirdLaw() {
       subdivisionColor: '#f8fafc'
     });
 
-    const padL = 52, padR = 14, padT = 16, padB = 36;
+    const padL = 56, padR = 14, padT = 16, padB = 36;
     const chartW = w - padL - padR;
     const chartH = h - padT - padB;
 
@@ -218,29 +230,30 @@ export default function NewtonsThirdLaw() {
     // Tick labels
     const vTicks = [maxV, 0, -maxV];
     for (const vt of vTicks) {
-      drawMixedText(ctx, padL - 6, mapV(vt),
+      drawMixedText(ctx, padL - 8, mapV(vt),
         [{ text: vt.toFixed(0) }],
-        { fontSize: 11, color: '#475569', align: 'right' });
+        { fontSize: 12, color: '#475569', align: 'right' });
     }
 
     // Y-axis title:  v  (m/s)
     ctx.save();
-    ctx.translate(12, padT + chartH / 2);
+    ctx.translate(14, padT + chartH / 2);
     ctx.rotate(-Math.PI / 2);
     drawMixedText(ctx, 0, 0,
-      [{ text: 'v', italic: true }, { text: ' (m/s)' }],
-      { fontSize: 12, color: '#334155', align: 'center' });
+      [{ text: 'v', italic: true }, { text: '  (m/s)' }],
+      { fontSize: 14, color: '#334155', align: 'center' }
+    );
     ctx.restore();
 
     // X-axis title
     drawMixedText(ctx, padL + chartW / 2, h - 4,
       [{ text: 'time →' }],
-      { fontSize: 11, color: '#475569', align: 'center', baseline: 'bottom' });
+      { fontSize: 12, color: '#475569', align: 'center', baseline: 'bottom' });
 
     // Velocity curve
     if (hist.length > 1) {
       ctx.strokeStyle = resolveColor('var(--color-vel)');
-      ctx.lineWidth   = 2;
+      ctx.lineWidth   = 2.2;
       ctx.beginPath();
       hist.forEach((v, i) => {
         const px = mapI(i + VEL_HISTORY - hist.length);
@@ -256,9 +269,7 @@ export default function NewtonsThirdLaw() {
       ctx.arc(mapI(VEL_HISTORY - 1), mapV(lastV), 4, 0, 2 * Math.PI);
       ctx.fill();
     }
-  }, [state, fontsReady]);
-
-
+  }, [state, fontsReady, showGraph]);
 
   const a   = params.F_app / (params.m1 + params.m2);
   const F12 = params.m2 * a;
@@ -287,17 +298,42 @@ export default function NewtonsThirdLaw() {
             <span style={{ color: '#be185d',                fontWeight: 600 }}>→ <InlineMath math="\vec{F}_{12}" /></span>
             <span style={{ color: '#0284c7',                fontWeight: 600 }}>→ <InlineMath math="\vec{F}_{21}" /></span>
             <span style={{ color: 'var(--color-accel)',     fontWeight: 600 }}>→ <InlineMath math="\vec{a}" /></span>
+            <button
+              type="button"
+              className="secondary"
+              style={{ marginLeft: 'auto', padding: '2px 10px', fontSize: '12px', height: 'auto', lineHeight: '1.4' }}
+              onClick={() => setShowGraph(p => !p)}
+            >
+              {showGraph ? '▲ Collapse Graph' : '▼ Expand Graph'}
+            </button>
           </div>
-          <div className="sim-stage sim-stage-split" style={{ ['--sim-stage-h' as string]: '300px' }}>
+          <div className="sim-stage sim-stage-split" style={{ ['--sim-stage-h' as string]: showGraph ? '320px' : '500px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
           <div style={{ borderTop: '1px solid var(--border-color)', background: '#fff' }}>
-            <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
-              Velocity <InlineMath math="v" /> vs time
+            <div 
+              onClick={() => setShowGraph(p => !p)}
+              style={{ 
+                padding: '8px 16px', 
+                fontSize: '13px', 
+                fontWeight: 600, 
+                color: '#475569', 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                background: '#f8fafc',
+                cursor: 'pointer',
+                userSelect: 'none'
+              }}
+            >
+              <span>Velocity <InlineMath math="v" /> vs time</span>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>{showGraph ? '▲ Collapse' : '▼ Expand'}</span>
             </div>
-            <div style={{ width: '100%', height: '160px' }}>
-              <canvas ref={velChartRef} style={{ display: 'block', width: '100%', height: '100%' }} />
-            </div>
+            {showGraph && (
+              <div style={{ width: '100%', height: '160px' }}>
+                <canvas ref={velChartRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+              </div>
+            )}
           </div>
         </>
       }

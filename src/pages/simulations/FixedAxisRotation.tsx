@@ -213,7 +213,7 @@ export default function FixedAxisRotation() {
     const pivotX = width / 2;
     const pivotY = sceneHeight / 2 + 10;
     const fitExtent = Math.max(model.visualExtent, 0.8);
-    const pxPerMeter = Math.max(42, (Math.min(width, sceneHeight) / 2 - 74 * s) / fitExtent);
+    const pxPerMeter = Math.max(48, (Math.min(width, sceneHeight) / 2 - 42 * s) / fitExtent);
     const theta = wrapUnsigned(state.theta);
     const forcePoint = pointFromPivot(pivotX, pivotY, params.forceRadius * pxPerMeter, theta);
     const markerPoint = pointFromPivot(pivotX, pivotY, model.trackingRadius * pxPerMeter, theta);
@@ -225,29 +225,30 @@ export default function FixedAxisRotation() {
 
     ctx.fillStyle = '#0f172a';
     ctx.beginPath();
-    ctx.arc(pivotX, pivotY, 5.5 * s, 0, TWO_PI);
+    ctx.arc(pivotX, pivotY, 7.5 * s, 0, TWO_PI);
     ctx.fill();
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
-    drawMixedText(ctx, pivotX + 12 * s, pivotY + 16 * s, [{ text: 'fixed axis' }], {
-      fontSize: Math.round(12 * s),
+    drawMixedText(ctx, pivotX + 14 * s, pivotY + 18 * s, [{ text: 'fixed axis' }], {
+      fontSize: Math.round(14 * s),
       color: '#475569',
       align: 'left'
     });
 
     if (params.forceRadius > 0.02) {
-      const leverTip = drawArrow(ctx, pivotX, pivotY, params.forceRadius * pxPerMeter, -theta, '#475569', 2.5 * s);
+      const leverTip = drawArrow(ctx, pivotX, pivotY, params.forceRadius * pxPerMeter, -theta, '#475569', 2.8 * s);
       const labelPoint = pointFromPivot(pivotX, pivotY, params.forceRadius * pxPerMeter * 0.5, theta);
-      const offset = normalOffset(theta, 18 * s);
+      const offset = normalOffset(theta, 20 * s);
       drawMixedText(ctx, labelPoint.x + offset.x, labelPoint.y + offset.y, [{ text: 'r', italic: true }], {
-        fontSize: Math.round(16 * s),
+        fontSize: Math.round(18 * s),
         color: '#475569',
-        align: 'center'
+        align: 'center',
+        halo: true
       });
       ctx.fillStyle = '#475569';
       ctx.beginPath();
-      ctx.arc(leverTip.hx, leverTip.hy, 3.5 * s, 0, TWO_PI);
+      ctx.arc(leverTip.hx, leverTip.hy, 4.5 * s, 0, TWO_PI);
       ctx.fill();
     }
 
@@ -568,7 +569,8 @@ function drawThetaArc(ctx: CanvasRenderingContext2D, cx: number, cy: number, the
   drawMixedText(ctx, label.x, label.y, [{ text: 'θ', italic: true }], {
     fontSize: 13,
     color: 'var(--color-gravity)',
-    align: 'center'
+    align: 'center',
+    halo: true
   });
 }
 
@@ -585,13 +587,14 @@ function drawForceVectors(
 
   const forceScale = 3.1 * s;
   const forceAngle = -(theta + torques.phi);
-  const forceTip = drawArrow(ctx, x, y, clamp(params.force * forceScale, 18 * s, 105 * s), forceAngle, 'var(--color-force-app)', 4.5 * s);
-  drawMixedText(ctx, forceTip.hx + 10 * s * Math.cos(forceAngle), forceTip.hy + 10 * s * Math.sin(forceAngle), [
+  const forceTip = drawArrow(ctx, x, y, clamp(params.force * forceScale, 18 * s, 105 * s), forceAngle, 'var(--color-force-app)', 4.5 * s, true);
+  drawMixedText(ctx, forceTip.hx + 12 * s * Math.cos(forceAngle), forceTip.hy + 12 * s * Math.sin(forceAngle), [
     { text: 'F', italic: true, vector: true }
   ], {
-    fontSize: Math.round(16 * s),
+    fontSize: Math.round(18 * s),
     color: 'var(--color-force-app)',
-    align: 'center'
+    align: 'center',
+    halo: true
   });
 
   if (!params.showDecomposition) return;
@@ -600,28 +603,30 @@ function drawForceVectors(
     const radialDirection = -(theta + (torques.radialForce >= 0 ? 0 : Math.PI));
     ctx.save();
     ctx.setLineDash([5, 4]);
-    const radialTip = drawArrow(ctx, x, y, clamp(Math.abs(torques.radialForce) * forceScale, 14 * s, 90 * s), radialDirection, '#0f766e', 3 * s);
+    const radialTip = drawArrow(ctx, x, y, clamp(Math.abs(torques.radialForce) * forceScale, 14 * s, 90 * s), radialDirection, '#0f766e', 3 * s, true);
     ctx.restore();
-    drawMixedText(ctx, radialTip.hx + 8 * s * Math.cos(radialDirection), radialTip.hy + 8 * s * Math.sin(radialDirection), [
+    drawMixedText(ctx, radialTip.hx + 10 * s * Math.cos(radialDirection), radialTip.hy + 10 * s * Math.sin(radialDirection), [
       { text: 'F', italic: true },
-      { text: 'r', italic: true, subscript: true }
+      { text: 'r', italic: false, subscript: true }
     ], {
-      fontSize: Math.round(14 * s),
+      fontSize: Math.round(16 * s),
       color: '#0f766e',
-      align: 'center'
+      align: 'center',
+      halo: true
     });
   }
 
   if (Math.abs(torques.tangentialForce) > 0.05) {
     const tangentDirection = -(theta + Math.sign(torques.tangentialForce) * Math.PI / 2);
-    const tangentTip = drawArrow(ctx, x, y, clamp(Math.abs(torques.tangentialForce) * forceScale, 14 * s, 96 * s), tangentDirection, 'var(--color-accel-tangential)', 4 * s);
-    drawMixedText(ctx, tangentTip.hx + 10 * s * Math.cos(tangentDirection), tangentTip.hy + 10 * s * Math.sin(tangentDirection), [
+    const tangentTip = drawArrow(ctx, x, y, clamp(Math.abs(torques.tangentialForce) * forceScale, 14 * s, 96 * s), tangentDirection, 'var(--color-accel-tangential)', 4 * s, true);
+    drawMixedText(ctx, tangentTip.hx + 12 * s * Math.cos(tangentDirection), tangentTip.hy + 12 * s * Math.sin(tangentDirection), [
       { text: 'F', italic: true },
-      { text: 't', italic: true, subscript: true }
+      { text: 't', italic: false, subscript: true }
     ], {
-      fontSize: Math.round(15 * s),
+      fontSize: Math.round(17 * s),
       color: 'var(--color-accel-tangential)',
-      align: 'center'
+      align: 'center',
+      halo: true
     });
   }
 }
@@ -634,11 +639,12 @@ function drawTorqueArcs(ctx: CanvasRenderingContext2D, cx: number, cy: number, b
     const label = pointFromPivot(cx, cy, torqueRadius + 18, Math.sign(netTorque) > 0 ? -0.18 : 0.18);
     drawMixedText(ctx, label.x, label.y, [
       { text: 'τ', italic: true },
-      { text: 'net', subscript: true }
+      { text: 'net', italic: false, subscript: true }
     ], {
       fontSize: 15,
       color: '#7c2d12',
-      align: 'center'
+      align: 'center',
+      halo: true
     });
   }
 
@@ -650,7 +656,8 @@ function drawTorqueArcs(ctx: CanvasRenderingContext2D, cx: number, cy: number, b
     drawMixedText(ctx, label.x, label.y, [{ text: 'ω', italic: true }], {
       fontSize: 15,
       color: 'var(--color-vel)',
-      align: 'center'
+      align: 'center',
+      halo: true
     });
   }
 }
@@ -662,9 +669,9 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, width: number, height: nu
   const chartH = 50;
   const maxEnergy = Math.max(1, Math.abs(kineticEnergy), Math.abs(work), Math.abs(deltaK));
   const items = [
-    { label: 'K_rot', value: kineticEnergy, color: '#0f766e' },
-    { label: 'W_net', value: work, color: '#7c2d12' },
-    { label: 'Delta K', value: deltaK, color: '#475569' }
+    { label: [{ text: 'K', italic: true }, { text: 'rot', italic: false, subscript: true }], value: kineticEnergy, color: '#0f766e' },
+    { label: [{ text: 'W', italic: true }, { text: 'net', italic: false, subscript: true }], value: work, color: '#7c2d12' },
+    { label: [{ text: 'Δ' }, { text: 'K', italic: true }], value: deltaK, color: '#475569' }
   ];
   const columnW = chartW / items.length;
   const zeroY = top + chartH - 10;
@@ -693,10 +700,11 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, width: number, height: nu
     const barY = item.value >= 0 ? zeroY - barH : zeroY;
     ctx.fillStyle = item.color;
     ctx.fillRect(centerX - barW / 2, barY, barW, barH);
-    drawMixedText(ctx, centerX, top + 9, [{ text: item.label }], {
-      fontSize: 11,
+    drawMixedText(ctx, centerX, top + 9, item.label, {
+      fontSize: 12,
       color: item.color,
-      align: 'center'
+      align: 'center',
+      halo: true
     });
   }
   ctx.restore();

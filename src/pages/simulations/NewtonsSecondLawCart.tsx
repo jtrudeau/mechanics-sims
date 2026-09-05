@@ -214,7 +214,7 @@ export default function NewtonsSecondLawCart() {
 
     const { ctx, w: width, h: height, s } = fitStage(canvas, 430);
     const lw = 4.5 * s;
-    const fs = Math.round(15 * s);
+    const fs = Math.round(18 * s);
 
     drawCoordinateGrid(ctx, width, height, {
       backgroundColor: '#fcfdfd',
@@ -223,16 +223,16 @@ export default function NewtonsSecondLawCart() {
     });
 
     const trackY = Math.round(height * 0.51);
-    const cartW = (width < 520 ? 72 : 88) * s;
-    const cartH = 52 * s;
+    const cartW = (width < 520 ? 90 : 118) * s;
+    const cartH = 66 * s;
     const cartStartX = (width < 520 ? 76 : 112) * Math.min(1, s);
-    const pulleyX = Math.max(cartStartX + 160 * s, width - 86 * s);
+    const pulleyX = Math.max(cartStartX + 180 * s, width - 96 * s);
     const cartCenterY = trackY - cartH / 2;
     const stringY = cartCenterY - 2 * s;
-    const pulleyR = 23 * s;
-    const hangerW = 54 * s;
-    const hangerH = 58 * s;
-    const hangerStartY = stringY + 76;
+    const pulleyR = 28 * s;
+    const hangerW = 66 * s;
+    const hangerH = 70 * s;
+    const hangerStartY = stringY + 86;
     const horizontalTravelPx = Math.max(72, pulleyX - pulleyR - 34 - cartW / 2 - cartStartX);
     const verticalTravelPx = Math.max(72, height - 42 - hangerH / 2 - hangerStartY);
     const pxPerMeter = Math.min(horizontalTravelPx, verticalTravelPx) / MAX_TRAVEL_M;
@@ -301,28 +301,37 @@ export default function NewtonsSecondLawCart() {
     ctx.stroke();
     ctx.fillStyle = '#475569';
     ctx.beginPath();
-    ctx.arc(pulleyX, stringY, 4 * s, 0, 2 * Math.PI);
+    ctx.arc(pulleyX, stringY, 5 * s, 0, 2 * Math.PI);
     ctx.fill();
 
     ctx.fillStyle = 'rgba(15, 23, 42, 0.06)';
-    ctx.fillRect(cartLeft + 4, cartTop + 4, cartW, cartH);
+    ctx.fillRect(cartLeft + 5, cartTop + 5, cartW, cartH);
     ctx.fillStyle = '#e0f2fe';
     ctx.fillRect(cartLeft, cartTop, cartW, cartH);
     ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 2.2;
     ctx.strokeRect(cartLeft, cartTop, cartW, cartH);
+
+    // Cart center of mass indicator dot
+    ctx.fillStyle = '#0284c7';
+    ctx.beginPath();
+    ctx.arc(cartCx, cartCenterY, 3.5 * s, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Position cart mass label 'mc' in upper-left corner of cart
+    // completely unobscured by vertical force vectors or tension arrow
     drawMixedText(
       ctx,
-      cartCx,
-      cartCenterY,
+      cartLeft + 24 * s,
+      cartTop + 20 * s,
       [{ text: 'm', italic: true }, { text: 'c', subscript: true }],
-      { fontSize: Math.round(17 * s), color: '#0284c7', align: 'center', baseline: 'middle' }
+      { fontSize: Math.round(19 * s), color: '#0284c7', align: 'center', baseline: 'middle', halo: true }
     );
 
     ctx.fillStyle = '#334155';
-    for (const wx of [cartLeft + 18 * s, cartRight - 18 * s]) {
+    for (const wx of [cartLeft + 22 * s, cartRight - 22 * s]) {
       ctx.beginPath();
-      ctx.arc(wx, trackY + 7 * s, 8 * s, 0, 2 * Math.PI);
+      ctx.arc(wx, trackY + 8 * s, 10 * s, 0, 2 * Math.PI);
       ctx.fill();
       ctx.strokeStyle = '#fff';
       ctx.lineWidth = 2;
@@ -330,18 +339,27 @@ export default function NewtonsSecondLawCart() {
     }
 
     ctx.fillStyle = 'rgba(15, 23, 42, 0.06)';
-    ctx.fillRect(hangerLeft + 4, hangerTop + 4, hangerW, hangerH);
+    ctx.fillRect(hangerLeft + 5, hangerTop + 5, hangerW, hangerH);
     ctx.fillStyle = '#fef3c7';
     ctx.fillRect(hangerLeft, hangerTop, hangerW, hangerH);
     ctx.strokeStyle = '#b45309';
     ctx.lineWidth = 2.2;
     ctx.strokeRect(hangerLeft, hangerTop, hangerW, hangerH);
+
+    // Hanger center of mass indicator dot
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.arc(pulleyX, hangerCy, 3.5 * s, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Position hanging mass label 'mh' offset horizontally to the left
+    // completely unobscured by vertical tension and gravity arrows
     drawMixedText(
       ctx,
-      pulleyX,
+      pulleyX - 18 * s,
       hangerCy,
       [{ text: 'm', italic: true }, { text: 'h', subscript: true }],
-      { fontSize: Math.round(17 * s), color: '#92400e', align: 'center', baseline: 'middle' }
+      { fontSize: Math.round(19 * s), color: '#92400e', align: 'center', baseline: 'middle', halo: true }
     );
 
     ctx.strokeStyle = '#475569';
@@ -398,83 +416,83 @@ export default function NewtonsSecondLawCart() {
       const hangerArrowX = pulleyX;
       const hangerArrowY = hangerCy;
 
-      const tTip = drawArrow(ctx, cartArrowX, cartArrowY, dynamics.tension * forceScale, 0, 'var(--color-force-app)', lw);
+      const tTip = drawArrow(ctx, cartArrowX, cartArrowY, dynamics.tension * forceScale, 0, 'var(--color-force-app)', lw, true);
       drawMixedText(
         ctx,
         tTip.hx + 10,
         tTip.hy,
         [{ text: 'T', italic: true, vector: true }],
-        { fontSize: fs, color: 'var(--color-force-app)', align: 'left', baseline: 'middle' }
+        { fontSize: fs, color: 'var(--color-force-app)', align: 'left', baseline: 'middle', halo: true }
       );
 
-      const nTip = drawArrow(ctx, cartArrowX, cartArrowY, dynamics.normal * forceScale, -Math.PI / 2, 'var(--color-normal)', lw);
+      const nTip = drawArrow(ctx, cartArrowX, cartArrowY, dynamics.normal * forceScale, -Math.PI / 2, 'var(--color-normal)', lw, true);
       drawMixedText(
         ctx,
         nTip.hx,
         nTip.hy - 8,
         [{ text: 'N', italic: true, vector: true }],
-        { fontSize: fs, color: 'var(--color-normal)', align: 'center', baseline: 'bottom' }
+        { fontSize: fs, color: 'var(--color-normal)', align: 'center', baseline: 'bottom', halo: true }
       );
 
-      const wcTip = drawArrow(ctx, cartArrowX, cartArrowY, dynamics.cartWeight * forceScale, Math.PI / 2, 'var(--color-gravity)', lw);
+      const wcTip = drawArrow(ctx, cartArrowX, cartArrowY, dynamics.cartWeight * forceScale, Math.PI / 2, 'var(--color-gravity)', lw, true);
       drawMixedText(
         ctx,
         wcTip.hx,
         wcTip.hy + 10,
-        [{ text: 'm', italic: true }, { text: 'c', subscript: true }, { text: 'g', italic: true }],
-        { fontSize: fs, color: 'var(--color-gravity)', align: 'center', baseline: 'top' }
+        [{ text: 'm', italic: true }, { text: 'c', subscript: true, italic: false }, { text: 'g', italic: true }],
+        { fontSize: fs, color: 'var(--color-gravity)', align: 'center', baseline: 'top', halo: true }
       );
 
       if (params.frictionEnabled && dynamics.friction > 0.05) {
-        const fTip = drawArrow(ctx, cartArrowX, trackY - 10, dynamics.friction * forceScale, Math.PI, 'var(--color-friction)', lw);
+        const fTip = drawArrow(ctx, cartArrowX, trackY - 10, dynamics.friction * forceScale, Math.PI, 'var(--color-friction)', lw, true);
         drawMixedText(
           ctx,
           fTip.hx - 10,
           fTip.hy,
           [
             { text: 'f', italic: true, vector: true },
-            { text: dynamics.regime === 'static' ? 's' : 'k', subscript: true }
+            { text: dynamics.regime === 'static' ? 's' : 'k', subscript: true, italic: false }
           ],
-          { fontSize: fs, color: 'var(--color-friction)', align: 'right', baseline: 'middle' }
+          { fontSize: fs, color: 'var(--color-friction)', align: 'right', baseline: 'middle', halo: true }
         );
       }
 
-      const htTip = drawArrow(ctx, hangerArrowX, hangerArrowY, dynamics.tension * forceScale, -Math.PI / 2, 'var(--color-force-app)', lw);
+      const htTip = drawArrow(ctx, hangerArrowX, hangerArrowY, dynamics.tension * forceScale, -Math.PI / 2, 'var(--color-force-app)', lw, true);
       drawMixedText(
         ctx,
         htTip.hx + 10,
         htTip.hy,
         [{ text: 'T', italic: true, vector: true }],
-        { fontSize: fs, color: 'var(--color-force-app)', align: 'left', baseline: 'middle' }
+        { fontSize: fs, color: 'var(--color-force-app)', align: 'left', baseline: 'middle', halo: true }
       );
 
-      const whTip = drawArrow(ctx, hangerArrowX, hangerArrowY, dynamics.hangerWeight * forceScale, Math.PI / 2, 'var(--color-gravity)', lw);
+      const whTip = drawArrow(ctx, hangerArrowX, hangerArrowY, dynamics.hangerWeight * forceScale, Math.PI / 2, 'var(--color-gravity)', lw, true);
       drawMixedText(
         ctx,
         whTip.hx + 12,
         whTip.hy,
-        [{ text: 'm', italic: true }, { text: 'h', subscript: true }, { text: 'g', italic: true }],
-        { fontSize: fs, color: 'var(--color-gravity)', align: 'left', baseline: 'middle' }
+        [{ text: 'm', italic: true }, { text: 'h', subscript: true, italic: false }, { text: 'g', italic: true }],
+        { fontSize: fs, color: 'var(--color-gravity)', align: 'left', baseline: 'middle', halo: true }
       );
     }
 
     if (dynamics.a > 0.01 && !state.atLimit) {
       const accelLen = Math.max(18 * s, dynamics.a * 24 * s);
-      const aTip = drawArrow(ctx, cartCx - 12 * s, cartTop - 28 * s, accelLen, 0, 'var(--color-accel)', lw);
+      const aTip = drawArrow(ctx, cartCx - 12 * s, cartTop - 28 * s, accelLen, 0, 'var(--color-accel)', lw, true);
       drawMixedText(
         ctx,
         aTip.hx + 10,
         aTip.hy,
         [{ text: 'a', italic: true, vector: true }],
-        { fontSize: fs, color: 'var(--color-accel)', align: 'left', baseline: 'middle' }
+        { fontSize: fs, color: 'var(--color-accel)', align: 'left', baseline: 'middle', halo: true }
       );
-      const haTip = drawArrow(ctx, pulleyX + hangerW / 2 + 18 * s, hangerCy - 20 * s, accelLen, Math.PI / 2, 'var(--color-accel)', lw);
+      const haTip = drawArrow(ctx, pulleyX + hangerW / 2 + 18 * s, hangerCy - 20 * s, accelLen, Math.PI / 2, 'var(--color-accel)', lw, true);
       drawMixedText(
         ctx,
         haTip.hx,
         haTip.hy + 8,
         [{ text: 'a', italic: true, vector: true }],
-        { fontSize: fs, color: 'var(--color-accel)', align: 'center', baseline: 'top' }
+        { fontSize: fs, color: 'var(--color-accel)', align: 'center', baseline: 'top', halo: true }
       );
     }
   }, [dynamics, fontsReady, params.showFbd, state, stageGen]);
@@ -519,10 +537,10 @@ export default function NewtonsSecondLawCart() {
     for (const tick of [0, maxSpeed / 2, maxSpeed]) {
       drawMixedText(
         ctx,
-        padL - 7,
+        padL - 8,
         mapV(tick),
         [{ text: tick.toFixed(1) }],
-        { fontSize: 11, color: '#475569', align: 'right', baseline: 'middle' }
+        { fontSize: 12, color: '#475569', align: 'right', baseline: 'middle' }
       );
     }
 
@@ -533,8 +551,8 @@ export default function NewtonsSecondLawCart() {
       ctx,
       0,
       0,
-      [{ text: 'v', italic: true }, { text: ' (m/s)' }],
-      { fontSize: 12, color: '#334155', align: 'center' }
+      [{ text: 'v', italic: true }, { text: '  (m/s)' }],
+      { fontSize: 14, color: '#334155', align: 'center' }
     );
     ctx.restore();
 
@@ -543,7 +561,7 @@ export default function NewtonsSecondLawCart() {
       padL + chartW / 2,
       height - 5,
       [{ text: 'recent time' }],
-      { fontSize: 11, color: '#475569', align: 'center', baseline: 'bottom' }
+      { fontSize: 12, color: '#475569', align: 'center', baseline: 'bottom' }
     );
 
     if (hist.length > 1) {
@@ -603,14 +621,36 @@ export default function NewtonsSecondLawCart() {
             <span style={{ marginLeft: 'auto', fontWeight: 700, fontSize: '12px', padding: '3px 12px', borderRadius: 99, ...regimeColors }}>
               {regimeLabel}
             </span>
+            <button
+              type="button"
+              className="secondary"
+              style={{ padding: '2px 10px', fontSize: '12px', height: 'auto', lineHeight: '1.4' }}
+              onClick={() => setParams(p => ({ ...p, showGraph: !p.showGraph }))}
+            >
+              {params.showGraph ? '▲ Collapse Graph' : '▼ Expand Graph'}
+            </button>
           </div>
-          <div className="sim-stage sim-stage-split" style={{ ['--sim-stage-h' as string]: '430px' }}>
+          <div className="sim-stage sim-stage-split" style={{ ['--sim-stage-h' as string]: params.showGraph ? '430px' : '580px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
           {params.showGraph && (
             <div style={{ borderTop: '1px solid var(--border-color)', background: '#fff' }}>
-              <div style={{ padding: '6px 16px 0', fontSize: '13px', fontWeight: 600, color: '#475569' }}>
-                Speed <InlineMath math="v" /> vs recent time
+              <div 
+                onClick={() => setParams(p => ({ ...p, showGraph: false }))}
+                style={{ 
+                  padding: '8px 16px', 
+                  fontSize: '13px', 
+                  fontWeight: 600, 
+                  color: '#475569', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  background: '#f8fafc',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>Speed <InlineMath math="v" /> vs recent time</span>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>▲ Collapse</span>
               </div>
               <div style={{ width: '100%', height: '170px' }}>
                 <canvas ref={velocityChartRef} style={{ display: 'block', width: '100%', height: '100%' }} />

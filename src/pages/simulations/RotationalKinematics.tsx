@@ -98,6 +98,7 @@ export default function RotationalKinematics() {
   const [showAreaW, setShowAreaW] = useState(true);
   const [showAreaA, setShowAreaA] = useState(false);
   const [showRimVectors, setShowRimVectors] = useState(true);
+  const [showGraphs, setShowGraphs] = useState(true);
 
   const physicsStep = useCallback(
     (dt: number) => {
@@ -132,9 +133,9 @@ export default function RotationalKinematics() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const { ctx, w: width, h } = fitStage(canvas, 540);
-    const sceneH = Math.round(h * 168 / 540);
-    const graphH = Math.floor((h - sceneH) / 3);
+    const { ctx, w: width, h, s } = fitStage(canvas, 540);
+    const sceneH = showGraphs ? Math.round(h * 180 / 540) : h - 10;
+    const graphH = showGraphs ? Math.floor((h - sceneH) / 3) : 0;
 
     drawCoordinateGrid(ctx, width, h, {
       backgroundColor: '#fcfdfd',
@@ -149,7 +150,9 @@ export default function RotationalKinematics() {
 
     const cx = width / 2;
     const cy = sceneH / 2 + 6;
-    const diskR = Math.min(58, 28 + params.R * 28);
+    const diskR = showGraphs
+      ? Math.min(68, 34 + params.R * 30)
+      : Math.min(135, 60 + params.R * 42);
     ctx.beginPath();
     ctx.arc(cx, cy, diskR, 0, Math.PI * 2);
     ctx.fillStyle = '#e0f2fe';
@@ -158,7 +161,7 @@ export default function RotationalKinematics() {
     ctx.lineWidth = 3;
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 7 * s, 0, Math.PI * 2);
     ctx.fillStyle = '#0f172a';
     ctx.fill();
 
@@ -173,43 +176,33 @@ export default function RotationalKinematics() {
     ctx.stroke();
     ctx.fillStyle = '#b91c1c';
     ctx.beginPath();
-    ctx.arc(rimX, rimY, 6, 0, Math.PI * 2);
+    ctx.arc(rimX, rimY, 8 * s, 0, Math.PI * 2);
     ctx.fill();
 
     if (showRimVectors) {
-      const lw = 3.2;
-      const velScale = 18;
-      const accelScale = 10;
+      const lw = 3.5 * s;
+      const velScale = 18 * s;
+      const accelScale = 10 * s;
       if (Math.abs(vt) > 0.05) {
         const vDir = markAng - Math.sign(now.w || 1) * Math.PI / 2;
-        const vTip = drawArrow(ctx, rimX, rimY, Math.min(56, Math.max(20, Math.abs(vt) * velScale)), vDir, 'var(--color-vel)', lw);
-        drawMixedText(ctx, vTip.hx + 10 * Math.cos(vDir), vTip.hy + 10 * Math.sin(vDir), [{ text: 'v', italic: true, vector: true }], {
-          fontSize: 13,
-          color: 'var(--color-vel)',
-          align: 'center',
-        });
+        const vTip = drawArrow(ctx, rimX, rimY, Math.min(88 * s, Math.abs(vt) * velScale), vDir, 'var(--color-vel)', lw, true);
+        drawMixedText(ctx, vTip.hx + 10 * s * Math.cos(vDir), vTip.hy + 10 * s * Math.sin(vDir),
+          [{ text: 'v', italic: true, vector: true }],
+          { fontSize: Math.round(16 * s), color: 'var(--color-vel)', align: 'center', baseline: 'middle', halo: true });
       }
       if (ar > 0.05) {
         const arDir = markAng + Math.PI;
-        const arTip = drawArrow(ctx, rimX, rimY, Math.min(48, Math.max(16, ar * accelScale * 0.35)), arDir, 'var(--color-accel-radial)', lw);
-        drawMixedText(
-          ctx,
-          arTip.hx + 11 * Math.cos(arDir),
-          arTip.hy + 11 * Math.sin(arDir),
-          [{ text: 'a', italic: true, vector: true }, { text: 'r', italic: true, subscript: true }],
-          { fontSize: 12, color: 'var(--color-accel-radial)', align: 'center' }
-        );
+        const arTip = drawArrow(ctx, rimX, rimY, Math.min(78 * s, ar * accelScale), arDir, 'var(--color-accel-radial)', lw, true);
+        drawMixedText(ctx, arTip.hx + 10 * s * Math.cos(arDir), arTip.hy + 10 * s * Math.sin(arDir),
+          [{ text: 'a', italic: true, vector: true }, { text: 'r', subscript: true }],
+          { fontSize: Math.round(15 * s), color: 'var(--color-accel-radial)', align: 'center', baseline: 'middle', halo: true });
       }
       if (Math.abs(at) > 0.05) {
         const atDir = markAng - Math.sign(now.al) * Math.PI / 2;
-        const atTip = drawArrow(ctx, rimX, rimY, Math.min(48, Math.max(16, Math.abs(at) * accelScale)), atDir, 'var(--color-accel-tangential)', lw);
-        drawMixedText(
-          ctx,
-          atTip.hx + 11 * Math.cos(atDir),
-          atTip.hy + 11 * Math.sin(atDir),
-          [{ text: 'a', italic: true, vector: true }, { text: 't', italic: true, subscript: true }],
-          { fontSize: 12, color: 'var(--color-accel-tangential)', align: 'center' }
-        );
+        const atTip = drawArrow(ctx, rimX, rimY, Math.min(78 * s, Math.abs(at) * accelScale), atDir, 'var(--color-accel-tangential)', lw, true);
+        drawMixedText(ctx, atTip.hx + 10 * s * Math.cos(atDir), atTip.hy + 10 * s * Math.sin(atDir),
+          [{ text: 'a', italic: true, vector: true }, { text: 't', subscript: true }],
+          { fontSize: Math.round(15 * s), color: 'var(--color-accel-tangential)', align: 'center', baseline: 'middle', halo: true });
       }
     }
 
@@ -228,39 +221,41 @@ export default function RotationalKinematics() {
       { fontSize: 12, color: '#475569', align: 'center', baseline: 'bottom' }
     );
 
-    const tA = Math.min(params.tA, params.tB);
-    const tB = Math.max(params.tA, params.tB);
-    const common = {
-      tMin: 0,
-      tMax,
-      tCursor,
-      slopeFrom: showSlope ? tA : undefined,
-      slopeTo: showSlope ? tB : undefined,
-    };
+    if (showGraphs && graphH > 20) {
+      const tA = Math.min(params.tA, params.tB);
+      const tB = Math.max(params.tA, params.tB);
+      const common = {
+        tMin: 0,
+        tMax,
+        tCursor,
+        slopeFrom: showSlope ? tA : undefined,
+        slopeTo: showSlope ? tB : undefined,
+      };
 
-    drawMotionGraph(ctx, { x: 0, y: sceneH, w: width, h: graphH }, als, {
-      ...common,
-      yLabel: [{ text: 'α', italic: true }, { text: ' (rad/s²)' }],
-      color: 'var(--color-accel)',
-      fillFrom: showAreaA ? tA : undefined,
-      fillTo: showAreaA ? tB : undefined,
-      fillColor: 'rgba(91, 33, 182, 0.16)',
-    });
-    drawMotionGraph(ctx, { x: 0, y: sceneH + graphH, w: width, h: graphH }, ws, {
-      ...common,
-      yLabel: [{ text: 'ω', italic: true }, { text: ' (rad/s)' }],
-      color: 'var(--color-vel)',
-      fillFrom: showAreaW ? tA : undefined,
-      fillTo: showAreaW ? tB : undefined,
-      fillColor: 'rgba(4, 120, 87, 0.18)',
-    });
-    drawMotionGraph(ctx, { x: 0, y: sceneH + 2 * graphH, w: width, h: graphH }, ths, {
-      ...common,
-      yLabel: [{ text: 'θ', italic: true }, { text: ' (rad)' }],
-      xLabel: [{ text: 't', italic: true }, { text: ' (s)' }],
-      color: 'var(--color-gravity)',
-    });
-  }, [fontsReady, params, tCursor, showSlope, showAreaW, showAreaA, showRimVectors, now, vt, ar, at, stageGen]);
+      drawMotionGraph(ctx, { x: 0, y: sceneH, w: width, h: graphH }, als, {
+        ...common,
+        yLabel: [{ text: 'α', italic: true }, { text: ' (rad/s²)' }],
+        color: 'var(--color-accel)',
+        fillFrom: showAreaA ? tA : undefined,
+        fillTo: showAreaA ? tB : undefined,
+        fillColor: 'rgba(91, 33, 182, 0.16)',
+      });
+      drawMotionGraph(ctx, { x: 0, y: sceneH + graphH, w: width, h: graphH }, ws, {
+        ...common,
+        yLabel: [{ text: 'ω', italic: true }, { text: ' (rad/s)' }],
+        color: 'var(--color-vel)',
+        fillFrom: showAreaW ? tA : undefined,
+        fillTo: showAreaW ? tB : undefined,
+        fillColor: 'rgba(4, 120, 87, 0.18)',
+      });
+      drawMotionGraph(ctx, { x: 0, y: sceneH + 2 * graphH, w: width, h: graphH }, ths, {
+        ...common,
+        yLabel: [{ text: 'θ', italic: true }, { text: ' (rad)' }],
+        xLabel: [{ text: 't', italic: true }, { text: ' (s)' }],
+        color: 'var(--color-gravity)',
+      });
+    }
+  }, [fontsReady, params, tCursor, showSlope, showAreaW, showAreaA, showRimVectors, showGraphs, now, vt, ar, at, stageGen]);
 
   const handleNum = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as keyof Params;
@@ -322,6 +317,14 @@ export default function RotationalKinematics() {
               {isUcm ? 'UCM at the rim' : 'non-UCM'}
             </span>
             <span style={{ color: '#475569' }}>cursor t = {tCursor.toFixed(2)} s</span>
+            <button
+              type="button"
+              className="secondary"
+              style={{ padding: '2px 10px', fontSize: 12, height: 'auto', lineHeight: '1.4' }}
+              onClick={() => setShowGraphs(p => !p)}
+            >
+              {showGraphs ? '▲ Collapse Graphs' : '▼ Expand Graphs'}
+            </button>
           </div>
           <div className="sim-stage" style={{ ['--sim-stage-h' as string]: '540px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />

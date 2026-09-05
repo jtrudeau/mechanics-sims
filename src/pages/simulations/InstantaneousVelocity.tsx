@@ -207,7 +207,7 @@ export default function InstantaneousVelocity() {
       ctx,
       (ptA.x + ptB.x) / 2, dtLabelY,
       [{ text: 'Δ' }, { text: 't', italic: true }],
-      { fontSize: fs, color: '#0284c7', align: 'center' }
+      { fontSize: fs, color: '#0284c7', align: 'center', halo: true }
     );
 
     // Δx label — centred on the vertical leg, offset to the right (or left)
@@ -216,7 +216,7 @@ export default function InstantaneousVelocity() {
       ctx,
       dxLabelX, (ptB.y + ptC.y) / 2,
       [{ text: 'Δ' }, { text: 'x', italic: true }],
-      { fontSize: fs, color: '#0284c7', align: triDir > 0 ? 'left' : 'right' }
+      { fontSize: fs, color: '#0284c7', align: triDir > 0 ? 'left' : 'right', halo: true }
     );
 
     // ── Drop lines from t₁ and t₂ ─────────────────────────────────
@@ -245,7 +245,7 @@ export default function InstantaneousVelocity() {
         ctx,
         labelX, labelY,
         [{ text: 't', italic: true }, { text: num, subscript: true }],
-        { fontSize: fs, color: '#1e293b', align: 'left' }
+        { fontSize: fs, color: '#1e293b', align: 'left', halo: true }
       );
     }
 

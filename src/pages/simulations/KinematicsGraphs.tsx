@@ -4,6 +4,7 @@ import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { useQuerySeed } from '../../hooks/useQuerySeed';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
 import {
+  drawArrow,
   drawCoordinateGrid,
   drawMixedText,
   drawMotionGraph,
@@ -116,6 +117,7 @@ export default function KinematicsGraphs() {
   const [showSlope, setShowSlope] = useState(true);
   const [showAreaV, setShowAreaV] = useState(true);
   const [showAreaA, setShowAreaA] = useState(false);
+  const [showGraphs, setShowGraphs] = useState(true);
 
   const physicsStep = useCallback(
     (dt: number) => {
@@ -146,8 +148,8 @@ export default function KinematicsGraphs() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const { ctx, w: width, h } = fitStage(canvas, 514);
-    const sceneH = Math.round(h * 118 / 514);
-    const graphH = Math.floor((h - sceneH) / 3);
+    const sceneH = showGraphs ? Math.round(h * 135 / 514) : h - 10;
+    const graphH = showGraphs ? Math.floor((h - sceneH) / 3) : 0;
 
     drawCoordinateGrid(ctx, width, h, {
       backgroundColor: '#fcfdfd',
@@ -168,47 +170,53 @@ export default function KinematicsGraphs() {
       if (s.y > xMax) xMax = s.y;
     }
     const xSpan = Math.max(4, xMax - xMin);
-    const trackPad = 48;
+    const trackPad = 54;
     const mapSceneX = (x: number) =>
       trackPad + ((x - (xMin - 0.08 * xSpan)) / (xSpan * 1.16)) * (width - 2 * trackPad);
+
+    const cartW = showGraphs ? 56 : 88;
+    const cartH = showGraphs ? 32 : 48;
+    const wheelR = showGraphs ? 6 : 9;
+    const trackY = showGraphs ? sceneH - 26 : sceneH / 2 + 36;
+    const cartY = trackY - cartH;
 
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(24, sceneH - 28);
-    ctx.lineTo(width - 24, sceneH - 28);
+    ctx.moveTo(24, trackY);
+    ctx.lineTo(width - 24, trackY);
     ctx.stroke();
 
     const cartX = mapSceneX(xNow);
-    const cartY = sceneH - 52;
     ctx.fillStyle = 'rgba(15,23,42,0.06)';
-    ctx.fillRect(cartX - 20, cartY + 4, 44, 24);
+    ctx.fillRect(cartX - cartW / 2 + 3, cartY + 3, cartW, cartH);
     ctx.fillStyle = '#e0f2fe';
-    ctx.fillRect(cartX - 22, cartY, 44, 24);
+    ctx.fillRect(cartX - cartW / 2, cartY, cartW, cartH);
     ctx.strokeStyle = '#0284c7';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(cartX - 22, cartY, 44, 24);
+    ctx.lineWidth = 2.2;
+    ctx.strokeRect(cartX - cartW / 2, cartY, cartW, cartH);
+
+    drawMixedText(ctx, cartX, cartY + cartH / 2,
+      [{ text: 'm', italic: true }],
+      { fontSize: showGraphs ? 15 : 18, color: '#0284c7', align: 'center', baseline: 'middle', halo: true });
+
     ctx.fillStyle = '#334155';
-    ctx.beginPath();
-    ctx.arc(cartX - 12, sceneH - 24, 5, 0, Math.PI * 2);
-    ctx.arc(cartX + 12, sceneH - 24, 5, 0, Math.PI * 2);
-    ctx.fill();
+    for (const wx of [cartX - cartW * 0.28, cartX + cartW * 0.28]) {
+      ctx.beginPath();
+      ctx.arc(wx, trackY + wheelR * 0.5, wheelR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
 
     const vDir = now.v >= 0 ? 1 : -1;
     if (Math.abs(now.v) > 0.08) {
-      ctx.strokeStyle = '#047857';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(cartX, cartY - 10);
-      ctx.lineTo(cartX + vDir * 36, cartY - 10);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cartX + vDir * 36, cartY - 10);
-      ctx.lineTo(cartX + vDir * 28, cartY - 15);
-      ctx.lineTo(cartX + vDir * 28, cartY - 5);
-      ctx.closePath();
-      ctx.fillStyle = '#047857';
-      ctx.fill();
+      const vLen = Math.min(84, Math.max(24, Math.abs(now.v) * (showGraphs ? 11 : 16)));
+      const vTip = drawArrow(ctx, cartX, cartY - 14, vLen, vDir === 1 ? 0 : Math.PI, 'var(--color-vel)', 3.5, true);
+      drawMixedText(ctx, vTip.hx + vDir * 10, cartY - 14,
+        [{ text: 'v', italic: true, vector: true }],
+        { fontSize: 16, color: 'var(--color-vel)', align: vDir === 1 ? 'left' : 'right', baseline: 'middle', halo: true });
     }
 
     drawMixedText(
@@ -219,39 +227,51 @@ export default function KinematicsGraphs() {
       { fontSize: 13, color: '#475569', align: 'left', baseline: 'top' }
     );
 
-    const tA = Math.min(params.tA, params.tB);
-    const tB = Math.max(params.tA, params.tB);
-    const common = {
-      tMin: 0,
-      tMax,
-      tCursor,
-      slopeFrom: showSlope ? tA : undefined,
-      slopeTo: showSlope ? tB : undefined,
-    };
+    if (!showGraphs) {
+      drawMixedText(
+        ctx,
+        width / 2,
+        trackY + 36,
+        [{ text: 'x', italic: true }, { text: ` = ${now.x.toFixed(2)} m    ` }, { text: 'v', italic: true }, { text: ` = ${now.v.toFixed(2)} m/s    ` }, { text: 'a', italic: true }, { text: ` = ${now.a.toFixed(2)} m/s²` }],
+        { fontSize: 16, color: '#334155', align: 'center', baseline: 'top', halo: true }
+      );
+    }
 
-    drawMotionGraph(ctx, { x: 0, y: sceneH, w: width, h: graphH }, as, {
-      ...common,
-      yLabel: [{ text: 'a', italic: true }, { text: ' (m/s²)' }],
-      color: 'var(--color-accel)',
-      fillFrom: showAreaA ? tA : undefined,
-      fillTo: showAreaA ? tB : undefined,
-      fillColor: 'rgba(91, 33, 182, 0.16)',
-    });
-    drawMotionGraph(ctx, { x: 0, y: sceneH + graphH, w: width, h: graphH }, vs, {
-      ...common,
-      yLabel: [{ text: 'v', italic: true }, { text: ' (m/s)' }],
-      color: 'var(--color-vel)',
-      fillFrom: showAreaV ? tA : undefined,
-      fillTo: showAreaV ? tB : undefined,
-      fillColor: 'rgba(4, 120, 87, 0.18)',
-    });
-    drawMotionGraph(ctx, { x: 0, y: sceneH + 2 * graphH, w: width, h: graphH }, xs, {
-      ...common,
-      yLabel: [{ text: 'x', italic: true }, { text: ' (m)' }],
-      xLabel: [{ text: 't', italic: true }, { text: ' (s)' }],
-      color: 'var(--color-gravity)',
-    });
-  }, [fontsReady, params, tCursor, showSlope, showAreaV, showAreaA, now.x, now.v, stageGen]);
+    if (showGraphs && graphH > 20) {
+      const tA = Math.min(params.tA, params.tB);
+      const tB = Math.max(params.tA, params.tB);
+      const common = {
+        tMin: 0,
+        tMax,
+        tCursor,
+        slopeFrom: showSlope ? tA : undefined,
+        slopeTo: showSlope ? tB : undefined,
+      };
+
+      drawMotionGraph(ctx, { x: 0, y: sceneH, w: width, h: graphH }, as, {
+        ...common,
+        yLabel: [{ text: 'a', italic: true }, { text: ' (m/s²)' }],
+        color: 'var(--color-accel)',
+        fillFrom: showAreaA ? tA : undefined,
+        fillTo: showAreaA ? tB : undefined,
+        fillColor: 'rgba(91, 33, 182, 0.16)',
+      });
+      drawMotionGraph(ctx, { x: 0, y: sceneH + graphH, w: width, h: graphH }, vs, {
+        ...common,
+        yLabel: [{ text: 'v', italic: true }, { text: ' (m/s)' }],
+        color: 'var(--color-vel)',
+        fillFrom: showAreaV ? tA : undefined,
+        fillTo: showAreaV ? tB : undefined,
+        fillColor: 'rgba(4, 120, 87, 0.18)',
+      });
+      drawMotionGraph(ctx, { x: 0, y: sceneH + 2 * graphH, w: width, h: graphH }, xs, {
+        ...common,
+        yLabel: [{ text: 'x', italic: true }, { text: ' (m)' }],
+        xLabel: [{ text: 't', italic: true }, { text: ' (s)' }],
+        color: 'var(--color-gravity)',
+      });
+    }
+  }, [fontsReady, params, tCursor, showSlope, showAreaV, showAreaA, showGraphs, now, stageGen]);
 
   const handleNum = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as keyof Params;
@@ -305,6 +325,14 @@ export default function KinematicsGraphs() {
             <span style={{ marginLeft: 'auto', color: '#475569' }}>
               cursor t = {tCursor.toFixed(2)} s
             </span>
+            <button
+              type="button"
+              className="secondary"
+              style={{ padding: '2px 10px', fontSize: 12, height: 'auto', lineHeight: '1.4' }}
+              onClick={() => setShowGraphs(p => !p)}
+            >
+              {showGraphs ? '▲ Collapse Graphs' : '▼ Expand Graphs'}
+            </button>
           </div>
           <div className="sim-stage" style={{ ['--sim-stage-h' as string]: '514px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />

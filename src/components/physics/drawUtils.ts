@@ -37,7 +37,8 @@ export function drawArrow(
   len: number,
   ang: number,
   color: string,
-  lineWidth: number = 4.5
+  lineWidth: number = 4.5,
+  halo?: boolean | string
 ) {
   const absLen = Math.abs(len);
   if (absLen < 1) return { hx: x, hy: y }; // Ignore negligible length vectors
@@ -47,19 +48,44 @@ export function drawArrow(
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(ang);
+
+  // Calculate dynamic arrowhead size
+  // Shrinks for small vectors so the head never dominates or overflows the shaft
+  const headLen = Math.min(absLen * 0.4, Math.max(10, lineWidth * 3.0));
+  const headHalfWidth = headLen * 0.6;
+  const direction = len >= 0 ? 1 : -1;
+  const shaftEnd = len - direction * headLen;
+
+  if (halo) {
+    const haloColor = typeof halo === 'string' ? resolveColor(halo) : '#ffffff';
+    const haloLineWidth = lineWidth + 2.5;
+    ctx.save();
+    ctx.strokeStyle = haloColor;
+    ctx.fillStyle = haloColor;
+    ctx.lineWidth = haloLineWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(shaftEnd, 0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(len + direction * 1.5, 0);
+    ctx.lineTo(len - direction * (headLen + 1), -(headHalfWidth + 1.5));
+    ctx.lineTo(len - direction * (headLen + 1), (headHalfWidth + 1.5));
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
   ctx.strokeStyle = resolvedColor;
   ctx.fillStyle = resolvedColor;
   ctx.lineWidth = lineWidth;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  
-  // Calculate dynamic arrowhead size
-  // Shrinks for small vectors so the head never dominates or overflows the shaft
-  const headLen = Math.min(absLen * 0.4, Math.max(10, lineWidth * 3.0));
-  const headHalfWidth = headLen * 0.6;
-  
-  const direction = len >= 0 ? 1 : -1;
-  const shaftEnd = len - direction * headLen;
   
   // Draw shaft line (stops exactly where the head begins)
   ctx.beginPath();
@@ -89,14 +115,14 @@ export function drawLabel(
   y: number,
   ang: number,
   text: string,
-  offset: number = 16,
+  offset: number = 18,
   color: string = '#0f172a'
 ) {
   const resolvedColor = resolveColor(color);
   ctx.save();
   ctx.translate(x, y);
   ctx.fillStyle = resolvedColor;
-  ctx.font = 'italic 16px "KaTeX_Math", "KaTeX_Main", serif';
+  ctx.font = 'italic 18px "KaTeX_Math", "KaTeX_Main", serif';
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   
@@ -156,10 +182,13 @@ export function drawMixedText(
     color?: string;
     align?: CanvasTextAlign;
     baseline?: CanvasTextBaseline;
+    halo?: boolean | string;
+    haloWidth?: number;
   } = {}
 ) {
-  const { fontSize = 15, color = '#334155', align = 'left', baseline = 'middle' } = opts;
+  const { fontSize = 16, color = '#334155', align = 'left', baseline = 'middle', halo = false, haloWidth = 3.5 } = opts;
   const resolvedColor = resolveColor(color);
+  const haloColor = typeof halo === 'string' ? resolveColor(halo) : '#ffffff';
 
   const getSegFont = (seg: TextSeg) => {
     const size = seg.subscript ? fontSize * 0.75 : fontSize;
@@ -189,6 +218,16 @@ export function drawMixedText(
     
     // Draw subscript offset downwards
     const curY = seg.subscript ? y + fontSize * 0.25 : y;
+
+    if (halo) {
+      ctx.save();
+      ctx.strokeStyle = haloColor;
+      ctx.lineWidth = haloWidth;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.strokeText(seg.text, curX, curY);
+      ctx.restore();
+    }
     ctx.fillText(seg.text, curX, curY);
 
     const textWidth = ctx.measureText(seg.text).width;
@@ -210,6 +249,24 @@ export function drawMixedText(
       let arrowX = curX + (textWidth - arrowW) / 2;
       if (seg.italic) {
         arrowX += curFontSize * 0.15;
+      }
+
+      if (halo) {
+        ctx.save();
+        ctx.strokeStyle = haloColor;
+        ctx.lineWidth = haloWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX + arrowW, arrowY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(arrowX + arrowW - curFontSize * 0.18, arrowY - curFontSize * 0.13);
+        ctx.lineTo(arrowX + arrowW, arrowY);
+        ctx.stroke();
+        ctx.restore();
       }
 
       ctx.save();
@@ -402,10 +459,10 @@ export function drawMotionGraph(
     tickCount?: number;
   } = { yLabel: [{ text: 'y' }] }
 ): MotionGraphResult {
-  const padL = 52;
-  const padR = 12;
-  const padT = 10;
-  const padB = opts.xLabel ? 28 : 14;
+  const padL = 58;
+  const padR = 14;
+  const padT = 12;
+  const padB = opts.xLabel ? 34 : 16;
   const plotX = box.x + padL;
   const plotY = box.y + padT;
   const plotW = Math.max(20, box.w - padL - padR);
@@ -562,40 +619,44 @@ export function drawMotionGraph(
 
   for (let i = 0; i <= ticks; i++) {
     const yVal = yHi - (i / ticks) * ySpan;
-    drawMixedText(ctx, plotX - 6, mapY(yVal), [{ text: yVal.toFixed(Math.abs(yVal) >= 10 ? 0 : 1) }], {
-      fontSize: 11,
+    drawMixedText(ctx, plotX - 8, mapY(yVal), [{ text: yVal.toFixed(Math.abs(yVal) >= 10 ? 0 : 1) }], {
+      fontSize: 13,
       color: '#475569',
       align: 'right',
       baseline: 'middle',
+      halo: true,
     });
   }
 
   ctx.save();
-  ctx.translate(box.x + 14, plotY + plotH / 2);
+  ctx.translate(box.x + 16, plotY + plotH / 2);
   ctx.rotate(-Math.PI / 2);
   drawMixedText(ctx, 0, 0, opts.yLabel, {
-    fontSize: 12,
+    fontSize: 14,
     color: '#334155',
     align: 'center',
     baseline: 'middle',
+    halo: true,
   });
   ctx.restore();
 
   if (opts.xLabel) {
     for (let i = 0; i <= tTicks; i++) {
       const tVal = tMin + (i / tTicks) * tSpan;
-      drawMixedText(ctx, mapT(tVal), plotY + plotH + 12, [{ text: tVal.toFixed(tSpan > 8 ? 0 : 1) }], {
-        fontSize: 11,
+      drawMixedText(ctx, mapT(tVal), plotY + plotH + 14, [{ text: tVal.toFixed(tSpan > 8 ? 0 : 1) }], {
+        fontSize: 13,
         color: '#475569',
         align: 'center',
         baseline: 'middle',
+        halo: true,
       });
     }
     drawMixedText(ctx, plotX + plotW / 2, box.y + box.h - 4, opts.xLabel, {
-      fontSize: 12,
+      fontSize: 14,
       color: '#334155',
       align: 'center',
       baseline: 'bottom',
+      halo: true,
     });
   }
 

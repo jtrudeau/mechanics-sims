@@ -185,7 +185,10 @@ export default function WorkEnergyTrack() {
       subdivisionColor: '#f8fafc'
     });
 
-    const topHeight = Math.round(height * 0.59);
+    const showBars = params.showEnergyBars;
+    const showGraph = params.showWorkGraph;
+    const hasBottomCharts = showBars || showGraph;
+    const topHeight = hasBottomCharts ? Math.round(height * 0.58) : height - 20;
     const trackBox = { x: 54, y: 22, w: width - 84, h: topHeight - 58 };
     const profile = sampleTrack(preset, 220);
     const yMinRaw = Math.min(...profile.map((point) => point.y));
@@ -212,8 +215,6 @@ export default function WorkEnergyTrack() {
 
     const chartTop = topHeight + 14;
     const chartHeight = height - chartTop - 20;
-    const showBars = params.showEnergyBars;
-    const showGraph = params.showWorkGraph;
 
     if (showBars && showGraph) {
       const panelW = (width - 42) / 2;
@@ -273,6 +274,21 @@ export default function WorkEnergyTrack() {
             }}>
               {params.frictionEnabled ? 'FRICTION ON' : 'CONSERVATIVE'}
             </span>
+            <button
+              type="button"
+              className="secondary"
+              style={{ padding: '2px 10px', fontSize: '12px', height: 'auto', lineHeight: '1.4' }}
+              onClick={() => setParams(p => {
+                const hasAny = p.showEnergyBars || p.showWorkGraph;
+                return {
+                  ...p,
+                  showEnergyBars: !hasAny,
+                  showWorkGraph: !hasAny,
+                };
+              })}
+            >
+              {(params.showEnergyBars || params.showWorkGraph) ? '▲ Collapse Graphs' : '▼ Expand Graphs'}
+            </button>
           </div>
           <div className="sim-stage" style={{ ['--sim-stage-h' as string]: '590px' }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
@@ -571,51 +587,57 @@ function drawTrackScene(
   const screenNormalAngle = Math.atan2(-normalY, normalX);
   const trackPx = mapX(x);
   const trackPy = mapY(y);
-  const cartCx = trackPx + normalX * 18 * s;
-  const cartCy = trackPy - normalY * 18 * s;
-  const lw = 4.2 * s;
-  const fs = Math.round(15 * s);
+  const cartCx = trackPx + normalX * 22 * s;
+  const cartCy = trackPy - normalY * 22 * s;
+  const lw = 4.5 * s;
+  const fs = Math.round(18 * s);
 
   ctx.save();
   ctx.translate(cartCx, cartCy);
   ctx.rotate(tangentAngle);
   ctx.fillStyle = 'rgba(15,23,42,0.08)';
-  ctx.fillRect(-21 * s, -11 * s, 44 * s, 24 * s);
+  ctx.fillRect(-31 * s, -15 * s, 64 * s, 34 * s);
   ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(-22 * s, -14 * s, 44 * s, 24 * s);
+  ctx.fillRect(-32 * s, -18 * s, 64 * s, 34 * s);
   ctx.strokeStyle = '#334155';
-  ctx.lineWidth = 2 * s;
-  ctx.strokeRect(-22 * s, -14 * s, 44 * s, 24 * s);
+  ctx.lineWidth = 2.2 * s;
+  ctx.strokeRect(-32 * s, -18 * s, 64 * s, 34 * s);
+
+  // Position mass label 'm' in cart center
+  drawMixedText(ctx, 0, -2 * s,
+    [{ text: 'm', italic: true }],
+    { fontSize: Math.round(16 * s), color: '#475569', align: 'center', baseline: 'middle', halo: true });
+
   ctx.fillStyle = '#475569';
   ctx.beginPath();
-  ctx.arc(-13 * s, 12 * s, 4 * s, 0, Math.PI * 2);
-  ctx.arc(13 * s, 12 * s, 4 * s, 0, Math.PI * 2);
+  ctx.arc(-18 * s, 16 * s, 6 * s, 0, Math.PI * 2);
+  ctx.arc(18 * s, 16 * s, 6 * s, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
   if (metrics.speed > 0.05) {
-    const vTip = drawArrow(ctx, cartCx, cartCy - 2 * s, clamp(metrics.speed * 11 * s, 20 * s, 82 * s), velocityAngle, 'var(--color-vel)', lw);
-    drawMixedText(ctx, vTip.hx + 8 * s * Math.cos(velocityAngle), vTip.hy + 8 * s * Math.sin(velocityAngle),
+    const vTip = drawArrow(ctx, cartCx, cartCy - 2 * s, clamp(metrics.speed * 12 * s, 24 * s, 90 * s), velocityAngle, 'var(--color-vel)', lw, true);
+    drawMixedText(ctx, vTip.hx + 10 * s * Math.cos(velocityAngle), vTip.hy + 10 * s * Math.sin(velocityAngle),
       [{ text: 'v', italic: true, vector: true }],
-      { fontSize: fs, color: 'var(--color-vel)', align: 'center', baseline: 'middle' });
+      { fontSize: fs, color: 'var(--color-vel)', align: 'center', baseline: 'middle', halo: true });
   }
 
-  const gTip = drawArrow(ctx, cartCx - 12 * s, cartCy, 62 * s, Math.PI / 2, 'var(--color-gravity)', lw);
-  drawMixedText(ctx, gTip.hx - 4 * s, gTip.hy + 12 * s,
-    [{ text: 'F', italic: true, vector: true }, { text: 'g', subscript: true }],
-    { fontSize: fs, color: 'var(--color-gravity)', align: 'right', baseline: 'top' });
+  const gTip = drawArrow(ctx, cartCx - 14 * s, cartCy, 68 * s, Math.PI / 2, 'var(--color-gravity)', lw, true);
+  drawMixedText(ctx, gTip.hx - 4 * s, gTip.hy + 14 * s,
+    [{ text: 'F', italic: true, vector: true }, { text: 'g', subscript: true, italic: false }],
+    { fontSize: fs, color: 'var(--color-gravity)', align: 'right', baseline: 'top', halo: true });
 
-  const nTip = drawArrow(ctx, cartCx + 10 * s, cartCy, 56 * s, screenNormalAngle, 'var(--color-normal)', lw);
-  drawMixedText(ctx, nTip.hx + 8 * s * Math.cos(screenNormalAngle), nTip.hy + 8 * s * Math.sin(screenNormalAngle),
-    [{ text: 'F', italic: true, vector: true }, { text: 'N', subscript: true }],
-    { fontSize: fs, color: 'var(--color-normal)', align: 'center', baseline: 'middle' });
+  const nTip = drawArrow(ctx, cartCx + 12 * s, cartCy, 62 * s, screenNormalAngle, 'var(--color-normal)', lw, true);
+  drawMixedText(ctx, nTip.hx + 10 * s * Math.cos(screenNormalAngle), nTip.hy + 10 * s * Math.sin(screenNormalAngle),
+    [{ text: 'F', italic: true, vector: true }, { text: 'N', subscript: true, italic: false }],
+    { fontSize: fs, color: 'var(--color-normal)', align: 'center', baseline: 'middle', halo: true });
 
   if (params.frictionEnabled && metrics.speed > 0.04) {
     const fAngle = velocityAngle + Math.PI;
-    const fTip = drawArrow(ctx, cartCx, cartCy + 10 * s, clamp((20 + params.muK * 130) * s, 20 * s, 66 * s), fAngle, 'var(--color-friction)', lw);
+    const fTip = drawArrow(ctx, cartCx, cartCy + 10 * s, clamp((20 + params.muK * 130) * s, 20 * s, 66 * s), fAngle, 'var(--color-friction)', lw, true);
     drawMixedText(ctx, fTip.hx + 8 * s * Math.cos(fAngle), fTip.hy + 8 * s * Math.sin(fAngle),
-      [{ text: 'f', italic: true, vector: true }, { text: 'k', subscript: true }],
-      { fontSize: fs, color: 'var(--color-friction)', align: 'center', baseline: 'middle' });
+      [{ text: 'f', italic: true, vector: true }, { text: 'k', subscript: true, italic: false }],
+      { fontSize: fs, color: 'var(--color-friction)', align: 'center', baseline: 'middle', halo: true });
   }
 
   drawMixedText(ctx, trackBox.x + 4, trackBox.y + 4,
@@ -629,10 +651,10 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, rect: { x: number; y: num
   drawPanelFrame(ctx, rect, 'Energy ledger');
 
   const entries = [
-    { label: 'K', value: metrics.kinetic, color: resolveColor('var(--color-vel)') },
-    { label: 'Ug', value: metrics.potential, color: resolveColor('var(--color-gravity)') },
-    { label: 'Emech', value: metrics.mechanical, color: '#1d4ed8' },
-    { label: 'Ediss', value: metrics.dissipated, color: '#b91c1c' }
+    { label: [{ text: 'K', italic: true }], value: metrics.kinetic, color: resolveColor('var(--color-vel)') },
+    { label: [{ text: 'U', italic: true }, { text: 'g', subscript: true, italic: false }], value: metrics.potential, color: resolveColor('var(--color-gravity)') },
+    { label: [{ text: 'E', italic: true }, { text: 'mech', subscript: true, italic: false }], value: metrics.mechanical, color: '#1d4ed8' },
+    { label: [{ text: 'E', italic: true }, { text: 'diss', subscript: true, italic: false }], value: metrics.dissipated, color: '#b91c1c' }
   ];
   const maxEnergy = Math.max(1, metrics.initialMechanical, ...entries.map((entry) => entry.value)) * 1.16;
   const chart = { x: rect.x + 38, y: rect.y + 36, w: rect.w - 62, h: rect.h - 76 };
@@ -654,12 +676,16 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, rect: { x: number; y: num
   ctx.lineTo(chart.x + chart.w + 4, initialY);
   ctx.stroke();
   ctx.setLineDash([]);
-  drawMixedText(ctx, chart.x + chart.w, initialY - 5, [{ text: 'initial E' }], {
-    fontSize: 10,
-    color: '#475569',
-    align: 'right',
-    baseline: 'bottom'
-  });
+  drawMixedText(ctx, chart.x + chart.w, initialY - 5,
+    [{ text: 'E', italic: true }, { text: '0', subscript: true, italic: false }, { text: ' (init)' }],
+    {
+      fontSize: 10,
+      color: '#475569',
+      align: 'right',
+      baseline: 'bottom',
+      halo: true
+    }
+  );
 
   entries.forEach((entry, i) => {
     const barW = Math.min(46, slot * 0.42);
@@ -670,17 +696,19 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, rect: { x: number; y: num
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1;
     ctx.strokeRect(cx - barW / 2, baseY - barH, barW, barH);
-    drawMixedText(ctx, cx, baseY + 14, [{ text: entry.label }], {
-      fontSize: 11,
+    drawMixedText(ctx, cx, baseY + 14, entry.label, {
+      fontSize: 12,
       color: '#334155',
       align: 'center',
-      baseline: 'top'
+      baseline: 'top',
+      halo: true
     });
     drawMixedText(ctx, cx, baseY - barH - 6, [{ text: entry.value.toFixed(1) }], {
       fontSize: 10,
       color: '#334155',
       align: 'center',
-      baseline: 'bottom'
+      baseline: 'bottom',
+      halo: true
     });
   });
 }
@@ -770,25 +798,40 @@ function drawWorkGraph(
   ctx.stroke();
   ctx.setLineDash([]);
 
-  drawMixedText(ctx, chart.x + chart.w / 2, rect.y + rect.h - 6, [{ text: 'position x' }], {
-    fontSize: 11,
-    color: '#475569',
-    align: 'center',
-    baseline: 'bottom'
-  });
+  drawMixedText(ctx, chart.x + chart.w / 2, rect.y + rect.h - 6,
+    [{ text: 'Position ' }, { text: 'x', italic: true }, { text: ' (m)' }],
+    {
+      fontSize: 11,
+      color: '#475569',
+      align: 'center',
+      baseline: 'bottom',
+      halo: true
+    }
+  );
   ctx.save();
   ctx.translate(rect.x + 12, chart.y + chart.h / 2);
   ctx.rotate(-Math.PI / 2);
-  drawMixedText(ctx, 0, 0, [{ text: 'F tangent (N)' }], {
-    fontSize: 11,
-    color: '#475569',
-    align: 'center'
-  });
+  drawMixedText(ctx, 0, 0,
+    [{ text: 'F', italic: true }, { text: 'tan', subscript: true, italic: false }, { text: ' (N)' }],
+    {
+      fontSize: 11,
+      color: '#475569',
+      align: 'center',
+      halo: true
+    }
+  );
   ctx.restore();
 
   drawMixedText(ctx, chart.x + 4, chart.y + 6,
-    [{ text: 'Wg = ' + metrics.workGravity.toFixed(1) + ' J, Wf = ' + metrics.workFriction.toFixed(1) + ' J' }],
-    { fontSize: 11, color: '#334155', align: 'left', baseline: 'top' });
+    [
+      { text: 'W', italic: true },
+      { text: 'g', subscript: true, italic: false },
+      { text: ` = ${metrics.workGravity.toFixed(1)} J,  ` },
+      { text: 'W', italic: true },
+      { text: 'f', subscript: true, italic: false },
+      { text: ` = ${metrics.workFriction.toFixed(1)} J` }
+    ],
+    { fontSize: 11, color: '#334155', align: 'left', baseline: 'top', halo: true });
 }
 
 function drawPanelFrame(ctx: CanvasRenderingContext2D, rect: { x: number; y: number; w: number; h: number }, title: string) {
