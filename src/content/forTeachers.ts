@@ -42,12 +42,11 @@ export const forTeachers = {
     'Ask pairs to agree on an answer before you unlock and walk through the explanation.',
   ],
   suggestedSequence: [
-    'Instantaneous velocity, then Kinematics graphs (slope and area on x–t, v–t, a–t).',
-    'Friction, Newton’s third law, then Newton’s second law (cart and hanger).',
-    'Force table (vector components and ΣF = 0) alongside or just before Newton applications.',
-    'Circular motion once students are comfortable with two-dimensional kinematics.',
-    'Work and energy on a track, then torque / fixed-axis rotation, then Rotational kinematics graphs.',
-    'Assign Problem sets as homework or an exit ticket; Load setup opens the matching simulation.',
+    'Unit 1 — Kinematics: Instantaneous velocity via tangent, Kinematics graphs (slope and area on x–t, v–t, a–t), then Uniform vs non-uniform circular motion.',
+    'Unit 2 — Dynamics & Forces: Newton’s second law (cart and hanger), Friction (static limit vs kinetic), Newton’s third law (action-reaction pairs), and Force table (vector equilibrium ΣF = 0).',
+    'Unit 3 — Work & Energy: Work and mechanical energy on a track (conservative exchange K ↔ Ug and frictional dissipation Wnc).',
+    'Unit 4 — Rotational Dynamics: Rotational kinematics graphs (θ–t, ω–t, α–t), followed by Torque and fixed-axis rotation (τ = Iα).',
+    'Assign Problem sets as homework or exit tickets; 1-click "Load Setup" syncs parameters directly to the simulation.',
   ],
   classroomLogistics: [
     'On a projector, collapse the sidebar and keep attention on the canvas; the companion column scrolls separately on desktop.',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, FlaskConical, X } from 'lucide-react';
+import { Check, Copy, FlaskConical, X } from 'lucide-react';
 import { MathText } from '../MathText';
 import { ProblemFigure } from '../figures/ProblemFigures';
 import type { MultiStepProblem, StudentProblem } from '../../content/problemSets';
@@ -55,6 +55,17 @@ export function ProblemCard({
   const [input, setInput] = useState('');
   const [choice, setChoice] = useState('');
   const [feedback, setFeedback] = useState<'idle' | 'correct' | 'wrong'>(record?.status ?? 'idle');
+  const [copied, setCopied] = useState(false);
+
+  const copyPrompt = () => {
+    let text = problem.prompt;
+    if (problem.choices && problem.choices.length > 0) {
+      text += '\n' + problem.choices.map((c, i) => `(${String.fromCharCode(97 + i)}) ${c.label}`).join('\n');
+    }
+    navigator.clipboard?.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const submit = () => {
     let ok = false;
@@ -77,12 +88,36 @@ export function ProblemCard({
         feedback === 'wrong' ? ' is-wrong' : ''
       }`}
     >
-      <h3>
-        {!nested && index != null && <span className="guide-problem-num">{index}</span>}
-        <span className="guide-problem-prompt">
-          <MathText text={problem.prompt} />
-        </span>
-      </h3>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+        <h3 style={{ margin: 0, flex: 1 }}>
+          {!nested && index != null && <span className="guide-problem-num">{index}</span>}
+          <span className="guide-problem-prompt">
+            <MathText text={problem.prompt} />
+          </span>
+        </h3>
+        <button
+          type="button"
+          onClick={copyPrompt}
+          title={copied ? 'Copied to clipboard!' : 'Copy problem text'}
+          aria-label="Copy problem text"
+          style={{
+            padding: '4px 6px',
+            background: 'transparent',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            color: copied ? 'var(--color-vel, #0284c7)' : 'var(--text-muted, #64748b)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            flexShrink: 0,
+          }}
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          {copied && <span>Copied</span>}
+        </button>
+      </div>
 
       {problem.kind === 'numeric' ? (
         <div className="problems-answer-row">
@@ -190,6 +225,15 @@ export function MultiStepCard({
     ? simPathWithParams(`/simulations/${problem.simSlug}`, problem.simParams)
     : null;
   const partCorrect = problem.parts.filter((p) => progress[p.id]?.status === 'correct').length;
+  const [copied, setCopied] = useState(false);
+
+  const copyMultiStep = () => {
+    const text = `${problem.title}\n\n${problem.stem}\n\n` +
+      problem.parts.map((p, idx) => `(${String.fromCharCode(97 + idx)}) ${p.prompt}`).join('\n\n');
+    navigator.clipboard?.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <li className="problems-card problems-multistep">
@@ -199,9 +243,32 @@ export function MultiStepCard({
           <span className="topic-chip">Homework / class</span>
           <h3>{problem.title}</h3>
         </div>
-        <span className="text-muted" style={{ marginLeft: 'auto', fontSize: 13 }}>
-          {partCorrect} / {problem.parts.length} parts
-        </span>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="text-muted" style={{ fontSize: 13 }}>
+            {partCorrect} / {problem.parts.length} parts
+          </span>
+          <button
+            type="button"
+            onClick={copyMultiStep}
+            title={copied ? 'Copied to clipboard!' : 'Copy homework problem text'}
+            aria-label="Copy homework problem text"
+            style={{
+              padding: '4px 6px',
+              background: 'transparent',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: copied ? 'var(--color-vel, #0284c7)' : 'var(--text-muted, #64748b)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '12px',
+            }}
+          >
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+            {copied && <span>Copied</span>}
+          </button>
+        </div>
       </div>
 
       {problem.figure && <ProblemFigure id={problem.figure} />}

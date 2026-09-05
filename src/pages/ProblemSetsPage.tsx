@@ -7,7 +7,7 @@ import {
   problemCount,
   problemSets,
 } from '../content/problemSets';
-import { TOPIC_GROUP_LABELS } from '../content/simulations';
+import { TOPIC_GROUP_LABELS, TOPIC_GROUP_ORDER } from '../content/simulations';
 import type { TopicGroup } from '../content/types';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useTeacherUnlock } from '../hooks/useTeacherUnlock';
@@ -89,7 +89,7 @@ export default function ProblemSetsPage() {
         <button type="button" className={topic === 'all' ? '' : 'secondary'} onClick={() => setTopic('all')}>
           All topics
         </button>
-        {(Object.keys(TOPIC_GROUP_LABELS) as TopicGroup[]).map((g) => (
+        {TOPIC_GROUP_ORDER.map((g) => (
           <button
             key={g}
             type="button"

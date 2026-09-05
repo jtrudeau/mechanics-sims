@@ -523,8 +523,8 @@ function drawTrackScene(
   ctx.stroke();
 
   drawMixedText(ctx, trackBox.x + trackBox.w / 2, axisY + 20,
-    [{ text: 'position x (m)' }],
-    { fontSize: 12, color: '#475569', align: 'center' });
+    [{ text: 'Position ' }, { text: 'x', italic: true }, { text: ' (m)' }],
+    { fontSize: 13, color: '#475569', align: 'center', halo: true });
 
   for (let tick = Math.ceil(preset.xMin / 2) * 2; tick <= preset.xMax; tick += 2) {
     const px = mapX(tick);
@@ -535,10 +535,11 @@ function drawTrackScene(
     ctx.lineTo(px, axisY + 4);
     ctx.stroke();
     drawMixedText(ctx, px, axisY + 10, [{ text: tick.toFixed(0) }], {
-      fontSize: 11,
+      fontSize: 13,
       color: '#475569',
       align: 'center',
-      baseline: 'top'
+      baseline: 'top',
+      halo: true
     });
   }
 
@@ -554,8 +555,8 @@ function drawTrackScene(
     ctx.stroke();
     ctx.setLineDash([]);
     drawMixedText(ctx, Math.min(width - 12, trackBox.x + trackBox.w - 4), energyY - 8,
-      [{ text: 'E/(mg)' }],
-      { fontSize: 12, color: '#334155', align: 'right', baseline: 'bottom' });
+      [{ text: 'E', italic: true }, { text: '/(mg)' }],
+      { fontSize: 13, color: '#334155', align: 'right', baseline: 'bottom', halo: true });
   }
 
   ctx.lineCap = 'round';
@@ -601,10 +602,11 @@ function drawTrackScene(
     ctx.arc(px, py, 4, 0, Math.PI * 2);
     ctx.fill();
     drawMixedText(ctx, px, py - 58, [{ text: 'turn' }], {
-      fontSize: 11,
+      fontSize: 13,
       color: '#0f172a',
       align: 'center',
-      baseline: 'bottom'
+      baseline: 'bottom',
+      halo: true
     });
   });
 
@@ -674,7 +676,7 @@ function drawTrackScene(
 
   drawMixedText(ctx, trackBox.x + 4, trackBox.y + 4,
     [{ text: preset.label }],
-    { fontSize: Math.round(13 * s), color: '#334155', align: 'left', baseline: 'top' });
+    { fontSize: Math.round(14 * s), color: '#334155', align: 'left', baseline: 'top' });
 
   ctx.restore();
 }
@@ -711,7 +713,7 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, rect: { x: number; y: num
   drawMixedText(ctx, chart.x + chart.w, initialY - 5,
     [{ text: 'E', italic: true }, { text: '0', subscript: true, italic: false }, { text: ' (init)' }],
     {
-      fontSize: 10,
+      fontSize: 13,
       color: '#475569',
       align: 'right',
       baseline: 'bottom',
@@ -729,14 +731,14 @@ function drawEnergyBars(ctx: CanvasRenderingContext2D, rect: { x: number; y: num
     ctx.lineWidth = 1;
     ctx.strokeRect(cx - barW / 2, baseY - barH, barW, barH);
     drawMixedText(ctx, cx, baseY + 14, entry.label, {
-      fontSize: 12,
+      fontSize: 15,
       color: '#334155',
       align: 'center',
       baseline: 'top',
       halo: true
     });
     drawMixedText(ctx, cx, baseY - barH - 6, [{ text: entry.value.toFixed(1) }], {
-      fontSize: 10,
+      fontSize: 13,
       color: '#334155',
       align: 'center',
       baseline: 'bottom',
@@ -833,7 +835,7 @@ function drawWorkGraph(
   drawMixedText(ctx, chart.x + chart.w / 2, rect.y + rect.h - 6,
     [{ text: 'Position ' }, { text: 'x', italic: true }, { text: ' (m)' }],
     {
-      fontSize: 11,
+      fontSize: 14,
       color: '#475569',
       align: 'center',
       baseline: 'bottom',
@@ -846,7 +848,7 @@ function drawWorkGraph(
   drawMixedText(ctx, 0, 0,
     [{ text: 'F', italic: true }, { text: 'tan', subscript: true, italic: false }, { text: ' (N)' }],
     {
-      fontSize: 11,
+      fontSize: 14,
       color: '#475569',
       align: 'center',
       halo: true
@@ -863,7 +865,7 @@ function drawWorkGraph(
       { text: 'f', subscript: true, italic: false },
       { text: ` = ${metrics.workFriction.toFixed(1)} J` }
     ],
-    { fontSize: 11, color: '#334155', align: 'left', baseline: 'top', halo: true });
+    { fontSize: 14, color: '#334155', align: 'left', baseline: 'top', halo: true });
 }
 
 function drawPanelFrame(ctx: CanvasRenderingContext2D, rect: { x: number; y: number; w: number; h: number }, title: string) {
@@ -874,7 +876,7 @@ function drawPanelFrame(ctx: CanvasRenderingContext2D, rect: { x: number; y: num
   ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
   ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
   drawMixedText(ctx, rect.x + 12, rect.y + 12, [{ text: title }], {
-    fontSize: 13,
+    fontSize: 15,
     color: '#334155',
     align: 'left',
     baseline: 'top'

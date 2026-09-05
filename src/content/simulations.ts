@@ -12,6 +12,7 @@ import { kinematicsGraphsGuide } from './guides/kinematics-graphs';
 import { rotationalKinematicsGuide } from './guides/rotational-kinematics';
 
 export const simulations: SimulationEntry[] = [
+  // ── Unit 1: Kinematics ──
   {
     slug: 'instantaneous-velocity',
     title: 'Instantaneous Velocity via Tangent',
@@ -37,18 +38,6 @@ export const simulations: SimulationEntry[] = [
     guide: kinematicsGraphsGuide,
   },
   {
-    slug: 'friction',
-    title: 'Friction vs Applied Force',
-    shortTitle: 'Friction vs Applied Force',
-    topicGroup: 'forces',
-    blurb: 'Identify the static friction limit and the transition to kinetic friction.',
-    icon: 'box',
-    simPath: '/simulations/friction',
-    guidePath: '/guides/friction',
-    learningGoalOneLiner: 'Relate static and kinetic friction to the free-body diagram.',
-    guide: frictionGuide,
-  },
-  {
     slug: 'circular-motion',
     title: 'Uniform vs Non-Uniform Circular Motion',
     shortTitle: 'Circular Motion',
@@ -59,6 +48,32 @@ export const simulations: SimulationEntry[] = [
     guidePath: '/guides/circular-motion',
     learningGoalOneLiner: 'Relate a_r and a_t to changes in direction and speed.',
     guide: circularMotionGuide,
+  },
+
+  // ── Unit 2: Dynamics & Forces ──
+  {
+    slug: 'newtons-second-law-cart',
+    title: "Newton's 2nd Law: Cart and Hanging Mass",
+    shortTitle: "Newton's 2nd Law Cart",
+    topicGroup: 'forces',
+    blurb: 'Acceleration, tension, and optional friction for a cart and hanging mass.',
+    icon: 'gauge',
+    simPath: '/simulations/newtons-second-law-cart',
+    guidePath: '/guides/newtons-second-law-cart',
+    learningGoalOneLiner: 'Apply ΣF = ma to the system and to each object’s free-body diagram.',
+    guide: newtonsSecondLawCartGuide,
+  },
+  {
+    slug: 'friction',
+    title: 'Friction vs Applied Force',
+    shortTitle: 'Friction vs Applied Force',
+    topicGroup: 'forces',
+    blurb: 'Identify the static friction limit and the transition to kinetic friction.',
+    icon: 'box',
+    simPath: '/simulations/friction',
+    guidePath: '/guides/friction',
+    learningGoalOneLiner: 'Relate static and kinetic friction to the free-body diagram.',
+    guide: frictionGuide,
   },
   {
     slug: 'newtons-third-law',
@@ -73,18 +88,6 @@ export const simulations: SimulationEntry[] = [
     guide: newtonsThirdLawGuide,
   },
   {
-    slug: 'newtons-second-law-cart',
-    title: "Newton's 2nd Law: Cart and Hanging Mass",
-    shortTitle: "Newton's 2nd Law Cart",
-    topicGroup: 'forces',
-    blurb: 'Acceleration, tension, and optional friction for a cart and hanging mass.',
-    icon: 'gauge',
-    simPath: '/simulations/newtons-second-law-cart',
-    guidePath: '/guides/newtons-second-law-cart',
-    learningGoalOneLiner: 'Apply ΣF = ma to the system and to each object’s free-body diagram.',
-    guide: newtonsSecondLawCartGuide,
-  },
-  {
     slug: 'force-table-equilibrium',
     title: 'Static Equilibrium: Force Table',
     shortTitle: 'Force Table Equilibrium',
@@ -96,11 +99,13 @@ export const simulations: SimulationEntry[] = [
     learningGoalOneLiner: 'Apply ΣF = 0 with force-table vectors and components.',
     guide: forceTableGuide,
   },
+
+  // ── Unit 3: Work & Energy ──
   {
     slug: 'work-energy-track',
     title: 'Work and Mechanical Energy on a Track',
     shortTitle: 'Work-Energy Track',
-    topicGroup: 'energy-rotation',
+    topicGroup: 'energy',
     blurb: 'Exchange between K and U_g on a track, including frictional dissipation.',
     icon: 'mountain',
     simPath: '/simulations/work-energy-track',
@@ -108,29 +113,31 @@ export const simulations: SimulationEntry[] = [
     learningGoalOneLiner: 'Account for mechanical energy and turning points on a constrained track.',
     guide: workEnergyTrackGuide,
   },
-  {
-    slug: 'fixed-axis-rotation',
-    title: 'Torque and Fixed-Axis Rotation',
-    shortTitle: 'Fixed-Axis Rotation',
-    topicGroup: 'energy-rotation',
-    blurb: 'Relate torque, moment of inertia, and angular acceleration for rigid bodies.',
-    icon: 'rotate-cw',
-    simPath: '/simulations/fixed-axis-rotation',
-    guidePath: '/guides/fixed-axis-rotation',
-    learningGoalOneLiner: 'Use the rotational analogues τ ↔ F, I ↔ m, and α ↔ a.',
-    guide: fixedAxisRotationGuide,
-  },
+
+  // ── Unit 4: Rotational Dynamics ──
   {
     slug: 'rotational-kinematics',
     title: 'Rotational Kinematics Graphs',
     shortTitle: 'Rotational Kinematics',
-    topicGroup: 'energy-rotation',
+    topicGroup: 'rotation',
     blurb: 'Stacked θ–t, ω–t, and α–t graphs, plus UCM vs non-UCM at a rim point.',
     icon: 'orbit',
     simPath: '/simulations/rotational-kinematics',
     guidePath: '/guides/rotational-kinematics',
     learningGoalOneLiner: 'Read θ, ω, and α graphs as the rotational analogues of x, v, and a.',
     guide: rotationalKinematicsGuide,
+  },
+  {
+    slug: 'fixed-axis-rotation',
+    title: 'Torque and Fixed-Axis Rotation',
+    shortTitle: 'Fixed-Axis Rotation',
+    topicGroup: 'rotation',
+    blurb: 'Relate torque, moment of inertia, and angular acceleration for rigid bodies.',
+    icon: 'rotate-cw',
+    simPath: '/simulations/fixed-axis-rotation',
+    guidePath: '/guides/fixed-axis-rotation',
+    learningGoalOneLiner: 'Use the rotational analogues τ ↔ F, I ↔ m, and α ↔ a.',
+    guide: fixedAxisRotationGuide,
   },
 ];
 

@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 import { SolutionUnlock } from '../components/SolutionUnlock';
 import { forTeachers } from '../content/forTeachers';
-import { TOPIC_GROUP_LABELS } from '../content/simulations';
-import type { TopicGroup } from '../content/types';
+import { TOPIC_GROUP_LABELS, TOPIC_GROUP_ORDER } from '../content/simulations';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function ForTeachers() {
@@ -20,7 +19,7 @@ export default function ForTeachers() {
     suggestedSequence,
   } = forTeachers;
 
-  const grouped = (['kinematics', 'forces', 'energy-rotation'] as TopicGroup[]).map((group) => ({
+  const grouped = TOPIC_GROUP_ORDER.map((group) => ({
     group,
     items: simIndex.filter((s) => s.topicGroup === group),
   }));

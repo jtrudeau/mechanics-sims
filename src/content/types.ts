@@ -1,4 +1,4 @@
-export type TopicGroup = 'kinematics' | 'forces' | 'energy-rotation';
+export type TopicGroup = 'kinematics' | 'forces' | 'energy' | 'rotation';
 
 export type SimIconName =
   | 'activity'
@@ -49,12 +49,14 @@ export interface SimulationEntry extends SimulationMeta {
 
 export const TOPIC_GROUP_LABELS: Record<TopicGroup, string> = {
   kinematics: 'Kinematics',
-  forces: 'Forces & Newton',
-  'energy-rotation': 'Energy & Rotation',
+  forces: 'Dynamics & Forces',
+  energy: 'Work & Energy',
+  rotation: 'Rotational Dynamics',
 };
 
 export const TOPIC_GROUP_ORDER: TopicGroup[] = [
   'kinematics',
   'forces',
-  'energy-rotation',
+  'energy',
+  'rotation',
 ];

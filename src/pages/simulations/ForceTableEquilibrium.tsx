@@ -58,7 +58,7 @@ const parseClampedNumber = (rawValue: string, fallback: number, min: number, max
 const formatForce = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(2)} N`;
 const formatMagnitude = (value: number) => `${value.toFixed(2)} N`;
 const formatAngle = (magnitude: number, angleDeg: number) =>
-  magnitude < EPSILON_FORCE ? '--' : `${normalizeDeg(angleDeg).toFixed(1)} deg`;
+  magnitude < EPSILON_FORCE ? '--' : `${normalizeDeg(angleDeg).toFixed(1)}°`;
 
 export default function ForceTableEquilibrium() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -286,7 +286,7 @@ export default function ForceTableEquilibrium() {
                 onChange={value => updateForce(index, 'magnitude', value)}
               />
               <ControlRow
-                label={<><InlineMath math={`\\theta_${index + 1}`} /> (deg)</>}
+                label={<><InlineMath math={`\\theta_${index + 1}`} /> (°)</>}
                 min={0}
                 max={360}
                 step={1}
@@ -461,23 +461,28 @@ function drawTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius
     ctx.stroke();
   }
 
-  ctx.fillStyle = '#475569';
-  ctx.font = `${Math.round(11 * s)}px "Inter", system-ui, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  for (const deg of [0, 90, 180, 270]) {
+  const degreeMarks = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+  for (const deg of degreeMarks) {
     const angle = -degToRad(deg);
-    drawMixedText(ctx, cx + (radius + 22 * s) * Math.cos(angle), cy + (radius + 22 * s) * Math.sin(angle),
+    const isCardinal = deg % 90 === 0;
+    const labelOffset = isCardinal ? 22 * s : 18 * s;
+    drawMixedText(ctx, cx + (radius + labelOffset) * Math.cos(angle), cy + (radius + labelOffset) * Math.sin(angle),
       [{ text: `${deg}°` }],
-      { fontSize: Math.round(11 * s), color: '#475569', align: 'center', baseline: 'middle', halo: true });
+      {
+        fontSize: Math.round(isCardinal ? 12 * s : 10.5 * s),
+        color: isCardinal ? '#1e293b' : '#64748b',
+        align: 'center',
+        baseline: 'middle',
+        halo: true
+      });
   }
 
-  drawMixedText(ctx, cx + radius - 12, cy + 16,
+  drawMixedText(ctx, cx + radius - 14, cy + 18,
     [{ text: '+' }, { text: 'x', italic: true }],
-    { fontSize: Math.round(12 * s), color: '#475569', align: 'right', halo: true });
-  drawMixedText(ctx, cx + 16, cy - radius + 12,
+    { fontSize: Math.round(13 * s), color: '#334155', align: 'right', halo: true });
+  drawMixedText(ctx, cx + 18, cy - radius + 12,
     [{ text: '+' }, { text: 'y', italic: true }],
-    { fontSize: Math.round(12 * s), color: '#475569', align: 'left', halo: true });
+    { fontSize: Math.round(13 * s), color: '#334155', align: 'left', halo: true });
 
   ctx.restore();
 }
