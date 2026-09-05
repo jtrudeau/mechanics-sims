@@ -12,6 +12,8 @@ import {
   fitStage,
 } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 type Profile = 'const-v' | 'const-a' | 'cruise' | 'turnaround';
 
@@ -129,10 +131,26 @@ export default function KinematicsGraphs() {
     [params.tMax]
   );
 
-  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward, start } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => setTPlay(params.tA),
   });
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    setParams((prev) => {
+      const next = { ...prev, ...(setup as Partial<Params>) };
+      if (next.tCursor !== undefined) setTPlay(next.tCursor);
+      return next;
+    });
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['kinematics-graphs']}
+      onApplySetup={handleApplyChallenge}
+      onRunSim={start}
+    />
+  );
 
   const tCursor = isRunning ? tPlay : params.tCursor;
   const now = useMemo(() => motionAt(params.profile, tCursor, params), [params, tCursor]);
@@ -289,6 +307,8 @@ export default function KinematicsGraphs() {
       description="Graphical analysis — slope of x–t is v; area under v–t is Δx."
       slug="kinematics-graphs"
       running={isRunning}
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
       actionsContent={
         <>
           <button type="button" onClick={toggle}>

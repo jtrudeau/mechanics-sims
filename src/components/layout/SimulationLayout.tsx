@@ -9,6 +9,8 @@ import {
   Zap,
   BookOpen,
   ClipboardList,
+  Share2,
+  Check,
 } from 'lucide-react';
 import { MathText } from '../MathText';
 import { getSimulation } from '../../content/simulations';
@@ -16,6 +18,7 @@ import { usePageTitle } from '../../hooks/usePageTitle';
 import { useLayout } from './LayoutContext';
 import { TopicGuideView } from './TopicGuideView';
 import { TopicProblemsView } from './TopicProblemsView';
+import { serializeSimParams } from '../../hooks/useUrlSync';
 
 interface SimulationLayoutProps {
   title: string;
@@ -26,6 +29,9 @@ interface SimulationLayoutProps {
   controlsContent: ReactNode;
   metricsContent: ReactNode;
   actionsContent?: ReactNode;
+  challengeContent?: ReactNode;
+  shareParams?: Record<string, unknown>;
+  onShare?: () => void;
   running?: boolean;
 }
 
@@ -38,11 +44,15 @@ export function SimulationLayout({
   controlsContent,
   metricsContent,
   actionsContent,
+  challengeContent,
+  shareParams,
+  onShare,
 }: SimulationLayoutProps) {
   const entry = slug ? getSimulation(slug) : undefined;
   const [theoryOpen, setTheoryOpen] = useState(false);
   const { wideCanvas, setWideCanvas, setSidebarCollapsed } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Active topic layer tab: 'sim' | 'guide' | 'practice'
   const activeTab = (searchParams.get('tab') || 'sim') as 'sim' | 'guide' | 'practice';
@@ -92,6 +102,26 @@ export function SimulationLayout({
       }
     }
     setSearchParams(next, { replace: true });
+  };
+
+  const handleShareClick = async () => {
+    if (onShare) {
+      onShare();
+      return;
+    }
+    if (shareParams) {
+      try {
+        const qs = serializeSimParams(shareParams);
+        const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+        await navigator.clipboard.writeText(window.location.href);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2500);
+      } catch {
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2500);
+      }
+    }
   };
 
   return (
@@ -145,6 +175,17 @@ export function SimulationLayout({
             </div>
             <div className="sim-header-actions">
               {actionsContent}
+              {(shareParams || onShare) && (
+                <button
+                  type="button"
+                  className={`btn-share-toggle ${shareCopied ? 'active' : 'secondary'}`}
+                  onClick={handleShareClick}
+                  title="Copy a shareable link with this exact simulation setup"
+                >
+                  {shareCopied ? <Check size={16} /> : <Share2 size={16} />}
+                  <span>{shareCopied ? 'Link Copied!' : 'Share Setup'}</span>
+                </button>
+              )}
               <button
                 type="button"
                 className={`btn-projector-toggle ${wideCanvas ? 'active' : 'secondary'}`}
@@ -156,6 +197,9 @@ export function SimulationLayout({
               </button>
             </div>
           </div>
+          {challengeContent && (
+            <div className="sim-challenge-wrapper">{challengeContent}</div>
+          )}
           <div className="glass-panel sim-canvas-panel">{canvasContent}</div>
         </div>
 

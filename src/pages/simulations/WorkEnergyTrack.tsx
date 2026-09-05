@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, drawMixedText, drawCoordinateGrid, resolveColor, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { parseUrlParams } from '../../hooks/useUrlSync';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 const g = 9.8;
 const TURN_NUDGE = 0.006;
@@ -108,8 +112,14 @@ export default function WorkEnergyTrack() {
     }
   }, []);
 
-  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
-  const [state, setState] = useState<SimState>(() => createInitialState(DEFAULT_PARAMS));
+  const [searchParams] = useSearchParams();
+  const [params, setParams] = useState<Params>(() => parseUrlParams(searchParams, DEFAULT_PARAMS));
+
+  useEffect(() => {
+    setParams((prev) => parseUrlParams(searchParams, prev));
+  }, [searchParams]);
+
+  const [state, setState] = useState<SimState>(() => createInitialState(params));
 
   const preset = TRACK_PRESETS[params.preset];
 
@@ -127,11 +137,31 @@ export default function WorkEnergyTrack() {
     setState(createInitialState(params));
   }, [params]);
 
-  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward, start } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: resetToInitial,
-    maxDt: 0.035
+    maxDt: 0.035,
+    fixedDt: 0.008,
   });
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    setParams((prev) => {
+      const next = {
+        ...prev,
+        ...(setup as Partial<Params>),
+      };
+      setState(createInitialState(next));
+      return next;
+    });
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['work-energy-track']}
+      onApplySetup={handleApplyChallenge}
+      onRunSim={start}
+    />
+  );
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -244,6 +274,8 @@ export default function WorkEnergyTrack() {
       title="Work and Mechanical Energy on a Track"
       description="Energy Methods - Work, kinetic energy, potential energy, and losses."
       slug="work-energy-track"
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
 
       actionsContent={
         <>

@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, scaleCanvas, drawMixedText, drawCoordinateGrid, resolveColor, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { parseUrlParams } from '../../hooks/useUrlSync';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 const VEL_HISTORY = 200;
 
@@ -22,7 +26,13 @@ export default function NewtonsThirdLaw() {
   }, []);
 
   const DEFAULT_PARAMS = { m1: 5.0, m2: 3.0, F_app: 16.0 };
-  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const [searchParams] = useSearchParams();
+  const [params, setParams] = useState(() => parseUrlParams(searchParams, DEFAULT_PARAMS));
+
+  useEffect(() => {
+    setParams((prev) => parseUrlParams(searchParams, prev));
+  }, [searchParams]);
+
   const [showGraph, setShowGraph] = useState(true);
   const [state,  setState]  = useState({ x: -8, v: 0 });
 
@@ -44,14 +54,33 @@ export default function NewtonsThirdLaw() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward, start } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => {
       setState({ x: -8, v: 0 });
       velHistRef.current = [];
       timeRef.current = 0;
-    }
+    },
+    fixedDt: 0.01,
   });
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    setState({ x: -8, v: 0 });
+    velHistRef.current = [];
+    timeRef.current = 0;
+    setParams((prev) => ({
+      ...prev,
+      ...(setup as Partial<typeof DEFAULT_PARAMS>),
+    }));
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['newtons-third-law']}
+      onApplySetup={handleApplyChallenge}
+      onRunSim={start}
+    />
+  );
 
   useEffect(() => { if (!isRunning) physicsStep(0); }, [params, isRunning, physicsStep]);
   useEffect(() => { setState(prev => ({ ...prev, x: -8 })); }, []);
@@ -280,6 +309,8 @@ export default function NewtonsThirdLaw() {
       title="Newton's 3rd Law"
       description="Interacting Objects — Every action has an equal and opposite reaction."
       slug="newtons-third-law"
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
 
       actionsContent={
         <>

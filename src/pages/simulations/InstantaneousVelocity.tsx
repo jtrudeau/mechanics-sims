@@ -1,8 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { drawMixedText, drawCoordinateGrid, resolveColor, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { parseUrlParams } from '../../hooks/useUrlSync';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
+
+const DEFAULT_PARAMS = {
+  x0: 0,
+  v0: 2,
+  a: 1,
+  t1: 2,
+  dt: 1,
+  tMax: 8
+};
 
 export default function InstantaneousVelocity() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,14 +28,26 @@ export default function InstantaneousVelocity() {
     }
   }, []);
   
-  const [params, setParams] = useState({
-    x0: 0,
-    v0: 2,
-    a: 1,
-    t1: 2,
-    dt: 1,
-    tMax: 8
-  });
+  const [searchParams] = useSearchParams();
+  const [params, setParams] = useState(() => parseUrlParams(searchParams, DEFAULT_PARAMS));
+
+  useEffect(() => {
+    setParams((prev) => parseUrlParams(searchParams, prev));
+  }, [searchParams]);
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    setParams((prev) => ({
+      ...prev,
+      ...(setup as Partial<typeof DEFAULT_PARAMS>),
+    }));
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['instantaneous-velocity']}
+      onApplySetup={handleApplyChallenge}
+    />
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setParams({ ...params, [e.target.name]: parseFloat(e.target.value) });
@@ -266,6 +291,8 @@ export default function InstantaneousVelocity() {
       title="Instantaneous Velocity via Tangent"
       description="1D Kinematics — The geometric relationship between secant lines, tangent lines, and limits."
       slug="instantaneous-velocity"
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
 
       canvasContent={
         <>

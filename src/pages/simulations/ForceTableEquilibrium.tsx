@@ -1,8 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { BlockMath, InlineMath } from 'react-katex';
 import { drawArrow, drawCoordinateGrid, drawMixedText, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 type ForceConfig = {
   magnitude: number;
@@ -68,11 +71,67 @@ export default function ForceTableEquilibrium() {
     }
   }, []);
 
+  const [searchParams] = useSearchParams();
   const [activeCount, setActiveCount] = useState(DEFAULT_ACTIVE_COUNT);
   const [forces, setForces] = useState<ForceConfig[]>(createDefaultForces);
   const [showResultant, setShowResultant] = useState(true);
   const [showEquilibrant, setShowEquilibrant] = useState(true);
   const [showComponents, setShowComponents] = useState(true);
+
+  const applyParams = useCallback((sp: URLSearchParams) => {
+    const ac = sp.get('activeCount');
+    if (ac) setActiveCount(clamp(parseInt(ac, 10), 2, 4));
+    setForces((prev) => {
+      const next = [...prev];
+      for (let i = 0; i < 4; i++) {
+        const mag = sp.get(`f${i + 1}`);
+        const ang = sp.get(`a${i + 1}`);
+        if (mag !== null && Number.isFinite(Number(mag))) {
+          next[i] = { ...next[i], magnitude: Number(mag) };
+        }
+        if (ang !== null && Number.isFinite(Number(ang))) {
+          next[i] = { ...next[i], angleDeg: Number(ang) };
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    applyParams(searchParams);
+  }, [searchParams, applyParams]);
+
+  const shareParams = useMemo(() => {
+    const p: Record<string, unknown> = { activeCount };
+    forces.slice(0, activeCount).forEach((f, i) => {
+      p[`f${i + 1}`] = f.magnitude;
+      p[`a${i + 1}`] = f.angleDeg;
+    });
+    return p;
+  }, [activeCount, forces]);
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    if (setup.activeCount) setActiveCount(Number(setup.activeCount));
+    setForces((prev) => {
+      const next = [...prev];
+      for (let i = 0; i < 4; i++) {
+        if (setup[`f${i + 1}`] !== undefined) {
+          next[i] = { ...next[i], magnitude: Number(setup[`f${i + 1}`]) };
+        }
+        if (setup[`a${i + 1}`] !== undefined) {
+          next[i] = { ...next[i], angleDeg: Number(setup[`a${i + 1}`]) };
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['force-table-equilibrium']}
+      onApplySetup={handleApplyChallenge}
+    />
+  );
 
   const activeForces = useMemo<ForceVector[]>(
     () =>
@@ -148,6 +207,8 @@ export default function ForceTableEquilibrium() {
       title="Static Equilibrium: Force Table"
       description="Vector Components - Resultants, equilibrants, and zero net force."
       slug="force-table-equilibrium"
+      shareParams={shareParams}
+      challengeContent={challengeContent}
       actionsContent={<button className="secondary" onClick={reset}>Reset</button>}
       canvasContent={
         <>

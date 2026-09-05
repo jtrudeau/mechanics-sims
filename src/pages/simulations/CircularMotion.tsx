@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, drawMixedText, drawCoordinateGrid, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { parseUrlParams } from '../../hooks/useUrlSync';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 const MAX_OMEGA = 12;
 
@@ -20,7 +24,14 @@ export default function CircularMotion() {
     }
   }, []);
 
-  const [params, setParams] = useState({ R: 5.0, w0: 1.0, alpha: 0.5 });
+  const DEFAULT_PARAMS = { R: 5.0, w0: 1.0, alpha: 0.5 };
+  const [searchParams] = useSearchParams();
+  const [params, setParams] = useState(() => parseUrlParams(searchParams, DEFAULT_PARAMS));
+
+  useEffect(() => {
+    setParams((prev) => parseUrlParams(searchParams, prev));
+  }, [searchParams]);
+
   const [state,  setState]  = useState({ theta: 0, w: 1.0 });
 
   useEffect(() => {
@@ -43,10 +54,28 @@ export default function CircularMotion() {
     });
   }, [params.alpha]);
 
-  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward, start } = usePhysicsEngine({
     onStep: physicsStep,
-    onReset: () => { setState({ theta: 0, w: params.w0 }); trailRef.current = []; }
+    onReset: () => { setState({ theta: 0, w: params.w0 }); trailRef.current = []; },
+    fixedDt: 0.01,
   });
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    trailRef.current = [];
+    setParams((prev) => {
+      const next = { ...prev, ...(setup as Partial<typeof DEFAULT_PARAMS>) };
+      setState({ theta: 0, w: next.w0 });
+      return next;
+    });
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['circular-motion']}
+      onApplySetup={handleApplyChallenge}
+      onRunSim={start}
+    />
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -252,6 +281,8 @@ export default function CircularMotion() {
       title="Uniform vs Non-Uniform Circular Motion"
       description="2D Dynamics — Radial and tangential acceleration components."
       slug="circular-motion"
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
 
       actionsContent={
         <>

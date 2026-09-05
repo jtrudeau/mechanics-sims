@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { BlockMath, InlineMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, drawCoordinateGrid, drawMixedText, resolveColor, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { parseUrlParams } from '../../hooks/useUrlSync';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 type BodyPreset = 'solid-disk' | 'hoop' | 'rod-center' | 'rod-end';
 type NumericParam = 'mass' | 'size' | 'force' | 'forceRadius' | 'forceAngleDeg' | 'brakeTorque' | 'omega0';
@@ -70,7 +74,13 @@ export default function FixedAxisRotation() {
   const stageGen = useCanvasStage(canvasRef);
   const [fontsReady, setFontsReady] = useState(false);
 
-  const [params, setParams] = useState<Params>(initialParams);
+  const [searchParams] = useSearchParams();
+  const [params, setParams] = useState<Params>(() => parseUrlParams(searchParams, initialParams));
+
+  useEffect(() => {
+    setParams((prev) => parseUrlParams(searchParams, prev));
+  }, [searchParams]);
+
   const [state, setState] = useState<RotationState>({
     theta: 0,
     omega: initialParams.omega0,
@@ -181,11 +191,28 @@ export default function FixedAxisRotation() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward, start } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => resetState(params.omega0),
-    maxDt: 0.035
+    maxDt: 0.035,
+    fixedDt: 0.01,
   });
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    setParams((prev) => {
+      const next = { ...prev, ...(setup as Partial<Params>) };
+      resetState(next.omega0);
+      return next;
+    });
+  }, [resetState]);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['fixed-axis-rotation']}
+      onApplySetup={handleApplyChallenge}
+      onRunSim={start}
+    />
+  );
 
   const model = getBodyModel(params);
   const torques = getTorques(params, state.omega);
@@ -295,6 +322,8 @@ export default function FixedAxisRotation() {
       title="Torque and Fixed-Axis Rotation"
       description="Rotational Dynamics - Torque, moment of inertia, and angular acceleration."
       slug="fixed-axis-rotation"
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
       actionsContent={
         <>
           <button onClick={toggle}>{isRunning ? 'Pause' : 'Play'}</button>

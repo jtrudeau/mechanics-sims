@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, scaleCanvas, drawMixedText, drawCoordinateGrid, resolveColor, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { parseUrlParams } from '../../hooks/useUrlSync';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 const g = 9.8;
 
@@ -27,7 +31,13 @@ export default function FrictionAppliedForce() {
     }
   }, []);
 
-  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const [searchParams] = useSearchParams();
+  const [params, setParams] = useState(() => parseUrlParams(searchParams, DEFAULT_PARAMS));
+
+  useEffect(() => {
+    setParams((prev) => parseUrlParams(searchParams, prev));
+  }, [searchParams]);
+
   const [showGraph, setShowGraph] = useState(true);
   const [state, setState] = useState({ x: 0, v: 0, a: 0, f_friction: 0 });
 
@@ -81,10 +91,27 @@ export default function FrictionAppliedForce() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward, start } = usePhysicsEngine({
     onStep: physicsStep,
-    onReset: () => setState({ x: 0, v: 0, a: 0, f_friction: 0 })
+    onReset: () => setState({ x: 0, v: 0, a: 0, f_friction: 0 }),
+    fixedDt: 0.01,
   });
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    setState({ x: 0, v: 0, a: 0, f_friction: 0 });
+    setParams((prev) => ({
+      ...prev,
+      ...(setup as Partial<typeof DEFAULT_PARAMS>),
+    }));
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['friction']}
+      onApplySetup={handleApplyChallenge}
+      onRunSim={start}
+    />
+  );
 
   useEffect(() => { if (!isRunning) physicsStep(0); }, [params, isRunning, physicsStep]);
 
@@ -301,7 +328,9 @@ export default function FrictionAppliedForce() {
     <SimulationLayout
       title="Static and Kinetic Friction"
       description="1D Dynamics — The transition from static grip to kinetic sliding."
-      slug="friction-applied-force"
+      slug="friction"
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
 
       actionsContent={
         <>

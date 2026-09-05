@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { BlockMath, InlineMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
 import { drawArrow, drawCoordinateGrid, drawMixedText, resolveColor, scaleCanvas, fitStage } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
+import { parseUrlParams } from '../../hooks/useUrlSync';
+import { PredictionGate } from '../../components/pedagogy/PredictionGate';
+import { predictionChallenges } from '../../content/predictionChallenges';
 
 const EPS = 1e-9;
 const MAX_TRAVEL_M = 3.0;
@@ -126,7 +130,12 @@ export default function NewtonsSecondLawCart() {
     showGraph: true
   };
 
-  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
+  const [searchParams] = useSearchParams();
+  const [params, setParams] = useState<Params>(() => parseUrlParams(searchParams, DEFAULT_PARAMS));
+
+  useEffect(() => {
+    setParams((prev) => parseUrlParams(searchParams, prev));
+  }, [searchParams]);
 
   const [state, setState] = useState<MotionState>({ x: 0, v: 0, atLimit: false });
 
@@ -194,13 +203,31 @@ export default function NewtonsSecondLawCart() {
     });
   }, [params]);
 
-  const { isRunning, toggle, reset, stepForward } = usePhysicsEngine({
+  const { isRunning, toggle, reset, stepForward, start } = usePhysicsEngine({
     onStep: physicsStep,
     onReset: () => {
       setState({ x: 0, v: 0, atLimit: false });
       resetHistory();
-    }
+    },
+    fixedDt: 0.01,
   });
+
+  const handleApplyChallenge = useCallback((setup: Record<string, unknown>) => {
+    setState({ x: 0, v: 0, atLimit: false });
+    resetHistory();
+    setParams((prev) => ({
+      ...prev,
+      ...(setup as Partial<Params>),
+    }));
+  }, []);
+
+  const challengeContent = (
+    <PredictionGate
+      challenges={predictionChallenges['newtons-second-law-cart']}
+      onApplySetup={handleApplyChallenge}
+      onRunSim={start}
+    />
+  );
 
   useEffect(() => {
     if (!isRunning) physicsStep(0);
@@ -599,6 +626,8 @@ export default function NewtonsSecondLawCart() {
       title="Newton's 2nd Law: Cart and Hanging Mass"
       description="Connected Systems - Tension, acceleration, and free-body diagrams."
       slug="newtons-second-law-cart"
+      shareParams={params as unknown as Record<string, unknown>}
+      challengeContent={challengeContent}
 
       actionsContent={
         <>
