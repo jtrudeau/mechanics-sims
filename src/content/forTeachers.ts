@@ -19,7 +19,7 @@ export const forTeachers = {
       {
         name: 'Predict (2–3 min)',
         detail:
-          'Pose one question from the Suggested exercise panel or a revision problem. Students record a brief prediction before changing controls.',
+          'Pose one question from the Suggested exercise panel, a Concept Challenge, or a revision problem. Students record a brief prediction before changing controls. In a Concept Challenge, the explanatory paragraph appears only after Apply setup.',
       },
       {
         name: 'Interact (5–7 min)',
@@ -37,7 +37,7 @@ export const forTeachers = {
     'Hints and worked solutions stay hidden until you unlock them (passphrase on this page). Check still grades an attempt without showing the write-up.',
     'Unlock lasts for this browser tab. Lock (or close the tab) before a student uses the same machine.',
     'For a closed warm-up on a projector, open Tips & Revision with ?quiz=1 so answers stay hidden even if this tab is unlocked.',
-    'Use Load setup on a problem to open the simulation with matching control values.',
+    'Matching problems use Load setup to open the simulation with matching control values; paper problems use a Related check button that opens a related simulation and names a quantity the canvas shows, rather than loading the figure as drawn.',
     'The Problem sets page (/problems) begins with short checks, then a multi-step homework / class problem with a figure. Unlock to see per-part solutions and a full teacher write-up. Progress is local only.',
     'Ask pairs to agree on an answer before you unlock and walk through the explanation.',
   ],

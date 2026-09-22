@@ -18,7 +18,7 @@ export const rotationalKinematicsGuide: SimGuideContent = {
     'On Constant $\\omega$, confirm $a_t = 0$ (UCM). On Constant $\\alpha$, read both $a_r$ and $a_t$ at the rim.',
   ],
   watchFors: [
-    'Mixing degrees and radians — the graphs and $\\tau = I\\alpha$ use radians.',
+    'Mixing degrees and radians — the graphs use radians.',
     'Thinking a horizontal $\\omega$–$t$ graph means the disk has stopped; it means constant spin rate.',
     'Confusing $\\alpha$ (how fast $\\omega$ changes) with $\\omega$ (how fast $\\theta$ changes).',
     'Forgetting that $\\Delta\\theta$ from area can exceed $2\\pi$ (multiple revolutions).',

@@ -148,6 +148,9 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
         url: 'https://openstax.org/books/university-physics-volume-1/pages/6-3-centripetal-force',
       },
       simSlug: 'circular-motion',
+      relatedCheckNote:
+        'Related check: open the simulation to compare radial acceleration $a_r = v^2/R$ on a horizontal circle (the crest figure is a paper problem). The canvas radius is not $50\\,\\mathrm{m}$, so the $a_r$ readout will not equal the paper answer $5.12\\,\\mathrm{m/s}^2$.',
+      simButtonLabel: 'Related check: compare $a_r$',
       parts: [
         {
           id: 'hw-cm-1a',
@@ -160,6 +163,9 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
           solution: '$a_r = (16)^2/50 = 5.12\\,\\mathrm{m/s}^2$.',
           simSlug: 'circular-motion',
           simParams: { R: 5, w0: 3.2, alpha: 0 },
+          relatedCheckNote:
+            'Related check: open the simulation to compare radial acceleration $a_r$ (scaled horizontal circle; the crest figure is a paper problem). The canvas radius is not $50\\,\\mathrm{m}$, so the $a_r$ readout will not equal the paper answer.',
+          simButtonLabel: 'Related check: compare $a_r$',
         },
         {
           id: 'hw-cm-1b',
@@ -279,7 +285,7 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
           ],
           hint: 'A circular path is necessary but not sufficient for UCM. UCM also needs constant $|\\vec{v}|$.',
           solution:
-            'Non-UCM. The path of $P$ is a circle, but $|\\vec{v}|$ is increasing. Both $a_r$ and $a_t$ appear on the rim-vector overlay. After a coast ($\alpha = 0$ at this $\\omega$), the same $P$ would be in UCM.',
+            'Non-UCM. The path of $P$ is a circle, but $|\\vec{v}|$ is increasing. Both $a_r$ and $a_t$ appear on the rim-vector overlay. After a coast ($\\alpha = 0$ at this $\\omega$), the same $P$ would be in UCM.',
         },
       ],
     },
@@ -368,7 +374,7 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
           hint: 'External horizontal force is only $F$. Contact forces are internal.',
           solution: '$a = F/(m_1+m_2) = 10/5.0 = 2.0\\,\\mathrm{m/s}^2$.',
           simSlug: 'newtons-third-law',
-          simParams: { scenario: 'side-by-side', m1: 2, m2: 3, F_app: 10 },
+          simParams: { m1: 2, m2: 3, F_app: 10 },
         },
         {
           id: 'hw-n3-1b',
@@ -423,6 +429,9 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
         url: 'https://openstax.org/books/university-physics-volume-1/pages/6-2-friction',
       },
       simSlug: 'friction',
+      relatedCheckNote:
+        'Related check: open the simulation to compare static vs kinetic friction on a horizontal surface (the incline figure is a paper problem).',
+      simButtonLabel: 'Related check: compare $f_s$ and $f_k$',
       parts: [
         {
           id: 'hw-fr-1a',
@@ -544,6 +553,9 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
         url: 'https://openstax.org/books/university-physics-volume-1/pages/8-5-conservation-of-energy',
       },
       simSlug: 'work-energy-track',
+      relatedCheckNote:
+        'Related check: open the simulation to compare mechanical energy exchange on a valley track (the vertical loop figure is a paper problem).',
+      simButtonLabel: 'Related check: compare $K$ and $U_g$',
       parts: [
         {
           id: 'hw-we-1a',
@@ -556,6 +568,9 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
           solution: '$v = \\sqrt{2g(5R)} = \\sqrt{10\\times 9.80\\times 0.40} = 6.26\\,\\mathrm{m/s}$.',
           simSlug: 'work-energy-track',
           simParams: { frictionEnabled: false },
+          relatedCheckNote:
+            'Related check: open the simulation to compare speed from energy conservation on a frictionless track (not a vertical loop).',
+          simButtonLabel: 'Related check: compare speed from energy',
         },
         {
           id: 'hw-we-1b',
@@ -605,6 +620,9 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
         url: 'https://openstax.org/books/university-physics-volume-1/pages/10-7-newtons-second-law-for-rotation',
       },
       simSlug: 'fixed-axis-rotation',
+      relatedCheckNote:
+        'Related check: open the simulation to compare moment of inertia $I$ for a solid disk (the unwinding hanging-mass figure is a paper problem).',
+      simButtonLabel: 'Related check: compare $I$ for a solid disk',
       parts: [
         {
           id: 'hw-tx-1a',
@@ -617,6 +635,9 @@ export const homeworkBySet: Record<string, MultiStepProblem[]> = {
           solution: '$I = \\tfrac{1}{2}(4.00)(0.20)^2 = 0.080\\,\\mathrm{kg\\,m}^2$.',
           simSlug: 'fixed-axis-rotation',
           simParams: { preset: 'solid-disk' },
+          relatedCheckNote:
+            'Related check: open the simulation to compare $I$ for a solid disk (not the hanging-mass unwind setup).',
+          simButtonLabel: 'Related check: compare $I$',
         },
         {
           id: 'hw-tx-1b',

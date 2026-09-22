@@ -53,4 +53,4 @@ src/
 - **Instantaneous Velocity**: Proper axis tick labels & titles, Δt–Δx right-angle triangle on secant, drop lines, convergence % readout
 - **Friction**: Floor hatch marks, labeled f vs F_app plot with colored STATIC/KINETIC regions, regime badge, normal force readout
 - **Circular Motion**: Fading position trail, radius line with label, θ arc indicator, ω speed clamp at ±12 rad/s, period readout
-- **Newton's 3rd Law**: Scrolling velocity vs time chart, in-canvas force labels, hatch floor, mass labels on blocks
+- **Newton's 3rd Law**: In-canvas force labels, hatch floor, mass labels on blocks

@@ -24,6 +24,10 @@ export interface StudentProblem {
   solution: string;
   simSlug?: string;
   simParams?: Record<string, string | number | boolean>;
+  /** When set, the sim link is a related check (not the figure loaded as-is). */
+  relatedCheckNote?: string;
+  /** Override the default “Load setup” button label. */
+  simButtonLabel?: string;
 }
 
 export interface MultiStepProblem {
@@ -35,6 +39,10 @@ export interface MultiStepProblem {
   source?: ProblemSource;
   simSlug?: string;
   simParams?: Record<string, string | number | boolean>;
+  /** When set, the sim link is a related check (not the figure loaded as-is). */
+  relatedCheckNote?: string;
+  /** Override the default sim button label. */
+  simButtonLabel?: string;
   parts: StudentProblem[];
   /** Full worked solution, shown after unlock. */
   teacherSolution?: string[];
@@ -314,7 +322,6 @@ const baseSets: ProblemSet[] = [
         solution:
           'Equal. $F_\\mathrm{app}$ is not a partner of $F_{12}$. Net force on each block can differ; the pair magnitudes do not.',
         simSlug: 'newtons-third-law',
-        simParams: { scenario: 'side-by-side' },
       },
       {
         id: 'ps-n3-2',
@@ -327,7 +334,7 @@ const baseSets: ProblemSet[] = [
         hint: '$a = F_\\mathrm{app}/(m_1+m_2)$. Then $F_{12} = m_2 a$.',
         solution: '$a = 8/4 = 2\\,\\mathrm{m/s}^2$, so $F_{12} = 1\\times 2 = 2\\,\\mathrm{N}$.',
         simSlug: 'newtons-third-law',
-        simParams: { scenario: 'side-by-side', m1: 3, m2: 1, F_app: 8 },
+        simParams: { m1: 3, m2: 1, F_app: 8 },
       },
     ],
   },

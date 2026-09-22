@@ -198,7 +198,7 @@ export const predictionChallenges: Record<string, PredictionChallenge[]> = {
             'Resistance/inertia dictates acceleration, but never violates action-reaction symmetry.',
         },
       ],
-      testSetup: { scenario: 'side-by-side', m1: 5.0, m2: 1.0, F_app: 12.0 },
+      testSetup: { m1: 5.0, m2: 1.0, F_app: 12.0 },
       observePrompt:
         'Examine the interaction vector readouts: both $|F_{12}|$ and $|F_{21}|$ equal exactly $2.00\\text{ N}$.',
     },
@@ -272,7 +272,7 @@ export const predictionChallenges: Record<string, PredictionChallenge[]> = {
       ],
       testSetup: { R: 4.0, w0: 2.0, alpha: 0 },
       observePrompt:
-        'Observe $a_r$: doubling angular speed from $1\\text{ rad/s}$ to $2\\text{ rad/s}$ increases $a_r$ from $4.0\\text{ m/s}^2$ to $16.0\\text{ m/s}^2$ ($4\\times$).',
+        'With $R = 4\\text{ m}$ and $\\omega = 2\\text{ rad/s}$, observe $a_r = \\omega^2 R = 16.0\\text{ m/s}^2$. At the same $R$ with $\\omega = 1\\text{ rad/s}$, $a_r$ would be $4.0\\text{ m/s}^2$ — a factor of $4\\times$ smaller.',
     },
   ],
 

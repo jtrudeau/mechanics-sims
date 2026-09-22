@@ -19,6 +19,7 @@ export function PredictionGate({
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [challengeIdx, setChallengeIdx] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [appliedNotice, setAppliedNotice] = useState(false);
 
   if (!challenges || challenges.length === 0) return null;
@@ -26,9 +27,11 @@ export function PredictionGate({
   const current = challenges[challengeIdx] || challenges[0];
   const selectedOptId = selectedOptions[current.id];
   const selectedOpt = current.options.find((o) => o.id === selectedOptId);
+  const explanationVisible = Boolean(revealed[current.id]);
 
   const handleSelect = (optId: string) => {
     setSelectedOptions((prev) => ({ ...prev, [current.id]: optId }));
+    setRevealed((prev) => ({ ...prev, [current.id]: false }));
     setAppliedNotice(false);
   };
 
@@ -39,6 +42,7 @@ export function PredictionGate({
     if (onRunSim) {
       onRunSim();
     }
+    setRevealed((prev) => ({ ...prev, [current.id]: true }));
     setAppliedNotice(true);
     setTimeout(() => setAppliedNotice(false), 3500);
   };
@@ -163,34 +167,44 @@ export function PredictionGate({
         {selectedOpt && (
           <div
             className={`sim-challenge-feedback ${
-              selectedOpt.isCorrect ? 'is-correct' : 'is-review'
+              explanationVisible
+                ? selectedOpt.isCorrect
+                  ? 'is-correct'
+                  : 'is-review'
+                : 'is-pending'
             }`}
           >
-            <div className="sim-challenge-feedback-head">
-              {selectedOpt.isCorrect ? (
-                <>
-                  <CheckCircle2 size={18} className="text-emerald-600" />
-                  <span className="feedback-status-text correct">Correct Prediction!</span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle size={18} className="text-amber-600" />
-                  <span className="feedback-status-text review">Concept Insight:</span>
-                </>
-              )}
-            </div>
+            {explanationVisible && (
+              <>
+                <div className="sim-challenge-feedback-head">
+                  {selectedOpt.isCorrect ? (
+                    <>
+                      <CheckCircle2 size={18} className="text-emerald-600" />
+                      <span className="feedback-status-text correct">Correct Prediction!</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle size={18} className="text-amber-600" />
+                      <span className="feedback-status-text review">Concept Insight:</span>
+                    </>
+                  )}
+                </div>
 
-            <p className="sim-challenge-explanation">
-              <MathText text={selectedOpt.explanation} />
-            </p>
+                <p className="sim-challenge-explanation">
+                  <MathText text={selectedOpt.explanation} />
+                </p>
+              </>
+            )}
 
             <div className="sim-challenge-action-row">
-              <div className="sim-challenge-observe-hint">
-                <Sparkles size={15} />
-                <span>
-                  <strong>Observe:</strong> <MathText text={current.observePrompt} />
-                </span>
-              </div>
+              {explanationVisible && (
+                <div className="sim-challenge-observe-hint">
+                  <Sparkles size={15} />
+                  <span>
+                    <strong>Observe:</strong> <MathText text={current.observePrompt} />
+                  </span>
+                </div>
+              )}
 
               <button
                 type="button"

@@ -1928,6 +1928,11 @@ h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   animation: tabFadeIn 0.2s ease-out;
 }
 
+.sim-challenge-feedback.is-pending {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+}
+
 .sim-challenge-feedback.is-correct {
   background: #f0fdf4;
   border-left: 4px solid #10b981;

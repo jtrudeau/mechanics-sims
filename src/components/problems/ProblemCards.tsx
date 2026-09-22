@@ -187,20 +187,41 @@ export function ProblemCard({
       )}
 
       {onLoadSetup && problem.simParams ? (
-        <button
-          type="button"
-          onClick={() => onLoadSetup(problem.simParams)}
-          className="btn-link secondary"
-          style={{ marginTop: 8 }}
-        >
-          <FlaskConical size={15} />
-          Load setup into simulation
-        </button>
+        <div style={{ marginTop: 8 }}>
+          {problem.relatedCheckNote && (
+            <p className="text-muted textbook-font" style={{ margin: '0 0 8px', fontSize: 13 }}>
+              <MathText text={problem.relatedCheckNote} />
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => onLoadSetup(problem.simParams)}
+            className="btn-link secondary"
+          >
+            <FlaskConical size={15} />
+            {problem.simButtonLabel ? (
+              <MathText text={problem.simButtonLabel} />
+            ) : (
+              'Load setup into simulation'
+            )}
+          </button>
+        </div>
       ) : simPath ? (
-        <Link to={simPath} className="btn-link secondary" style={{ marginTop: 8 }}>
-          <FlaskConical size={15} />
-          Load setup
-        </Link>
+        <div style={{ marginTop: 8 }}>
+          {problem.relatedCheckNote && (
+            <p className="text-muted textbook-font" style={{ margin: '0 0 8px', fontSize: 13 }}>
+              <MathText text={problem.relatedCheckNote} />
+            </p>
+          )}
+          <Link to={simPath} className="btn-link secondary">
+            <FlaskConical size={15} />
+            {problem.simButtonLabel ? (
+              <MathText text={problem.simButtonLabel} />
+            ) : (
+              'Load setup'
+            )}
+          </Link>
+        </div>
       ) : null}
     </li>
   );
@@ -290,20 +311,41 @@ export function MultiStepCard({
       )}
 
       {onLoadSetup && problem.simParams ? (
-        <button
-          type="button"
-          onClick={() => onLoadSetup(problem.simParams)}
-          className="btn-link secondary"
-          style={{ marginBottom: 12 }}
-        >
-          <FlaskConical size={15} />
-          Open related simulation
-        </button>
+        <div style={{ marginBottom: 12 }}>
+          {problem.relatedCheckNote && (
+            <p className="text-muted textbook-font" style={{ margin: '0 0 8px', fontSize: 13 }}>
+              <MathText text={problem.relatedCheckNote} />
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => onLoadSetup(problem.simParams)}
+            className="btn-link secondary"
+          >
+            <FlaskConical size={15} />
+            {problem.simButtonLabel ? (
+              <MathText text={problem.simButtonLabel} />
+            ) : (
+              'Open related simulation'
+            )}
+          </button>
+        </div>
       ) : simPath ? (
-        <Link to={simPath} className="btn-link secondary" style={{ marginBottom: 12 }}>
-          <FlaskConical size={15} />
-          Open related simulation
-        </Link>
+        <div style={{ marginBottom: 12 }}>
+          {problem.relatedCheckNote && (
+            <p className="text-muted textbook-font" style={{ margin: '0 0 8px', fontSize: 13 }}>
+              <MathText text={problem.relatedCheckNote} />
+            </p>
+          )}
+          <Link to={simPath} className="btn-link secondary">
+            <FlaskConical size={15} />
+            {problem.simButtonLabel ? (
+              <MathText text={problem.simButtonLabel} />
+            ) : (
+              'Open related simulation'
+            )}
+          </Link>
+        </div>
       ) : null}
 
       <ol className="problems-parts">

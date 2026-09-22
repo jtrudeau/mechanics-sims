@@ -80,7 +80,7 @@ export const simulations: SimulationEntry[] = [
     title: "Newton's 3rd Law",
     shortTitle: "Newton's 3rd Law",
     topicGroup: 'forces',
-    blurb: 'Equal-and-opposite pairs for side-by-side, stacked, and incline setups.',
+    blurb: 'Equal-and-opposite contact pairs for two blocks pushed side by side.',
     icon: 'arrow-right',
     simPath: '/simulations/newtons-third-law',
     guidePath: '/guides/newtons-third-law',

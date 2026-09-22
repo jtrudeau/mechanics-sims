@@ -105,6 +105,15 @@ export default function SimGuidePage() {
         </section>
       </div>
 
+      {guide.tryThis && (
+        <section className="glass-panel guide-section" style={{ marginTop: 24 }}>
+          <h2>Suggested exercise</h2>
+          <p className="textbook-font" style={{ margin: 0 }}>
+            <MathText text={guide.tryThis} />
+          </p>
+        </section>
+      )}
+
       <section className="guide-problems">
         <div className="home-section-head">
           <h2>Revision problems</h2>
