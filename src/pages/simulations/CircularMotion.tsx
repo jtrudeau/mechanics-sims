@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
-import { drawArrow, drawMixedText, drawCoordinateGrid, fitStage } from '../../components/physics/drawUtils';
+import { drawArrow, drawMixedText, drawCoordinateGrid, fitStage, placeLabelBeside, placeLabelBeyond, placeTipLabel } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
 import { parseUrlParams } from '../../hooks/useUrlSync';
@@ -182,16 +182,15 @@ export default function CircularMotion() {
     const accelScale = 0.85 * s; // Standardized scale for ALL acceleration components!
     
     const screenTheta = -state.theta;
-    const radialPerpX = Math.sin(screenTheta);
-    const radialPerpY = -Math.cos(screenTheta);
 
     // 1. Velocity Vector
     if (Math.abs(v_mag) > 0.1) {
       const dir = screenTheta - Math.sign(state.w) * Math.PI / 2;
       const tip = drawArrow(ctx, objX, objY, Math.abs(v_mag) * velScale, dir, 'var(--color-vel)', lw, true);
-      drawMixedText(ctx, tip.hx + 18 * s * Math.cos(screenTheta), tip.hy + 18 * s * Math.sin(screenTheta),
+      const vLabel = placeLabelBeyond(objX, objY, tip.hx, tip.hy, dir, 14 * s, 40 * s, 18 * s);
+      drawMixedText(ctx, vLabel.x, vLabel.y,
         [{ text: 'v', italic: true, vector: true }],
-        { fontSize: fs, color: 'var(--color-vel)', align: 'center', baseline: 'middle', halo: true });
+        { fontSize: fs, color: 'var(--color-vel)', align: vLabel.align, baseline: vLabel.baseline, halo: true });
     }
 
     // Directions
@@ -201,17 +200,19 @@ export default function CircularMotion() {
     // 2. Radial (Centripetal) Acceleration Vector
     if (ar_mag > 0.1) {
       const tip = drawArrow(ctx, objX, objY, ar_mag * accelScale, dir_ar, 'var(--color-accel-radial)', lw, true);
-      drawMixedText(ctx, tip.hx + 14 * s * Math.cos(dir_ar) + 14 * s * radialPerpX, tip.hy + 14 * s * Math.sin(dir_ar) + 14 * s * radialPerpY,
+      const arLabel = placeLabelBeside(objX, objY, tip.hx, tip.hy, dir_ar, 22 * s, 26 * s);
+      drawMixedText(ctx, arLabel.x, arLabel.y,
         [{ text: 'a', italic: true, vector: true }, { text: 'r', italic: true, subscript: true }],
-        { fontSize: Math.round(17 * s), color: 'var(--color-accel-radial)', align: 'center', baseline: 'middle', halo: true });
+        { fontSize: Math.round(17 * s), color: 'var(--color-accel-radial)', align: arLabel.align, baseline: arLabel.baseline, halo: true });
     }
 
     // 3. Tangential Acceleration Vector
     if (Math.abs(at_mag) > 0.1) {
       const tip = drawArrow(ctx, objX, objY, Math.abs(at_mag) * accelScale, at_dir, 'var(--color-accel-tangential)', lw, true);
-      drawMixedText(ctx, tip.hx + 18 * s * Math.cos(screenTheta) + 12 * s * Math.cos(at_dir), tip.hy + 18 * s * Math.sin(screenTheta) + 12 * s * Math.sin(at_dir),
+      const atLabel = placeLabelBeyond(objX, objY, tip.hx, tip.hy, at_dir, 14 * s, 68 * s, -22 * s);
+      drawMixedText(ctx, atLabel.x, atLabel.y,
         [{ text: 'a', italic: true, vector: true }, { text: 't', italic: true, subscript: true }],
-        { fontSize: Math.round(17 * s), color: 'var(--color-accel-tangential)', align: 'center', baseline: 'middle', halo: true });
+        { fontSize: Math.round(17 * s), color: 'var(--color-accel-tangential)', align: atLabel.align, baseline: atLabel.baseline, halo: true });
     }
 
     // Total acceleration components math & drawing
@@ -253,10 +254,20 @@ export default function CircularMotion() {
 
     // 5. Total Acceleration Vector (draw only if it deviates from pure radial or has components)
     if (a_tot_mag > 0.1 && Math.abs(at_mag) > 0.1) {
-      const tip = drawArrow(ctx, objX, objY, a_tot_mag * accelScale, a_tot_dir, 'var(--color-accel)', lw, true);
-      drawMixedText(ctx, tip.hx + 16 * s * Math.cos(a_tot_dir), tip.hy + 16 * s * Math.sin(a_tot_dir),
+      drawArrow(ctx, objX, objY, a_tot_mag * accelScale, a_tot_dir, 'var(--color-accel)', lw, true);
+      const outX = Math.cos(screenTheta);
+      const outY = Math.sin(screenTheta);
+      const cwX = Math.sin(screenTheta);
+      const cwY = -Math.cos(screenTheta);
+      const aLabel = placeTipLabel(
+        objX + 16 * s * outX + 36 * s * cwX,
+        objY + 16 * s * outY + 36 * s * cwY,
+        Math.atan2(cwY, cwX),
+        4 * s,
+      );
+      drawMixedText(ctx, aLabel.x, aLabel.y,
         [{ text: 'a', italic: true, vector: true }],
-        { fontSize: fs, color: 'var(--color-accel)', align: 'center', baseline: 'middle', halo: true });
+        { fontSize: fs, color: 'var(--color-accel)', align: aLabel.align, baseline: aLabel.baseline, halo: true });
     }
 
     // ω cap warning

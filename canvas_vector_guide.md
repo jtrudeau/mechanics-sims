@@ -94,6 +94,8 @@ To standardise the visual composition, labels placed at the tips of vector arrow
 | **Rightwards** ($\vec{F}_{\text{app}}$, etc.) | `'left'` | `'middle'` | `(tip.hx + 12, tip.hy)` |
 | **Leftwards** ($\vec{f}$, etc.) | `'right'` | `'middle'` | `(tip.hx - 12, tip.hy)` |
 
+Arrows that are not axis-aligned use `placeTipLabel(tipX, tipY, angle, gap)`. The anchor moves `gap` pixels past the tip, and `align` / `baseline` follow the same four cases, using whichever of the horizontal and vertical components is larger. `placeLabelBeyond` applies that rule and also keeps the label at least `minReach` pixels from the body, so a short arrow cannot leave the symbol on the mass. A perpendicular shift separates parallel arrows such as \(\vec{v}\) and \(\vec{a}_t\). `placeLabelBeside` grows the glyph along the shaft normal when the space past the tip is already occupied, as with \(\vec{a}_r\) inside a circle.
+
 ---
 
 ## 5. Viewport Boundary Clamping

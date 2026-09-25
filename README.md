@@ -12,7 +12,7 @@ Share the site with students as you would any other web resource. There is no si
 
 **Simulations** — open a topic, set parameters, and use Play. Collapse the sidebar or use **Widen canvas** when projecting.
 
-**Tips & Revision** — learning goals, operating notes, common difficulties, and revision problems that can load a matching control setup.
+**Tips & practice** — learning goals, operating notes, common difficulties, and formative problems that can load a matching control setup.
 
 **Problem sets** (`/problems`) — numeric and multiple-choice checks in the browser. Progress stays on that device only.
 
@@ -22,7 +22,7 @@ Share the site with students as you would any other web resource. There is no si
 
 Hints and worked solutions are **hidden by default**. Check still grades an attempt (correct / not yet) without showing the write-up.
 
-Unlock from **For Teachers** with the instructor passphrase. Unlock lasts for that browser tab; use **Lock solutions** (or close the tab) before handing a machine to a student. **Quiz mode** (`?quiz=1` on a Tips & Revision page) keeps answers hidden even after unlock, which is useful on a projector.
+Unlock from **For Teachers** with the instructor passphrase. Unlock lasts for that browser tab; use **Lock solutions** (or close the tab) before handing a machine to a student. **Quiz mode** (`?tab=practice&quiz=1`) keeps answers hidden even after unlock, which is useful on a projector.
 
 This is a classroom deterrent, not true access control. The site is a static web app with no accounts: a determined student can still inspect the page source. Do not put the passphrase in student-facing materials or in this README.
 

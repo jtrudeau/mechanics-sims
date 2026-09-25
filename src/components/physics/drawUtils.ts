@@ -6,10 +6,10 @@ export const CSS_VAR_FALLBACKS: Record<string, string> = {
   '--color-friction': '#b91c1c',        // Deep Crimson
   '--color-normal': '#0f766e',          // Teal Forest
   '--color-gravity': '#581c87',         // Slate Royal Purple
-  '--color-vel': '#15803d',             // Emerald Green
-  '--color-accel': '#6b21a8',           // Deep Violet
-  '--color-accel-radial': '#b45309',     // Ochre Orange
-  '--color-accel-tangential': '#c2410c'  // Warm Vermillion
+  '--color-vel': '#047857',             // Emerald Green
+  '--color-accel': '#5b21b6',           // Deep Violet
+  '--color-accel-radial': '#9a3412',     // Ochre Orange
+  '--color-accel-tangential': '#9f1239'  // Warm Vermillion
 };
 
 // Resolves a CSS variable color string like 'var(--color-gravity)' to its actual hex/rgb value
@@ -171,6 +171,81 @@ export type TextSeg = {
   vector?: boolean;    // If true, draws a neat textbook vector arrow above the character
   subscript?: boolean; // If true, renders smaller and offset downwards for math subscripts
 };
+
+/**
+ * Anchor a vector label just past an arrow tip.
+ * Axis choice follows canvas_vector_guide.md §4; diagonal arrows use the larger component.
+ * Canvas y grows downward, so a positive sine is a downward arrow.
+ */
+export function placeTipLabel(
+  tipX: number,
+  tipY: number,
+  angle: number,
+  gap: number,
+): { x: number; y: number; align: CanvasTextAlign; baseline: CanvasTextBaseline } {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  const x = tipX + gap * c;
+  const y = tipY + gap * s;
+  if (Math.abs(c) >= Math.abs(s)) {
+    return { x, y, align: c >= 0 ? 'left' : 'right', baseline: 'middle' };
+  }
+  return { x, y, align: 'center', baseline: s >= 0 ? 'top' : 'bottom' };
+}
+
+/**
+ * Same tip rule as placeTipLabel, but a short arrow cannot leave the label on the body.
+ * minReach is the smallest distance from origin to the label's near edge.
+ * perp shifts the label along the arrow normal so parallel arrows stay in separate lanes.
+ */
+export function placeLabelBeyond(
+  originX: number,
+  originY: number,
+  tipX: number,
+  tipY: number,
+  angle: number,
+  gap: number,
+  minReach: number,
+  perp = 0,
+): { x: number; y: number; align: CanvasTextAlign; baseline: CanvasTextBaseline } {
+  const reach = Math.hypot(tipX - originX, tipY - originY);
+  const dist = Math.max(reach + gap, minReach);
+  const nx = -Math.sin(angle);
+  const ny = Math.cos(angle);
+  return placeTipLabel(
+    originX + dist * Math.cos(angle) + perp * nx,
+    originY + dist * Math.sin(angle) + perp * ny,
+    angle,
+    0,
+  );
+}
+
+/**
+ * Park a label beside an arrow shaft. The glyph grows along the normal,
+ * so a short inward arrow does not run the symbol into the center of the figure.
+ * lane is a signed pixel offset; positive and negative lanes sit on opposite sides.
+ */
+export function placeLabelBeside(
+  originX: number,
+  originY: number,
+  tipX: number,
+  tipY: number,
+  angle: number,
+  minReach: number,
+  lane: number,
+): { x: number; y: number; align: CanvasTextAlign; baseline: CanvasTextBaseline } {
+  const reach = Math.hypot(tipX - originX, tipY - originY);
+  const dist = Math.max(reach, minReach);
+  const nx = -Math.sin(angle);
+  const ny = Math.cos(angle);
+  const side = Math.atan2(lane >= 0 ? ny : -ny, lane >= 0 ? nx : -nx);
+  return placeTipLabel(
+    originX + dist * Math.cos(angle) + lane * nx,
+    originY + dist * Math.sin(angle) + lane * ny,
+    side,
+    0,
+  );
+}
 
 export function drawMixedText(
   ctx: CanvasRenderingContext2D,

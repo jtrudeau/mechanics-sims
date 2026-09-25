@@ -103,7 +103,7 @@ export default function ForTeachers() {
       <section className="teachers-index">
         <div className="home-section-head">
           <h2>Simulation index</h2>
-          <p className="text-muted">Open a simulation or its Tips &amp; Revision page.</p>
+          <p className="text-muted">Open a simulation or its Tips &amp; practice tab.</p>
         </div>
 
         {grouped.map(({ group, items }) => (
@@ -122,8 +122,8 @@ export default function ForTeachers() {
                     <Link to={sim.simPath} className="btn-link">
                       Open simulation
                     </Link>
-                    <Link to={sim.guidePath} className="btn-link secondary">
-                      Tips &amp; Revision
+                    <Link to={`${sim.simPath}?tab=practice`} className="btn-link secondary">
+                      Tips &amp; practice
                     </Link>
                   </div>
                 </div>

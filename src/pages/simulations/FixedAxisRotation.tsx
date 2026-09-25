@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BlockMath, InlineMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
-import { drawArrow, drawCoordinateGrid, drawMixedText, resolveColor, fitStage } from '../../components/physics/drawUtils';
+import { drawArrow, drawCoordinateGrid, drawMixedText, resolveColor, fitStage, placeTipLabel } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
 import { parseUrlParams } from '../../hooks/useUrlSync';
@@ -246,7 +246,7 @@ export default function FixedAxisRotation() {
     const markerPoint = pointFromPivot(pivotX, pivotY, model.trackingRadius * pxPerMeter, theta);
     const bodyExtentPx = model.visualExtent * pxPerMeter;
 
-    drawReferenceLine(ctx, pivotX, pivotY, width);
+    drawReferenceLine(ctx, pivotX, pivotY, width, bodyExtentPx);
     drawBody(ctx, model, pivotX, pivotY, theta, pxPerMeter);
     drawThetaArc(ctx, pivotX, pivotY, thetaWrapped, Math.min(48, Math.max(30, bodyExtentPx * 0.36)));
 
@@ -279,7 +279,7 @@ export default function FixedAxisRotation() {
       ctx.fill();
     }
 
-    drawForceVectors(ctx, params, torques, forcePoint.x, forcePoint.y, theta, s);
+    drawForceVectors(ctx, params, torques, forcePoint.x, forcePoint.y, theta, s, pivotX, pivotY, bodyExtentPx);
     drawTorqueArcs(ctx, pivotX, pivotY, bodyExtentPx, torques.netTorque, state.omega);
 
     ctx.fillStyle = '#ffffff';
@@ -302,13 +302,28 @@ export default function FixedAxisRotation() {
         'var(--color-vel)',
         4 * s
       );
-      drawMixedText(ctx, speedTip.hx + 10 * s * Math.cos(direction), speedTip.hy + 10 * s * Math.sin(direction), [
+      const outX = Math.cos(theta);
+      const outY = -Math.sin(theta);
+      const tanX = Math.cos(direction);
+      const tanY = Math.sin(direction);
+      const speedAnchor = parkOutsideBody(
+        pivotX,
+        pivotY,
+        speedTip.hx + tanX * 16 * s + outX * 42 * s,
+        speedTip.hy + tanY * 16 * s + outY * 42 * s,
+        bodyExtentPx,
+        30 * s,
+      );
+      const speedLabel = placeTipLabel(speedAnchor.x, speedAnchor.y, Math.atan2(outY, outX), 4 * s);
+      drawMixedText(ctx, speedLabel.x, speedLabel.y, [
         { text: 'v', italic: true },
         { text: 't', italic: true, subscript: true }
       ], {
         fontSize: Math.round(16 * s),
         color: 'var(--color-vel)',
-        align: tangentialSpeed >= 0 ? 'left' : 'right'
+        align: speedLabel.align,
+        baseline: speedLabel.baseline,
+        halo: true,
       });
     }
 
@@ -572,20 +587,25 @@ function drawBody(
   }
 }
 
-function drawReferenceLine(ctx: CanvasRenderingContext2D, cx: number, cy: number, width: number) {
+function drawReferenceLine(ctx: CanvasRenderingContext2D, cx: number, cy: number, width: number, bodyRadius: number) {
   ctx.save();
   ctx.strokeStyle = '#cbd5e1';
   ctx.lineWidth = 1.5;
   ctx.setLineDash([6, 5]);
   ctx.beginPath();
-  ctx.moveTo(Math.max(12, cx - width * 0.18), cy);
-  ctx.lineTo(Math.min(width - 12, cx + width * 0.28), cy);
+  const left = Math.max(16, cx - width * 0.2);
+  // Stop short of the rim so the line does not run through the force vectors.
+  const right = cx + Math.min(bodyRadius * 0.42, width * 0.12);
+  ctx.moveTo(left, cy);
+  ctx.lineTo(right, cy);
   ctx.stroke();
   ctx.setLineDash([]);
-  drawMixedText(ctx, Math.min(width - 18, cx + width * 0.28 + 10), cy - 12, [{ text: 'reference' }], {
+  drawMixedText(ctx, left, cy - 8, [{ text: 'reference' }], {
     fontSize: 11,
     color: '#475569',
-    align: 'right'
+    align: 'left',
+    baseline: 'bottom',
+    halo: true,
   });
   ctx.restore();
 }
@@ -610,51 +630,95 @@ function drawForceVectors(
   x: number,
   y: number,
   theta: number,
-  s: number
+  s: number,
+  pivotX: number,
+  pivotY: number,
+  bodyRadius: number,
 ) {
   if (params.force < 0.05) return;
 
   const forceScale = 3.1 * s;
   const forceAngle = -(theta + torques.phi);
-  const forceTip = drawArrow(ctx, x, y, clamp(params.force * forceScale, 18 * s, 105 * s), forceAngle, 'var(--color-force-app)', 4.5 * s, true);
-  drawMixedText(ctx, forceTip.hx + 12 * s * Math.cos(forceAngle), forceTip.hy + 12 * s * Math.sin(forceAngle), [
+  const forceLen = clamp(params.force * forceScale, 18 * s, 105 * s);
+  const forceTip = drawArrow(ctx, x, y, forceLen, forceAngle, 'var(--color-force-app)', 4.5 * s, true);
+  const forceLabel = placeTipLabel(
+    forceTip.hx + Math.cos(forceAngle) * 10 * s,
+    forceTip.hy + Math.sin(forceAngle) * 10 * s,
+    forceAngle,
+    6 * s,
+  );
+  drawMixedText(ctx, forceLabel.x, forceLabel.y, [
     { text: 'F', italic: true, vector: true }
   ], {
     fontSize: Math.round(18 * s),
     color: 'var(--color-force-app)',
-    align: 'center',
+    align: forceLabel.align,
+    baseline: forceLabel.baseline,
     halo: true
   });
 
   if (!params.showDecomposition) return;
 
+  const outX = Math.cos(theta);
+  const outY = -Math.sin(theta);
+
   if (Math.abs(torques.radialForce) > 0.05) {
     const radialDirection = -(theta + (torques.radialForce >= 0 ? 0 : Math.PI));
+    const radialLen = clamp(Math.abs(torques.radialForce) * forceScale, 14 * s, 90 * s);
     ctx.save();
     ctx.setLineDash([5, 4]);
-    const radialTip = drawArrow(ctx, x, y, clamp(Math.abs(torques.radialForce) * forceScale, 14 * s, 90 * s), radialDirection, '#0f766e', 3 * s, true);
+    drawArrow(ctx, x, y, radialLen, radialDirection, '#0f766e', 3 * s, true);
     ctx.restore();
-    drawMixedText(ctx, radialTip.hx + 10 * s * Math.cos(radialDirection), radialTip.hy + 10 * s * Math.sin(radialDirection), [
+    const radialOut = Math.cos(radialDirection) * outX + Math.sin(radialDirection) * outY;
+    const radialSign = radialOut >= 0 ? 1 : -1;
+    const tanX = -Math.sin(theta);
+    const tanY = -Math.cos(theta);
+    const radialAnchor = parkOutsideBody(
+      pivotX,
+      pivotY,
+      x + outX * radialSign * (radialLen + 16 * s) + tanX * (-48 * s),
+      y + outY * radialSign * (radialLen + 16 * s) + tanY * (-48 * s),
+      bodyRadius,
+      34 * s,
+    );
+    const radialAway = Math.atan2(
+      radialAnchor.y - y,
+      radialAnchor.x - x,
+    );
+    const radialLabel = placeTipLabel(radialAnchor.x, radialAnchor.y, radialAway, 2 * s);
+    drawMixedText(ctx, radialLabel.x, radialLabel.y, [
       { text: 'F', italic: true },
       { text: 'r', italic: false, subscript: true }
     ], {
       fontSize: Math.round(16 * s),
       color: '#0f766e',
-      align: 'center',
+      align: radialLabel.align,
+      baseline: radialLabel.baseline,
       halo: true
     });
   }
 
   if (Math.abs(torques.tangentialForce) > 0.05) {
     const tangentDirection = -(theta + Math.sign(torques.tangentialForce) * Math.PI / 2);
-    const tangentTip = drawArrow(ctx, x, y, clamp(Math.abs(torques.tangentialForce) * forceScale, 14 * s, 96 * s), tangentDirection, 'var(--color-accel-tangential)', 4 * s, true);
-    drawMixedText(ctx, tangentTip.hx + 12 * s * Math.cos(tangentDirection), tangentTip.hy + 12 * s * Math.sin(tangentDirection), [
+    const tangentLen = clamp(Math.abs(torques.tangentialForce) * forceScale, 14 * s, 96 * s);
+    const tangentTip = drawArrow(ctx, x, y, tangentLen, tangentDirection, 'var(--color-accel-tangential)', 4 * s, true);
+    const tangentAnchor = parkOutsideBody(
+      pivotX,
+      pivotY,
+      tangentTip.hx + Math.cos(tangentDirection) * 28 * s + outX * 10 * s,
+      tangentTip.hy + Math.sin(tangentDirection) * 28 * s + outY * 10 * s,
+      bodyRadius,
+      36 * s,
+    );
+    const tangentLabel = placeTipLabel(tangentAnchor.x, tangentAnchor.y, tangentDirection, 4 * s);
+    drawMixedText(ctx, tangentLabel.x, tangentLabel.y, [
       { text: 'F', italic: true },
       { text: 't', italic: false, subscript: true }
     ], {
       fontSize: Math.round(17 * s),
       color: 'var(--color-accel-tangential)',
-      align: 'center',
+      align: tangentLabel.align,
+      baseline: tangentLabel.baseline,
       halo: true
     });
   }
@@ -665,7 +729,7 @@ function drawTorqueArcs(ctx: CanvasRenderingContext2D, cx: number, cy: number, b
   if (Math.abs(netTorque) > 0.02) {
     const sweep = Math.sign(netTorque) * 1.1;
     drawCurvedArrow(ctx, cx, cy, torqueRadius, Math.sign(netTorque) > 0 ? -0.85 : 0.85, sweep, '#7c2d12', 3);
-    const label = pointFromPivot(cx, cy, torqueRadius + 18, Math.sign(netTorque) > 0 ? -0.18 : 0.18);
+    const label = pointFromPivot(cx, cy, torqueRadius + 22, Math.sign(netTorque) > 0 ? -0.62 : 0.62);
     drawMixedText(ctx, label.x, label.y, [
       { text: 'τ', italic: true },
       { text: 'net', italic: false, subscript: true }
@@ -788,6 +852,23 @@ function drawCurvedArrow(
   ctx.closePath();
   ctx.fill();
   ctx.restore();
+}
+
+function parkOutsideBody(
+  pivotX: number,
+  pivotY: number,
+  x: number,
+  y: number,
+  bodyRadius: number,
+  pad: number,
+) {
+  const dx = x - pivotX;
+  const dy = y - pivotY;
+  const dist = Math.hypot(dx, dy);
+  const minDist = bodyRadius + pad;
+  if (dist < 1 || dist >= minDist) return { x, y };
+  const scale = minDist / dist;
+  return { x: pivotX + dx * scale, y: pivotY + dy * scale };
 }
 
 function pointFromPivot(cx: number, cy: number, radiusPx: number, theta: number) {

@@ -7,7 +7,6 @@ import {
   Minimize2,
   SlidersHorizontal,
   Zap,
-  BookOpen,
   ClipboardList,
   Share2,
   Check,
@@ -54,8 +53,9 @@ export function SimulationLayout({
   const [searchParams, setSearchParams] = useSearchParams();
   const [shareCopied, setShareCopied] = useState(false);
 
-  // Active topic layer tab: 'sim' | 'guide' | 'practice'
-  const activeTab = (searchParams.get('tab') || 'sim') as 'sim' | 'guide' | 'practice';
+  const embed = searchParams.get('embed') === '1';
+  const rawTab = searchParams.get('tab');
+  const activeTab = rawTab === 'guide' || rawTab === 'practice' ? 'practice' : 'sim';
 
   usePageTitle(entry ? `${entry.shortTitle} · SN1 Mechanics` : `${title} · SN1 Mechanics`);
 
@@ -81,7 +81,7 @@ export function SimulationLayout({
     });
   };
 
-  const setTab = (tab: 'sim' | 'guide' | 'practice') => {
+  const setTab = (tab: 'sim' | 'practice') => {
     const next = new URLSearchParams(searchParams);
     if (tab === 'sim') {
       next.delete('tab');
@@ -124,9 +124,16 @@ export function SimulationLayout({
     }
   };
 
+  if (embed) {
+    return (
+      <div className="sim-embed">
+        <div className="glass-panel sim-canvas-panel">{canvasContent}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="sim-workspace">
-      {/* ── 3-Layer Tabbed Hub Navigation ── */}
       {entry && (
         <div className="sim-tab-bar" role="tablist">
           <button
@@ -142,22 +149,12 @@ export function SimulationLayout({
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === 'guide'}
-            className={`sim-tab-btn${activeTab === 'guide' ? ' active' : ''}`}
-            onClick={() => setTab('guide')}
-          >
-            <BookOpen size={15} />
-            <span>Tips &amp; Revision</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
             aria-selected={activeTab === 'practice'}
             className={`sim-tab-btn${activeTab === 'practice' ? ' active' : ''}`}
             onClick={() => setTab('practice')}
           >
             <ClipboardList size={15} />
-            <span>Practice &amp; Homework</span>
+            <span>Tips &amp; practice</span>
           </button>
         </div>
       )}
@@ -201,6 +198,20 @@ export function SimulationLayout({
             <div className="sim-challenge-wrapper">{challengeContent}</div>
           )}
           <div className="glass-panel sim-canvas-panel">{canvasContent}</div>
+          <div className={`glass-panel sim-theory-panel textbook-font${theoryOpen ? '' : ' collapsed'}`}>
+            <button
+              type="button"
+              className="theory-toggle"
+              onClick={() => setTheoryOpen((o) => !o)}
+              aria-expanded={theoryOpen}
+            >
+              {theoryOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              <span className="sim-section-heading" style={{ margin: 0 }}>
+                Theory
+              </span>
+            </button>
+            {theoryOpen && <div className="theory-body">{theoryContent}</div>}
+          </div>
         </div>
 
         {wideCanvas && (
@@ -234,35 +245,13 @@ export function SimulationLayout({
             <h2 className="sim-section-heading">Live Dynamics</h2>
             {metricsContent}
           </div>
-
-          <div className={`glass-panel sim-theory-panel textbook-font${theoryOpen ? '' : ' collapsed'}`}>
-            <button
-              type="button"
-              className="theory-toggle"
-              onClick={() => setTheoryOpen((o) => !o)}
-              aria-expanded={theoryOpen}
-            >
-              {theoryOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              <span className="sim-section-heading" style={{ margin: 0 }}>
-                {theoryOpen ? 'Theory' : 'Theory (expand after attempting the exercise)'}
-              </span>
-            </button>
-            {theoryOpen && <div className="theory-body">{theoryContent}</div>}
-          </div>
         </div>
       </div>
 
-      {/* ── Tab 2: Tips & Revision (Learning Goals, Pitfalls, Figure Notes) ── */}
-      {entry && activeTab === 'guide' && (
+      {entry && activeTab === 'practice' && (
         <div className="sim-tab-content">
           <TopicGuideView sim={entry} onLoadSetup={handleLoadSetup} />
-        </div>
-      )}
-
-      {/* ── Tab 3: Practice Problems & Multi-Step Homework with Figures ── */}
-      {slug && activeTab === 'practice' && (
-        <div className="sim-tab-content">
-          <TopicProblemsView slug={slug} onLoadSetup={handleLoadSetup} />
+          {slug && <TopicProblemsView slug={slug} onLoadSetup={handleLoadSetup} />}
         </div>
       )}
     </div>

@@ -205,22 +205,22 @@ function ForceTable3() {
 
 function LoopTheLoop() {
   return (
-    <Frame viewBox="0 0 340 230">
+    <Frame viewBox="0 0 360 220">
       <path
-        d="M 36 40 L 36 170 Q 36 200 70 200 L 130 200"
+        d="M 40 28 L 40 148 Q 40 168 68 168 L 214 168"
         fill="none"
         stroke={INK}
         strokeWidth="2"
       />
-      <circle cx="210" cy="130" r="54" fill="none" stroke={INK} strokeWidth="2" />
-      <path d="M 264 130 L 310 130" fill="none" stroke={INK} strokeWidth="2" />
-      <circle cx="36" cy="48" r="7" fill="#334155" />
-      <line x1="48" y1="40" x2="48" y2="200" stroke={MUTED} strokeWidth="1" strokeDasharray="3 3" />
-      <FigMath x={56} y={120} math="H" w={28} />
-      <line x1="210" y1="130" x2="210" y2="76" stroke={MUTED} strokeWidth="1" />
-      <FigMath x={218} y={108} math="R" w={28} />
-      <text x="210" y="38" className="fig-label">top</text>
-      <text x="170" y="218" className="fig-caption">frictionless track into a vertical loop</text>
+      <circle cx="214" cy="112" r="56" fill="none" stroke={INK} strokeWidth="2" />
+      <path d="M 214 168 L 332 168" fill="none" stroke={INK} strokeWidth="2" />
+      <circle cx="40" cy="36" r="7" fill="#334155" />
+      <line x1="52" y1="28" x2="52" y2="168" stroke={MUTED} strokeWidth="1" strokeDasharray="3 3" />
+      <FigMath x={60} y={100} math="H" w={28} />
+      <line x1="214" y1="112" x2="214" y2="56" stroke={MUTED} strokeWidth="1" />
+      <FigMath x={222} y={88} math="R" w={28} />
+      <text x="214" y="28" className="fig-label">top</text>
+      <text x="180" y="202" className="fig-caption">frictionless track into a vertical loop</text>
     </Frame>
   );
 }

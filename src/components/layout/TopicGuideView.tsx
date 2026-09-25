@@ -20,10 +20,10 @@ export function TopicGuideView({
   return (
     <div className="guide-page in-topic-hub" style={{ padding: 0 }}>
       <header className="guide-header glass-panel" style={{ marginTop: 0 }}>
-        <p className="home-eyebrow">Tips &amp; Revision</p>
+        <p className="home-eyebrow">Tips &amp; practice</p>
         <h2>{sim.title}</h2>
         <p className="text-muted textbook-font">
-          {sim.blurb}
+          <MathText text={sim.blurb} />
         </p>
       </header>
 

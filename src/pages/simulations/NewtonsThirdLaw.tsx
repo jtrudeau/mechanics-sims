@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
-import { drawArrow, drawMixedText, drawCoordinateGrid, fitStage } from '../../components/physics/drawUtils';
+import { drawArrow, drawMixedText, drawCoordinateGrid, fitStage, placeLabelBeside } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
 import { parseUrlParams } from '../../hooks/useUrlSync';
@@ -170,54 +170,51 @@ export default function NewtonsThirdLaw() {
       { fontSize: fsMass, color: '#be185d', align: 'center', baseline: 'middle', halo: true });
 
     const vecScale = 3.5 * s;
-    const topY = cy - Math.max(b1_h, b2_h) - 18 * s;
+    const blockTop = cy - Math.max(b1_h, b2_h);
+    const contact = x1_right;
+    const above = (angle: number, gap: number) => (Math.cos(angle) >= 0 ? -gap : gap);
 
     if (Math.abs(params.F_app) > 0.1) {
-      if (params.F_app >= 0) {
-        drawArrow(ctx, x1_left - params.F_app * vecScale, cy - b1_h / 2,
-          params.F_app * vecScale, 0, 'var(--color-force-app)', lw, true);
-      } else {
-        drawArrow(ctx, x1_right + Math.abs(params.F_app) * vecScale, cy - b1_h / 2,
-          Math.abs(params.F_app) * vecScale, Math.PI, 'var(--color-force-app)', lw, true);
-      }
-
-      const shaftMidX = params.F_app >= 0
-        ? x1_left - (params.F_app * vecScale) / 2
-        : x1_right + (Math.abs(params.F_app) * vecScale) / 2;
-      drawMixedText(ctx, shaftMidX, cy - b1_h / 2 - 12 * s,
+      const appLen = Math.abs(params.F_app) * vecScale;
+      const appAngle = params.F_app >= 0 ? 0 : Math.PI;
+      const appStartX = params.F_app >= 0 ? x1_left - appLen : x1_right + appLen;
+      const appY = cy - b1_h / 2;
+      drawArrow(ctx, appStartX, appY, appLen, appAngle, 'var(--color-force-app)', lw, true);
+      const appLabelX = params.F_app >= 0 ? x1_left - 10 * s : x1_right + 10 * s;
+      drawMixedText(ctx, appLabelX, appY - 14 * s,
         [{ text: 'F', italic: true, vector: true }, { text: 'app', italic: false, subscript: true }, { text: ' = ' + Math.abs(params.F_app).toFixed(0) + ' N' }],
-        { fontSize: fs, color: 'var(--color-force-app)', align: 'center', baseline: 'bottom', halo: true });
-    }
-
-    if (Math.abs(F12) > 0.1) {
-      const tip = drawArrow(ctx, x1_right, topY - 8 * s,
-        Math.abs(F12) * vecScale,
-        F12 > 0 ? 0 : Math.PI,
-        '#be185d', lw, true);
-      drawMixedText(ctx, tip.hx + (F12 > 0 ? 8 : -8) * s, topY - 8 * s,
-        [{ text: 'F', italic: true, vector: true }, { text: '12', italic: false, subscript: true }, { text: ' = ' + F12.toFixed(1) + ' N' }],
-        { fontSize: fs, color: '#be185d', align: F12 > 0 ? 'left' : 'right', baseline: 'middle', halo: true });
+        { fontSize: fs, color: 'var(--color-force-app)', align: params.F_app >= 0 ? 'right' : 'left', baseline: 'bottom', halo: true });
     }
 
     if (Math.abs(F21) > 0.1) {
-      const tip = drawArrow(ctx, x1_right, topY + 14 * s,
-        Math.abs(F21) * vecScale,
-        F21 > 0 ? 0 : Math.PI,
-        '#0284c7', lw, true);
-      drawMixedText(ctx, tip.hx + (F21 > 0 ? 8 : -8) * s, topY + 14 * s,
+      const f21Angle = F21 > 0 ? 0 : Math.PI;
+      const f21Y = blockTop - 36 * s;
+      const tip = drawArrow(ctx, contact, f21Y, Math.abs(F21) * vecScale, f21Angle, '#0284c7', lw, true);
+      const label = placeLabelBeside(contact, f21Y, tip.hx, tip.hy, f21Angle, 12 * s, above(f21Angle, 22 * s));
+      drawMixedText(ctx, label.x, label.y,
         [{ text: 'F', italic: true, vector: true }, { text: '21', italic: false, subscript: true }, { text: ' = ' + Math.abs(F21).toFixed(1) + ' N' }],
-        { fontSize: fs, color: '#0284c7', align: F21 > 0 ? 'left' : 'right', baseline: 'middle', halo: true });
+        { fontSize: fs, color: '#0284c7', align: label.align, baseline: label.baseline, halo: true });
+    }
+
+    if (Math.abs(F12) > 0.1) {
+      const f12Angle = F12 > 0 ? 0 : Math.PI;
+      const f12Y = blockTop - 92 * s;
+      const tip = drawArrow(ctx, contact, f12Y, Math.abs(F12) * vecScale, f12Angle, '#be185d', lw, true);
+      const label = placeLabelBeside(contact, f12Y, tip.hx, tip.hy, f12Angle, 12 * s, above(f12Angle, 22 * s));
+      drawMixedText(ctx, label.x, label.y,
+        [{ text: 'F', italic: true, vector: true }, { text: '12', italic: false, subscript: true }, { text: ' = ' + F12.toFixed(1) + ' N' }],
+        { fontSize: fs, color: '#be185d', align: label.align, baseline: label.baseline, halo: true });
     }
 
     if (Math.abs(a) > 0.01) {
       const midBlock = x1_left + (b1_w + b2_w) / 2;
-      drawArrow(ctx, midBlock, topY - 34 * s,
-        Math.abs(a) * 14 * s,
-        a > 0 ? 0 : Math.PI,
-        'var(--color-accel)', lw, true);
-      drawMixedText(ctx, midBlock, topY - 50 * s,
+      const aAngle = a > 0 ? 0 : Math.PI;
+      const aY = blockTop - 172 * s;
+      const aTip = drawArrow(ctx, midBlock, aY, Math.max(36 * s, Math.abs(a) * 14 * s), aAngle, 'var(--color-accel)', lw, true);
+      const aLabel = placeLabelBeside(midBlock, aY, aTip.hx, aTip.hy, aAngle, 14 * s, above(aAngle, 20 * s));
+      drawMixedText(ctx, aLabel.x, aLabel.y,
         [{ text: 'a', italic: true, vector: true }, { text: ' = ' + a.toFixed(2) + ' m/s²' }],
-        { fontSize: fs, color: 'var(--color-accel)', align: 'center', baseline: 'bottom', halo: true });
+        { fontSize: fs, color: 'var(--color-accel)', align: aLabel.align, baseline: aLabel.baseline, halo: true });
     }
   }, [state, params, fontsReady, stageGen]);
 

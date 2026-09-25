@@ -30,6 +30,9 @@ import type { PredictionChallenge } from '../src/content/predictionChallenges';
 vi.mock('../src/components/physics/drawUtils', () => ({
   drawArrow: vi.fn(() => ({ hx: 0, hy: 0 })),
   drawMixedText: vi.fn(),
+  placeTipLabel: vi.fn((x: number, y: number) => ({ x, y, align: 'center', baseline: 'middle' })),
+  placeLabelBeyond: vi.fn((x: number, y: number) => ({ x, y, align: 'center', baseline: 'middle' })),
+  placeLabelBeside: vi.fn((x: number, y: number) => ({ x, y, align: 'center', baseline: 'middle' })),
   drawCoordinateGrid: vi.fn(),
   fitStage: vi.fn(() => ({
     ctx: new Proxy(
@@ -80,7 +83,7 @@ function withRouter(ui: ReactNode, path = '/') {
 describe('predict then observe', () => {
   it('hides the explanation until Apply, then shows it with the observe prompt', () => {
     const onApply = vi.fn();
-    render(<PredictionGate challenges={[challenge]} onApplySetup={onApply} />);
+    render(<PredictionGate challenges={[challenge]} onApplySetup={onApply} defaultExpanded />);
 
     fireEvent.click(screen.getByRole('button', { name: /It matches the push/ }));
     expect(screen.queryByText(/EXPLANATION_SECRET/)).toBeNull();
@@ -98,7 +101,7 @@ describe('predict then observe', () => {
   it('still reveals the explanation when testSetup is missing', () => {
     const onApply = vi.fn();
     const bare = { ...challenge, id: 'gate-bare', testSetup: undefined as unknown as PredictionChallenge['testSetup'] };
-    render(<PredictionGate challenges={[bare]} onApplySetup={onApply} />);
+    render(<PredictionGate challenges={[bare]} onApplySetup={onApply} defaultExpanded />);
     fireEvent.click(screen.getByRole('button', { name: /It matches the push/ }));
     fireEvent.click(screen.getByRole('button', { name: /Apply Setup/ }));
     expect(onApply).not.toHaveBeenCalled();

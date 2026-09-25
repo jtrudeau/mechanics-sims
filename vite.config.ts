@@ -22,7 +22,7 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    include: ['tests/**/*.test.tsx'],
+    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     alias: [
       { find: /^react-dom/, replacement: path.join(appRoot, 'node_modules/react-dom') },
       { find: /^react$/, replacement: path.join(appRoot, 'node_modules/react') },

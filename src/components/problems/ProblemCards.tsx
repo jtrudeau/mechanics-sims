@@ -43,6 +43,7 @@ export function ProblemCard({
   unlocked,
   nested = false,
   onLoadSetup,
+  onOpenInPane,
 }: {
   index?: number;
   problem: StudentProblem;
@@ -51,6 +52,7 @@ export function ProblemCard({
   unlocked: boolean;
   nested?: boolean;
   onLoadSetup?: (params?: Record<string, string | number | boolean>) => void;
+  onOpenInPane?: (slug: string, params?: Record<string, string | number | boolean>) => void;
 }) {
   const [input, setInput] = useState('');
   const [choice, setChoice] = useState('');
@@ -206,6 +208,22 @@ export function ProblemCard({
             )}
           </button>
         </div>
+      ) : onOpenInPane && problem.simSlug ? (
+        <div style={{ marginTop: 8 }}>
+          {problem.relatedCheckNote && (
+            <p className="text-muted textbook-font" style={{ margin: '0 0 8px', fontSize: 13 }}>
+              <MathText text={problem.relatedCheckNote} />
+            </p>
+          )}
+          <button
+            type="button"
+            className="btn-link secondary"
+            onClick={() => onOpenInPane(problem.simSlug as string, problem.simParams)}
+          >
+            <FlaskConical size={15} />
+            {problem.simButtonLabel ? <MathText text={problem.simButtonLabel} /> : 'Open simulation'}
+          </button>
+        </div>
       ) : simPath ? (
         <div style={{ marginTop: 8 }}>
           {problem.relatedCheckNote && (
@@ -234,6 +252,7 @@ export function MultiStepCard({
   onCheck,
   unlocked,
   onLoadSetup,
+  onOpenInPane,
 }: {
   index: number;
   problem: MultiStepProblem;
@@ -241,6 +260,7 @@ export function MultiStepCard({
   onCheck: (id: string, ok: boolean) => void;
   unlocked: boolean;
   onLoadSetup?: (params?: Record<string, string | number | boolean>) => void;
+  onOpenInPane?: (slug: string, params?: Record<string, string | number | boolean>) => void;
 }) {
   const simPath = problem.simSlug
     ? simPathWithParams(`/simulations/${problem.simSlug}`, problem.simParams)
@@ -262,7 +282,7 @@ export function MultiStepCard({
         <span className="guide-problem-num">{index}</span>
         <div>
           <span className="topic-chip">Homework / class</span>
-          <h3>{problem.title}</h3>
+          <h3><MathText text={problem.title} /></h3>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="text-muted" style={{ fontSize: 13 }}>
@@ -302,10 +322,10 @@ export function MultiStepCard({
         <p className="problem-source">
           {problem.source.url ? (
             <a href={problem.source.url} target="_blank" rel="noreferrer">
-              {problem.source.credit}
+              <MathText text={problem.source.credit} />
             </a>
           ) : (
-            problem.source.credit
+            <MathText text={problem.source.credit} />
           )}
         </p>
       )}
@@ -328,6 +348,22 @@ export function MultiStepCard({
             ) : (
               'Open related simulation'
             )}
+          </button>
+        </div>
+      ) : onOpenInPane && problem.simSlug ? (
+        <div style={{ marginBottom: 12 }}>
+          {problem.relatedCheckNote && (
+            <p className="text-muted textbook-font" style={{ margin: '0 0 8px', fontSize: 13 }}>
+              <MathText text={problem.relatedCheckNote} />
+            </p>
+          )}
+          <button
+            type="button"
+            className="btn-link secondary"
+            onClick={() => onOpenInPane(problem.simSlug as string, problem.simParams)}
+          >
+            <FlaskConical size={15} />
+            {problem.simButtonLabel ? <MathText text={problem.simButtonLabel} /> : 'Open simulation'}
           </button>
         </div>
       ) : simPath ? (
@@ -357,6 +393,7 @@ export function MultiStepCard({
             onCheck={onCheck}
             unlocked={unlocked}
             onLoadSetup={onLoadSetup}
+            onOpenInPane={onOpenInPane}
             nested
           />
         ))}

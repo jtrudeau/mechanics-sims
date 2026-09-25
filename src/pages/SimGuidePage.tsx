@@ -14,7 +14,7 @@ export default function SimGuidePage() {
   const { unlocked } = useTeacherUnlock();
   const showAnswers = unlocked && !quiz;
 
-  usePageTitle(sim ? `Tips: ${sim.shortTitle} · SN1 Mechanics` : 'Tips & Revision · SN1 Mechanics');
+  usePageTitle(sim ? `Tips: ${sim.shortTitle} · SN1 Mechanics` : 'Tips & practice · SN1 Mechanics');
 
   if (!sim) {
     return <Navigate to="/" replace />;
@@ -36,10 +36,10 @@ export default function SimGuidePage() {
       </div>
 
       <header className="guide-header">
-        <h1>Tips &amp; Revision</h1>
+        <h1>Tips &amp; practice</h1>
         <p className="guide-sim-title">{sim.title}</p>
         <p className="text-muted textbook-font" style={{ maxWidth: 640 }}>
-          {sim.blurb}
+          <MathText text={sim.blurb} />
         </p>
         <div className="guide-cta-row">
           <Link to={sim.simPath} className="btn-link">

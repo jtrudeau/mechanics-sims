@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MathText } from '../MathText';
 import { SolutionUnlock, SolutionsLockedNote } from '../SolutionUnlock';
 import { problemSets, isMultiStep } from '../../content/problemSets';
 import { useTeacherUnlock } from '../../hooks/useTeacherUnlock';
@@ -49,7 +50,7 @@ export function TopicProblemsView({
         <p className="home-eyebrow">Practice &amp; Homework</p>
         <h2>{set.title}</h2>
         <p className="home-lede textbook-font">
-          {set.blurb} Work numerically or by multiple choice. Hints and board-style worked solutions remain
+          <MathText text={set.blurb} /> Work numerically or by multiple choice. Hints and board-style worked solutions remain
           locked until unlocked by your teacher.
         </p>
       </header>

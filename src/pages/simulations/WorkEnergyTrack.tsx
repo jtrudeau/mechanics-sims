@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom';
 import { InlineMath, BlockMath } from 'react-katex';
 import { usePhysicsEngine } from '../../hooks/usePhysicsEngine';
-import { drawArrow, drawMixedText, drawCoordinateGrid, resolveColor, fitStage } from '../../components/physics/drawUtils';
+import { drawArrow, drawMixedText, drawCoordinateGrid, resolveColor, fitStage, placeLabelBeside, placeLabelBeyond } from '../../components/physics/drawUtils';
 import { SimulationLayout } from '../../components/layout/SimulationLayout';
 import { useCanvasStage } from '../../hooks/useCanvasStage';
 import { parseUrlParams } from '../../hooks/useUrlSync';
@@ -651,27 +651,36 @@ function drawTrackScene(
 
   if (metrics.speed > 0.05) {
     const vTip = drawArrow(ctx, cartCx, cartCy - 2 * s, clamp(metrics.speed * 12 * s, 24 * s, 90 * s), velocityAngle, 'var(--color-vel)', lw, true);
-    drawMixedText(ctx, vTip.hx + 10 * s * Math.cos(velocityAngle), vTip.hy + 10 * s * Math.sin(velocityAngle),
+    const vLabel = placeLabelBeyond(cartCx, cartCy, vTip.hx, vTip.hy, velocityAngle, 14 * s, 72 * s);
+    drawMixedText(ctx, vLabel.x, vLabel.y,
       [{ text: 'v', italic: true, vector: true }],
-      { fontSize: fs, color: 'var(--color-vel)', align: 'center', baseline: 'middle', halo: true });
+      { fontSize: fs, color: 'var(--color-vel)', align: vLabel.align, baseline: vLabel.baseline, halo: true });
   }
 
   const gTip = drawArrow(ctx, cartCx - 14 * s, cartCy, 68 * s, Math.PI / 2, 'var(--color-gravity)', lw, true);
-  drawMixedText(ctx, gTip.hx - 4 * s, gTip.hy + 14 * s,
+  const gLabel = placeLabelBeside(cartCx, cartCy, gTip.hx, gTip.hy, Math.PI / 2, 48 * s, 22 * s);
+  drawMixedText(ctx, gLabel.x, gLabel.y,
     [{ text: 'F', italic: true, vector: true }, { text: 'g', subscript: true, italic: false }],
-    { fontSize: fs, color: 'var(--color-gravity)', align: 'right', baseline: 'top', halo: true });
+    { fontSize: fs, color: 'var(--color-gravity)', align: gLabel.align, baseline: gLabel.baseline, halo: true });
 
   const nTip = drawArrow(ctx, cartCx + 12 * s, cartCy, 62 * s, screenNormalAngle, 'var(--color-normal)', lw, true);
-  drawMixedText(ctx, nTip.hx + 10 * s * Math.cos(screenNormalAngle), nTip.hy + 10 * s * Math.sin(screenNormalAngle),
+  const nLabel = placeLabelBeyond(cartCx, cartCy, nTip.hx, nTip.hy, screenNormalAngle, 14 * s, 48 * s);
+  drawMixedText(ctx, nLabel.x, nLabel.y,
     [{ text: 'F', italic: true, vector: true }, { text: 'N', subscript: true, italic: false }],
-    { fontSize: fs, color: 'var(--color-normal)', align: 'center', baseline: 'middle', halo: true });
+    { fontSize: fs, color: 'var(--color-normal)', align: nLabel.align, baseline: nLabel.baseline, halo: true });
 
   if (params.frictionEnabled && metrics.speed > 0.04) {
     const fAngle = velocityAngle + Math.PI;
     const fTip = drawArrow(ctx, cartCx, cartCy + 10 * s, clamp((20 + params.muK * 130) * s, 20 * s, 66 * s), fAngle, 'var(--color-friction)', lw, true);
-    drawMixedText(ctx, fTip.hx + 8 * s * Math.cos(fAngle), fTip.hy + 8 * s * Math.sin(fAngle),
+    const laneX = -Math.sin(fAngle);
+    const laneY = Math.cos(fAngle);
+    const upX = Math.cos(screenNormalAngle);
+    const upY = Math.sin(screenNormalAngle);
+    const lane = (laneX * upX + laneY * upY) >= 0 ? 22 * s : -22 * s;
+    const fLabel = placeLabelBeside(cartCx, cartCy, fTip.hx, fTip.hy, fAngle, 40 * s, lane);
+    drawMixedText(ctx, fLabel.x, fLabel.y,
       [{ text: 'f', italic: true, vector: true }, { text: 'k', subscript: true, italic: false }],
-      { fontSize: fs, color: 'var(--color-friction)', align: 'center', baseline: 'middle', halo: true });
+      { fontSize: fs, color: 'var(--color-friction)', align: fLabel.align, baseline: fLabel.baseline, halo: true });
   }
 
   drawMixedText(ctx, trackBox.x + 4, trackBox.y + 4,

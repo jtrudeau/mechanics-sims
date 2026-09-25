@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   Activity,
   BookOpen,
@@ -14,6 +14,8 @@ import {
   RotateCw,
   GraduationCap,
   Menu,
+  Moon,
+  Sun,
   X,
   Info,
   LineChart,
@@ -30,6 +32,7 @@ import {
 import type { SimIconName } from '../../content/types';
 import { TeacherUnlockProvider } from '../../hooks/useTeacherUnlock';
 import { LayoutContext } from './LayoutContext';
+import { applyTheme, readTheme, type ThemeName } from '../../theme';
 
 const ICON_MAP: Record<SimIconName, LucideIcon> = {
   activity: Activity,
@@ -53,7 +56,7 @@ function pageTitle(pathname: string): string {
     const slug = pathname.replace('/guides/', '');
     return getSimulation(slug)?.shortTitle
       ? `Tips: ${getSimulation(slug)!.shortTitle}`
-      : 'Tips & Revision';
+      : 'Tips & practice';
   }
   if (pathname.startsWith('/simulations/')) {
     const slug = pathname.replace('/simulations/', '');
@@ -71,7 +74,8 @@ function NavBody({
 }) {
   const groups = simulationsByTopic();
   const location = useLocation();
-  const onGuideTab = location.pathname.startsWith('/simulations/') && location.search.includes('tab=guide');
+  const onGuideTab = location.pathname.startsWith('/simulations/')
+    && (location.search.includes('tab=guide') || location.search.includes('tab=practice'));
   const guideSlug = location.pathname.startsWith('/guides/')
     ? location.pathname.replace(/^\/guides\//, '').split(/[/?#]/)[0]
     : onGuideTab
@@ -144,13 +148,14 @@ function NavBody({
                   {!collapsed && <span>{sim.shortTitle}</span>}
                 </NavLink>
                 {!collapsed && (isCurrentSim || isCurrentGuide) && (
-                  <NavLink
-                    to={`${sim.simPath}?tab=guide`}
+                  <Link
+                    to={`${sim.simPath}?tab=practice`}
                     onClick={onNavigate}
                     className={`nav-link nav-sublink${isCurrentGuide ? ' active' : ''}`}
+                    aria-current={isCurrentGuide ? 'page' : undefined}
                   >
-                    <span>Tips &amp; Revision</span>
-                  </NavLink>
+                    <span>Tips &amp; practice</span>
+                  </Link>
                 )}
               </div>
             );
@@ -164,9 +169,13 @@ function NavBody({
 const Sidebar = ({
   collapsed,
   onToggle,
+  theme,
+  onToggleTheme,
 }: {
   collapsed: boolean;
   onToggle: () => void;
+  theme: ThemeName;
+  onToggleTheme: () => void;
 }) => {
   return (
     <nav
@@ -208,14 +217,25 @@ const Sidebar = ({
             </p>
           </div>
         )}
-        <button
-          type="button"
-          onClick={onToggle}
-          className="icon-btn"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-        </button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="icon-btn"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+          <button
+            type="button"
+            onClick={onToggle}
+            className="icon-btn"
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+        </div>
       </div>
 
       <div
@@ -238,30 +258,21 @@ const Sidebar = ({
 export const Dashboard = () => {
   const location = useLocation();
   const onSim = location.pathname.startsWith('/simulations/');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem('sn1-sidebar-collapsed') === '1';
-    } catch {
-      return false;
-    }
-  });
+  const embed = new URLSearchParams(location.search).get('embed') === '1';
+  const [theme, setTheme] = useState<ThemeName>(() => readTheme());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [wideCanvas, setWideCanvas] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const title = useMemo(() => pageTitle(location.pathname), [location.pathname]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('sn1-sidebar-collapsed', sidebarCollapsed ? '1' : '0');
-    } catch {
-      /* ignore */
-    }
-  }, [sidebarCollapsed]);
+    applyTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     setMobileOpen(false);
-    if (onSim) setSidebarCollapsed(true);
-    else setWideCanvas(false);
-  }, [location.pathname]);
+    if (!onSim) setWideCanvas(false);
+  }, [location.pathname, onSim]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -272,13 +283,30 @@ export const Dashboard = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [mobileOpen]);
 
+  const layoutValue = { sidebarCollapsed, setSidebarCollapsed, wideCanvas, setWideCanvas };
+
+  if (embed) {
+    return (
+      <LayoutContext.Provider value={layoutValue}>
+        <TeacherUnlockProvider>
+          <div className="sim-embed-root">
+            <Outlet />
+          </div>
+        </TeacherUnlockProvider>
+      </LayoutContext.Provider>
+    );
+  }
+
   return (
-    <LayoutContext.Provider
-      value={{ sidebarCollapsed, setSidebarCollapsed, wideCanvas, setWideCanvas }}
-    >
+    <LayoutContext.Provider value={layoutValue}>
       <TeacherUnlockProvider>
       <div className={`app-container${wideCanvas ? ' wide-canvas' : ''}`}>
-        <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((c) => !c)} />
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed((c) => !c)}
+          theme={theme}
+          onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+        />
 
         <div className="main-column">
           <header className="mobile-topbar">

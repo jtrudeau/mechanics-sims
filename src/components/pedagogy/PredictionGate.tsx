@@ -14,7 +14,7 @@ export function PredictionGate({
   challenges,
   onApplySetup,
   onRunSim,
-  defaultExpanded = true,
+  defaultExpanded = false,
 }: PredictionGateProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [challengeIdx, setChallengeIdx] = useState(0);

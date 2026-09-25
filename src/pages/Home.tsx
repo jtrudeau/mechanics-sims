@@ -17,6 +17,7 @@ import {
 import { simulations, TOPIC_GROUP_LABELS } from '../content/simulations';
 import type { SimIconName } from '../content/types';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { MathText } from '../components/MathText';
 
 const ICON_MAP: Record<SimIconName, LucideIcon> = {
   activity: Activity,
@@ -78,7 +79,7 @@ export default function Home() {
           <span className="home-flow-num">3</span>
           <div>
             <strong>Explain</strong>
-            <p className="text-muted">Use Tips &amp; Revision to refine the physical argument.</p>
+            <p className="text-muted">Use Tips &amp; practice to refine the physical argument.</p>
           </div>
         </div>
       </section>
@@ -101,13 +102,13 @@ export default function Home() {
                   <Icon size={18} className="home-card-icon" />
                 </div>
                 <h3>{sim.shortTitle}</h3>
-                <p className="text-muted home-card-blurb">{sim.blurb}</p>
+                <p className="text-muted home-card-blurb"><MathText text={sim.blurb} /></p>
                 <div className="home-card-actions">
                   <Link to={sim.simPath} className="btn-link">
                     Open simulation
                   </Link>
-                  <Link to={sim.guidePath} className="btn-link secondary">
-                    Tips &amp; Revision
+                  <Link to={`${sim.simPath}?tab=practice`} className="btn-link secondary">
+                    Tips &amp; practice
                   </Link>
                 </div>
               </article>
